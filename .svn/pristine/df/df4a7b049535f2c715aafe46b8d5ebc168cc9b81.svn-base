@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.FileReportProviderMapper" >
+
+	<select id="getReportList" resultType="map">
+		select t.name "name",t.updateDate "updateDate" from UreportData t
+	</select>
+	
+	<update id="saveReport">
+		insert into UreportData(name,updateDate,context) values(#{name},sysdate,#{context})
+	</update>
+	
+	<update id="editReport">
+		update UreportData
+		   set updateDate=sysdate,
+		   	   context = #{context}
+		 where name=#{name}
+	</update>
+	
+	<select id="getSelectedUreport" resultType="map">
+		select * from UreportData t where t.name=#{name}
+	</select>
+	
+	<update id="deleteReport">
+		delete from UreportData where name=#{name}
+	</update>
+</mapper>

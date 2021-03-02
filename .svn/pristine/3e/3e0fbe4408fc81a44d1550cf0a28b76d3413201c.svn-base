@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.NoticeInformMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.NoticeInform" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="Title" property="title" jdbcType="VARCHAR" />
+    <result column="Content" property="content" jdbcType="VARCHAR" />
+    <result column="Informer" property="informer" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, Title, Content, Informer, CreateDate
+  </sql>
+  
+   <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+  
+  <select id="getList" resultType="Map">
+  <include refid="c_start"></include>
+      select id, title,content,informer, 
+      date_format(createdate,'%Y-%m-%d') createdate   
+      from NoticeInform 
+      <where>
+      <if test="id != null and id!='' " >
+        and id=#{id}
+      </if>
+      <if test="content != null and content!='' " >
+        and content=#{content}
+      </if>
+      <if test="informer != null and informer!='' " >
+         and informer=#{informer}
+      </if>
+      <if test="title != null and title!='' " >
+         and title like concat('%',#{title},'%')
+      </if>
+      <if test="date1 != null and date1!='' " >
+         and date_format(createdate,'%Y-%m-%d')&gt;=#{date1}
+      </if>
+      <if test="date2 != null and date2!=''" >
+         and date_format(createdate,'%Y-%m-%d') &lt;=#{date2}
+      </if>
+      </where>
+      <include refid="c_end"></include>
+  </select>
+  
+  <select id="getListCount" resultType="Integer">
+      select count(1) from NoticeInform
+         <where>
+      <if test="id != null and id!='' " >
+        and id=#{id}
+      </if>
+      <if test="content != null and content!='' " >
+        and content=#{content}
+      </if>
+      <if test="informer != null and informer!='' " >
+         and informer=#{informer}
+      </if>
+      <if test="title != null and title!='' " >
+         and title like concat('%',#{title},'%')
+      </if>
+      <if test="date1 != null and date1!='' " >
+         and date_format(createdate,'%Y-%m-%d')&gt;=#{date1}
+      </if>
+      <if test="date2 != null and date2!=''" >
+         and date_format(createdate,'%Y-%m-%d') &lt;=#{date2}
+      </if>
+      </where>
+  </select>
+  
+  <insert id="add" parameterType="Map">
+  insert into noticeinform (Title, Content, Informer)
+    values (#{title}, #{content},#{informer});
+    <if test="arr!=null and arr!=''">
+         <foreach collection="arr" item="item" index="index" separator=";">
+               insert into noticeuser (NoticeID, UserID)
+               values((select max(id) from noticeinform), #{item})
+         </foreach>
+    </if>
+  </insert>
+  
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from noticeinform
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from noticeinform
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.NoticeInform" >
+    insert into noticeinform (ID, Title, Content, 
+      Informer, CreateDate)
+    values (#{id,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, 
+      #{informer,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.NoticeInform" >
+    insert into noticeinform
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="title != null" >
+        Title,
+      </if>
+      <if test="content != null" >
+        Content,
+      </if>
+      <if test="informer != null" >
+        Informer,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="informer != null" >
+        #{informer,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.NoticeInform" >
+    update noticeinform
+    <set >
+      <if test="title != null" >
+        Title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        Content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="informer != null" >
+        Informer = #{informer,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.NoticeInform" >
+    update noticeinform
+    set Title = #{title,jdbcType=VARCHAR},
+      Content = #{content,jdbcType=VARCHAR},
+      Informer = #{informer,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

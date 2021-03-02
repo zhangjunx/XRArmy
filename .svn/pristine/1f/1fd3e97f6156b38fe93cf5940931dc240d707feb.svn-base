@@ -1,0 +1,83 @@
+package com.xr.tools;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSONObject;
+
+@Service
+public class HttpRequestTools {
+
+	/**
+	  * 请求接口
+	  * @param requestUrl
+	  * @param map
+	  * @return
+	  * @throws Exception
+	  */
+	 public static Map<String,Object> sentToURL(String requestUrl, Map<String,Object> map,String method) throws Exception {
+	     URL url = new URL(requestUrl);
+		 // 打开和URL之间的连接
+		 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		 connection.setConnectTimeout(1000);
+		 // 设置通用的请求属性
+		 connection.setRequestMethod(method);
+		 connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+		 connection.setRequestProperty("Connection", "Keep-Alive");
+		 connection.setUseCaches(false);
+		 connection.setDoOutput(true);
+		 connection.setDoInput(true);
+	
+		 // 得到请求的输出流对象
+		 if(map != null){
+			 JSONObject jsonObj=new JSONObject(map);
+			 String params = jsonObj.toString();
+			 DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+			 out.write(params.getBytes("UTF-8"));
+			 out.flush();
+			 out.close();
+		 }
+	
+		 // 建立实际的连接
+		 connection.connect();
+		
+		 // 定义 BufferedReader输入流来读取URL的响应
+		 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+		 String result = "";
+		 String getLine;
+		 while ((getLine = in.readLine()) != null) {
+			 result += getLine;
+		 }
+		 in.close();
+		 JSONObject jsonObject = JSONObject.parseObject(result);
+		 Map<String, Object> resultMap = (Map) jsonObject;
+		 return resultMap;
+	 }
+	 
+	 public static void main(String[] args) throws Exception {
+		/* Map<String,Object> map = new HashMap<String,Object>();
+		 List<Map<String,Object>> parmMap = getPersonList(map);
+		 
+		 Map<String,Object> parmMap2 = new HashMap<String,Object>();
+		 parmMap2.put("person", parmMap);
+		 parmMap2.put("pass", 12345);
+		 String url="http://192.168.1.197:8090/person/create";
+		 Map<String,Object> resultMap = sentToURL(url,parmMap2);
+		 System.out.println(resultMap);*/
+	 }
+	 
+}

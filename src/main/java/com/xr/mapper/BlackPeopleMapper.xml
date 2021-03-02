@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.BlackPeopleMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.BlackPeople" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+    <result column="HolderName" property="holdername" jdbcType="VARCHAR" />
+    <result column="SexName" property="sexname" jdbcType="VARCHAR" />
+    <result column="IDCode" property="idcode" jdbcType="VARCHAR" />
+    <result column="Address" property="address" jdbcType="VARCHAR" />
+    <result column="PhotoStr" property="photostr" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.xr.entry.BlackPeople" extends="BaseResultMap" >
+    <result column="Photo" property="photo" jdbcType="LONGVARBINARY" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, HolderNo,HolderName, SexName, IDCode, Address, PhotoStr, CreateDate,UpdateDate
+  </sql>
+  <sql id="Blob_Column_List" >
+    Photo
+  </sql>
+  
+  <sql id="c_start">
+	  	select res.*
+  		  from (select @num := @num+1 tindex, tmp.* from (
+	  </sql>
+	  
+	  <sql id="c_end">
+	  	) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+	  	<if test="curpage != null and curpage != ''">
+	  		and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) * CONVERT(#{pagesize},SIGNED)+1 
+	  		and res.tindex &lt;= CONVERT(#{curpage},SIGNED) * CONVERT(#{pagesize},SIGNED)
+	  	</if>
+	  </sql>
+	  
+	  
+	  <select id="getNextid" resultType="Integer">
+	      select IFNULL(max(id),0)+1 from BlackPeople
+	  </select>
+  
+ <select id="getList" resultType="Map">
+ <include refid="c_start"></include>
+     select id,holderno,holdername,sexname,idcode,address,photostr,
+     date_format(createdate,'%Y-%m-%d %H:%i:%s') createdate from BlackPeople 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="idcode != null and idcode!='' " >
+	        and idcode=#{idcode}
+	      </if>
+	      <if test="holdername != null and holdername!='' " >
+	        and holdername like concat('%',#{holdername},'%')
+	      </if>
+	      <if test="sexname != null and sexname!='' " >
+	        and sexname like concat('%',#{sexname},'%')
+	      </if>
+     </where>
+      <include refid="c_end"></include>
+  </select>
+  
+  
+  <select id="getListCount" resultType="integer">
+		select count(1) from BlackPeople 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="idcode != null and idcode!='' " >
+	        and idcode=#{idcode}
+	      </if>
+	      <if test="holdername != null and holdername!='' " >
+	        and holdername like concat('%',#{holdername},'%')
+	      </if>
+	      <if test="sexname != null and sexname!='' " >
+	        and sexname like concat('%',#{sexname},'%')
+	      </if>
+     </where>
+ </select>
+  
+   <insert id="addExcel" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";" index="index">
+             insert into blackpeople (HolderNo,HolderName, SexName, 
+      IDCode, Address, PhotoStr)
+    values (#{item.holderno},#{item.holdername}, #{item.sexname}, 
+      #{item.idcode}, #{item.address}, #{item.photostr})
+        </foreach>
+  </insert>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from blackpeople
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from blackpeople
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.BlackPeople" >
+    insert into blackpeople (ID, HolderNo,HolderName, SexName, 
+      IDCode, Address, PhotoStr, 
+      CreateDate,UpdateDate, Photo)
+    values (#{id,jdbcType=INTEGER},#{holderno,jdbcType=VARCHAR}, #{holdername,jdbcType=VARCHAR}, #{sexname,jdbcType=VARCHAR}, 
+      #{idcode,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, #{photostr,jdbcType=VARCHAR}, 
+      #{createdate,jdbcType=TIMESTAMP}, #{updatedate,jdbcType=TIMESTAMP},#{photo,jdbcType=LONGVARBINARY})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.BlackPeople" >
+    insert into blackpeople
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+      <if test="holdername != null" >
+        HolderName,
+      </if>
+      <if test="sexname != null" >
+        SexName,
+      </if>
+      <if test="idcode != null" >
+        IDCode,
+      </if>
+      <if test="address != null" >
+        Address,
+      </if>
+      <if test="photostr != null" >
+        PhotoStr,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+      <if test="photo != null" >
+        Photo,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+       <if test="holdername != null" >
+        #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="sexname != null" >
+        #{sexname,jdbcType=VARCHAR},
+      </if>
+      <if test="idcode != null" >
+        #{idcode,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="photo != null" >
+        #{photo,jdbcType=LONGVARBINARY},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.BlackPeople" >
+    update blackpeople
+    <set >
+      <if test="holderno != null" >
+        HolderNo = #{holderno,jdbcType=VARCHAR},
+      </if>
+       <if test="holdername != null" >
+        HolderName = #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="sexname != null" >
+        SexName = #{sexname,jdbcType=VARCHAR},
+      </if>
+      <if test="idcode != null" >
+        IDCode = #{idcode,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        Address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        PhotoStr = #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="photo != null" >
+        Photo = #{photo,jdbcType=LONGVARBINARY},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.xr.entry.BlackPeople" >
+    update blackpeople
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+    HolderName = #{holdername,jdbcType=VARCHAR},
+      SexName = #{sexname,jdbcType=VARCHAR},
+      IDCode = #{idcode,jdbcType=VARCHAR},
+      Address = #{address,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      Photo = #{photo,jdbcType=LONGVARBINARY}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.BlackPeople" >
+    update blackpeople
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      SexName = #{sexname,jdbcType=VARCHAR},
+      IDCode = #{idcode,jdbcType=VARCHAR},
+      Address = #{address,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+       UpdateDate = #{updatedate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

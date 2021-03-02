@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.HolderTransferMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.HolderTransfer" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+    <result column="HolderName" property="holdername" jdbcType="VARCHAR" />
+    <result column="SexName" property="sexname" jdbcType="VARCHAR" />
+    <result column="Rank" property="rank" jdbcType="VARCHAR" />
+    <result column="IDCode" property="idcode" jdbcType="VARCHAR" />
+    <result column="UnitNo" property="unitno" jdbcType="VARCHAR" />
+    <result column="UnitName" property="unitname" jdbcType="VARCHAR" />
+    <result column="OldUnitNo" property="oldunitno" jdbcType="VARCHAR" />
+    <result column="OldUnitName" property="oldunitname" jdbcType="VARCHAR" />
+    <result column="TransferDate" property="transferdate" jdbcType="TIMESTAMP" />
+    <result column="Reason" property="reason" jdbcType="VARCHAR" />
+    <result column="FileStr" property="filestr" jdbcType="VARCHAR" />
+    <result column="PhotoStr" property="photostr" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="CreatePerson" property="createperson" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.xr.entry.HolderTransfer" extends="BaseResultMap" >
+    <result column="Photo" property="photo" jdbcType="LONGVARBINARY" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, HolderNo, HolderName, SexName, Rank, IDCode, UnitNo, UnitName, OldUnitNo, OldUnitName, 
+    TransferDate, Reason, FileStr, PhotoStr, CreateDate, CreatePerson
+  </sql>
+  <sql id="Blob_Column_List" >
+    Photo
+  </sql>
+  
+   <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+  
+  <insert id="add" parameterType="Map">
+     insert into holdertransfer (HolderNo, HolderName, 
+      SexName, Rank, IDCode, 
+      UnitNo, UnitName, OldUnitNo, 
+      OldUnitName, TransferDate, Reason, 
+      FileStr, PhotoStr,CreatePerson, Photo)
+    select  h.holderno, h.holdername, 
+      h.sexname, h.rank, h.idcode, 
+      #{unitno}, #{unitname}, h.unitno, 
+      ul.unitname, now(), #{reason}, 
+      #{filestr}, #{photostr}, 
+      #{loginid}, #{photo} from holderdata h 
+      left join unitlist ul on h.unitno=ul.unitno where h.holderno=#{holderno};
+    <!-- insert into HolderTransfer(holderno,holdername,sexname,rank,idcode,
+    unitno,unitname,oldunitno,oldunitname,transferdate,
+    reason,filestr,createperson)
+    select h.holderno,h.holdername,h.sexname,h.rank,h.idcode,
+    #{unitno},#{unitname},h.unitno,ul.unitname,now(),
+    #{reason},#{filestr},#{loginid}  from HolderData h 
+    left join UnitList ul on h.unitno=ul.unitno where h.holderno=#{holderno}; -->
+    update  HolderData set unitno=#{unitno} where holderno=#{holderno};
+  </insert>
+  
+  <select id="getList" resultType="Map">
+  <include refid="c_start"></include>
+      select id,holderno,holdername,unitno,unitname,rank,
+      sexname,idcode, oldunitname,filestr,reason,photostr,
+      date_format(TransferDate,'%Y-%m-%d %H:%i:%s') transferdate,
+      date_format(createdate,'%Y-%m-%d %H:%i:%s')  createdate
+       from HolderTransfer 
+      <where>
+      <if test="id != null and id!='' " >
+        and id=#{id}
+      </if>
+       <if test="holderno != null and holderno!='' " >
+        and HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+         and HolderName=#{holdername}
+      </if>
+      <if test="name != null and name!='' " >
+         and HolderName like concat('%',#{name},'%')
+      </if>
+      <if test="unitno != null and unitno!='' " >
+         and UnitNo=#{unitno}
+      </if>
+      </where>
+      <include refid="c_end"></include>
+  </select>
+  
+  <select id="getListCount" resultType="Integer">
+      select count(1)  from HolderTransfer
+       <where>
+      <if test="holderno != null and holderno!='' " >
+        and HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+         and HolderName=#{holdername}
+      </if>
+      <if test="name != null and name!='' " >
+         and HolderName like concat('%',#{name},'%')
+      </if>
+      <if test="unitno != null and unitno!='' " >
+         and UnitNo=#{unitno}
+      </if>
+      </where>
+  </select>
+  
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from holdertransfer
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from holdertransfer
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.HolderTransfer" >
+    insert into holdertransfer (ID, HolderNo, HolderName, 
+      SexName, Rank, IDCode, 
+      UnitNo, UnitName, OldUnitNo, 
+      OldUnitName, TransferDate, Reason, 
+      FileStr, PhotoStr, CreateDate, 
+      CreatePerson, Photo)
+    values (#{id,jdbcType=INTEGER}, #{holderno,jdbcType=VARCHAR}, #{holdername,jdbcType=VARCHAR}, 
+      #{sexname,jdbcType=VARCHAR}, #{rank,jdbcType=VARCHAR}, #{idcode,jdbcType=VARCHAR}, 
+      #{unitno,jdbcType=VARCHAR}, #{unitname,jdbcType=VARCHAR}, #{oldunitno,jdbcType=VARCHAR}, 
+      #{oldunitname,jdbcType=VARCHAR}, #{transferdate,jdbcType=TIMESTAMP}, #{reason,jdbcType=VARCHAR}, 
+      #{filestr,jdbcType=VARCHAR}, #{photostr,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, 
+      #{createperson,jdbcType=VARCHAR}, #{photo,jdbcType=LONGVARBINARY})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.HolderTransfer" >
+    insert into holdertransfer
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+      <if test="holdername != null" >
+        HolderName,
+      </if>
+      <if test="sexname != null" >
+        SexName,
+      </if>
+      <if test="rank != null" >
+        Rank,
+      </if>
+      <if test="idcode != null" >
+        IDCode,
+      </if>
+      <if test="unitno != null" >
+        UnitNo,
+      </if>
+      <if test="unitname != null" >
+        UnitName,
+      </if>
+      <if test="oldunitno != null" >
+        OldUnitNo,
+      </if>
+      <if test="oldunitname != null" >
+        OldUnitName,
+      </if>
+      <if test="transferdate != null" >
+        TransferDate,
+      </if>
+      <if test="reason != null" >
+        Reason,
+      </if>
+      <if test="filestr != null" >
+        FileStr,
+      </if>
+      <if test="photostr != null" >
+        PhotoStr,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="createperson != null" >
+        CreatePerson,
+      </if>
+      <if test="photo != null" >
+        Photo,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="sexname != null" >
+        #{sexname,jdbcType=VARCHAR},
+      </if>
+      <if test="rank != null" >
+        #{rank,jdbcType=VARCHAR},
+      </if>
+      <if test="idcode != null" >
+        #{idcode,jdbcType=VARCHAR},
+      </if>
+      <if test="unitno != null" >
+        #{unitno,jdbcType=VARCHAR},
+      </if>
+      <if test="unitname != null" >
+        #{unitname,jdbcType=VARCHAR},
+      </if>
+      <if test="oldunitno != null" >
+        #{oldunitno,jdbcType=VARCHAR},
+      </if>
+      <if test="oldunitname != null" >
+        #{oldunitname,jdbcType=VARCHAR},
+      </if>
+      <if test="transferdate != null" >
+        #{transferdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="reason != null" >
+        #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="filestr != null" >
+        #{filestr,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createperson != null" >
+        #{createperson,jdbcType=VARCHAR},
+      </if>
+      <if test="photo != null" >
+        #{photo,jdbcType=LONGVARBINARY},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.HolderTransfer" >
+    update holdertransfer
+    <set >
+      <if test="holderno != null" >
+        HolderNo = #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        HolderName = #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="sexname != null" >
+        SexName = #{sexname,jdbcType=VARCHAR},
+      </if>
+      <if test="rank != null" >
+        Rank = #{rank,jdbcType=VARCHAR},
+      </if>
+      <if test="idcode != null" >
+        IDCode = #{idcode,jdbcType=VARCHAR},
+      </if>
+      <if test="unitno != null" >
+        UnitNo = #{unitno,jdbcType=VARCHAR},
+      </if>
+      <if test="unitname != null" >
+        UnitName = #{unitname,jdbcType=VARCHAR},
+      </if>
+      <if test="oldunitno != null" >
+        OldUnitNo = #{oldunitno,jdbcType=VARCHAR},
+      </if>
+      <if test="oldunitname != null" >
+        OldUnitName = #{oldunitname,jdbcType=VARCHAR},
+      </if>
+      <if test="transferdate != null" >
+        TransferDate = #{transferdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="reason != null" >
+        Reason = #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="filestr != null" >
+        FileStr = #{filestr,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        PhotoStr = #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createperson != null" >
+        CreatePerson = #{createperson,jdbcType=VARCHAR},
+      </if>
+      <if test="photo != null" >
+        Photo = #{photo,jdbcType=LONGVARBINARY},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.xr.entry.HolderTransfer" >
+    update holdertransfer
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      SexName = #{sexname,jdbcType=VARCHAR},
+      Rank = #{rank,jdbcType=VARCHAR},
+      IDCode = #{idcode,jdbcType=VARCHAR},
+      UnitNo = #{unitno,jdbcType=VARCHAR},
+      UnitName = #{unitname,jdbcType=VARCHAR},
+      OldUnitNo = #{oldunitno,jdbcType=VARCHAR},
+      OldUnitName = #{oldunitname,jdbcType=VARCHAR},
+      TransferDate = #{transferdate,jdbcType=TIMESTAMP},
+      Reason = #{reason,jdbcType=VARCHAR},
+      FileStr = #{filestr,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      CreatePerson = #{createperson,jdbcType=VARCHAR},
+      Photo = #{photo,jdbcType=LONGVARBINARY}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.HolderTransfer" >
+    update holdertransfer
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      SexName = #{sexname,jdbcType=VARCHAR},
+      Rank = #{rank,jdbcType=VARCHAR},
+      IDCode = #{idcode,jdbcType=VARCHAR},
+      UnitNo = #{unitno,jdbcType=VARCHAR},
+      UnitName = #{unitname,jdbcType=VARCHAR},
+      OldUnitNo = #{oldunitno,jdbcType=VARCHAR},
+      OldUnitName = #{oldunitname,jdbcType=VARCHAR},
+      TransferDate = #{transferdate,jdbcType=TIMESTAMP},
+      Reason = #{reason,jdbcType=VARCHAR},
+      FileStr = #{filestr,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      CreatePerson = #{createperson,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

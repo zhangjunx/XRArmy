@@ -1,0 +1,53 @@
+package com.xr.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.bstek.ureport.provider.report.ReportFile;
+import com.xr.mapper.FileReportProviderMapper;
+import com.xr.service.FileReportProviderService;
+
+@Service
+public class FileReportProviderServiceImpl implements FileReportProviderService {
+
+	@Autowired
+	private FileReportProviderMapper fileReportProviderMapper;
+	
+	@Override
+	public List<ReportFile> getReportList() {
+		List<ReportFile> list = null;
+		try{
+			list = fileReportProviderMapper.getReportList();
+		}catch(Exception e){
+			System.out.println(e);
+		}
+		return list;
+	}
+
+	@Override
+	public void saveReport(Map<String, Object> parmMap) {
+		// TODO Auto-generated method stub
+		Map<String,Object> oneMap = fileReportProviderMapper.getSelectedUreport(parmMap);
+		if(oneMap != null){
+			fileReportProviderMapper.editReport(parmMap);
+		}else{
+			fileReportProviderMapper.saveReport(parmMap);
+		}
+	}
+
+	@Override
+	public Map<String, Object> getSelectedUreport(Map<String, Object> pramMap) {
+		Map<String,Object> resultMap = new HashMap<String, Object>();
+		resultMap = fileReportProviderMapper.getSelectedUreport(pramMap);
+		return resultMap;
+	}
+
+	@Override
+	public void deleteReport(Map<String, Object> parmMap) {
+		fileReportProviderMapper.deleteReport(parmMap);
+	}
+}

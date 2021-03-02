@@ -1,0 +1,329 @@
+package com.xr.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSONArray;
+import com.xr.configure.MethodLog;
+import com.xr.entry.AccessGroupHolder;
+import com.xr.service.IAccessGroupHolderService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+
+@Controller
+@RequestMapping("AccessGroupHolder")
+@Api(tags="AccessGroupHolderController",description="接口标题：权限组人员分配层接口")
+public class AccessGroupHolderController {
+	@Autowired
+	private IAccessGroupHolderService ics;
+	
+	/**
+	 * 新增
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：门禁权限设置接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：主键id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="groupid",value="参数：权限组id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="str",value="参数：json字符串：['aaa','bbb'],存的是人员id",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@MethodLog(methodName="保存",remark="门禁权限设置")
+	@RequestMapping(value="/addBatch",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> addBatch(String str,Integer groupid,String type,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		try{
+			 JSONArray list=JSONArray.parseArray(str);
+			 List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
+			 for(int i=0;i<list.size();i++){
+				 Map<String,Object> m=new HashMap<String,Object>();
+				 Map<String,Object> m1=new HashMap<String,Object>();
+				 String holderno=list.getString(i);
+				 m.put("holderno", holderno);
+				 List<Map<String,Object>> exist=ics.getListService(m);
+				 if(exist!=null && exist.size()==1){  
+					 m1=exist.get(0);
+					 Integer groupid2=Integer.valueOf(String.valueOf(m1.get("groupid")));
+					 if(type.equals("aa")){
+						 if(groupid!=groupid2 && !groupid.equals(groupid2)){
+							 m1.put("type", "uu");
+							 m1.put("groupid", groupid);
+							 m1.put("holderno", holderno);
+							 result.add(m1);
+						}
+					 }else if(type.equals("dd")){
+						 m1.put("type", "dd");
+						 result.add(m1);
+					 }
+					
+				 }else if(exist==null || exist.size()==0){
+					 if(type.equals("aa")){
+						 m1.put("type","aa");
+						 m1.put("holderno", holderno);
+						 m1.put("groupid", groupid);
+						 result.add(m1);
+					 }
+					
+				 }else{
+					 for(int k=0;k<exist.size();k++){
+						 Map<String,Object> m2=exist.get(k);
+						 m2.put("type", "dd");
+						 result.add(m2);
+					 }
+				 }
+				
+			 }
+			 
+			 //分批次添加
+			 List<Map<String,Object>> pici=new ArrayList<Map<String,Object>>();
+			 for(int i=0;i<result.size();i++){
+				 pici.add(result.get(i));
+				 if(pici.size()==100 || i==result.size()-1){
+					 int t=ics.addService(pici);
+					 pici.clear();
+				 }
+			 }
+			if(result.size()>=0){
+				map.put("flag", true);
+				map.put("reason", "保存成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "保存失败！");
+			}
+		}catch(Exception ex){
+ 			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 新增
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：人事权限设置接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：主键id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="groupid",value="参数：权限组id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="str",value="参数：json字符串：['aaa','bbb'],存的是人员id",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@MethodLog(methodName="保存",remark="人事权限设置接口")
+	@RequestMapping(value="/add",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> insert(String str,Integer groupid,String type,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		try{
+			 JSONArray list=JSONArray.parseArray(str);
+			 List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
+			 for(int i=0;i<list.size();i++){
+				 Map<String,Object> m=new HashMap<String,Object>();
+				 Map<String,Object> m1=new HashMap<String,Object>();
+				 String holderno=list.getString(i);
+				 
+				 m.put("holderno", holderno);
+				 List<Map<String,Object>> exist=ics.getListService(m);
+				 if(exist!=null && exist.size()==1){
+					 m1=exist.get(0);
+					 Integer groupid2=Integer.valueOf(String.valueOf(m1.get("groupid")));
+					 if(groupid!=null && !"".equals(groupid)){
+						 if(groupid!=groupid2 && !groupid.equals(groupid2)){
+							 m1.put("type", "uu");
+							 m1.put("groupid", groupid);
+							 result.add(m1);
+						}
+					 }else{
+						 m1.put("type", "dd");
+						 m1.put("groupid", groupid);
+						 result.add(m1);
+					 }
+					
+				 }else if(exist==null || exist.size()==0){
+					 if(groupid!=null && !"".equals(groupid)){
+						 m1.put("type","aa");
+						 m1.put("holderno", holderno);
+						 m1.put("groupid", groupid);
+						 result.add(m1);
+					 }
+					
+				 }else{
+					 for(int k=0;k<exist.size();k++){
+						 Map<String,Object> m2=exist.get(k);
+						 m2.put("type", "dd");
+						 result.add(m2);
+					 }
+				 }
+				
+			 }
+			 
+			 //分批次添加
+			 List<Map<String,Object>> pici=new ArrayList<Map<String,Object>>();
+			 for(int i=0;i<result.size();i++){
+				 pici.add(result.get(i));
+				 if(pici.size()==100 || i==result.size()-1){
+					 int t=ics.addService(pici);
+					 pici.clear();
+				 }
+			 }
+			if(result.size()>=0){
+				map.put("flag", true);
+				map.put("reason", "保存成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "保存失败！");
+			}
+		}catch(Exception ex){
+ 			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="curpage",value="参数：当前页数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="pagesize",value="参数：每页显示数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="id",value="参数：主键id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="groupid",value="参数：权限组id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="holderno",value="参数：人员id",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getList",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getList(AccessGroupHolder record,Integer curpage,Integer pagesize,String unitno,String holdername,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("id", record.getId());
+			m.put("groupid", record.getGroupid());
+			m.put("holderno", record.getHolderno());
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			List<Map<String,Object>> list=ics.getListService(m);
+			int count=ics.getListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="curpage",value="参数：当前页数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="pagesize",value="参数：每页显示数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="id",value="参数：主键id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="groupid",value="参数：权限组id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="holderno",value="参数：人员id",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getGroupList",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getGroupList(Integer curpage,Integer pagesize,String holderno,Integer groupid,String holdername,String unitno,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			m.put("holderno", holderno);
+			m.put("groupid", groupid);
+			List<Map<String,Object>> list=ics.getGroupListService(m);
+			int count=ics.getGroupListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	 
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="groupid",value="参数：权限组id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="unitno",value="参数：单位id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="holderno",value="参数：人员id",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="holdername",value="参数：人员姓名",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getListByGroup",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getListByGroup(String holderno,Integer groupid,String holdername,String unitno,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("holderno", holderno);
+			m.put("groupid", groupid);
+			m.put("holdername", holdername);
+			m.put("unitno", unitno);
+			List<Map<String,Object>> list=ics.getListByGroupService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+
+}

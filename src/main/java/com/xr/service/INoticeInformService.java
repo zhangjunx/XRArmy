@@ -1,0 +1,26 @@
+package com.xr.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.xr.entry.NoticeInform;
+
+@Service
+public interface INoticeInformService {
+
+	int insertSelectiveService(NoticeInform record);
+
+	int deleteByPrimaryKeyService(Integer id);
+	NoticeInform selectByPrimaryKeyService(Integer id);
+
+	List<Map<String, Object>> getListService(Map m);
+
+	int getListCountService(Map m);
+
+	int addService(Map m);
+
+	 
+
+}

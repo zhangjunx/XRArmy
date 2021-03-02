@@ -1,0 +1,109 @@
+package com.xr.https;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+
+import com.xr.tools.MyX509TrustManager;
+
+import net.sf.json.JSONObject;
+
+public class HttpRequest {
+	
+	public static final String URL="192.168.1.250/";
+	public static final String APP_ID="";
+	public static final String APP_Key="24949434";
+	public static final String APP_SECRET="85q63mc5ZX51IzU390Rj";
+	public static String TOKEN="5493eac7031e540c686b92489a4b8f246c93cd09fc1de60f366989593f57b03d";
+    
+	public static void main(String[] args) throws Exception {
+		//1.第一步：
+		String url=URL+"";//接口的url地址
+		Map path=new HashMap(2){
+			{put("https://",url);}
+		};
+		String contentType="application/json";
+		//组装请求参数
+		JSONObject jsonBody=new JSONObject();
+		jsonBody.put("cameraIndexCode", "748d84750e3a4a5bbad3cd4af9ed5101");
+		jsonBody.put("streamType", 0);
+		jsonBody.put("protocol", "rtsp");
+		jsonBody.put("transmode", 1);
+		jsonBody.put("expand", "streamform=ps");
+		//String body=jsonBody.toJSONString();
+		//调用接口
+		//String result=ArtemisHttpUtil.doPostStringArtemis(path,body,null,null,contentType,null);
+		//post请求application/json类型参数
+		//System.out.println(result);
+		
+		
+
+	}
+	
+	 
+	public static void getAreaList(){
+		String url=URL+"/api/resource/v1/regions/root";
+		
+	}
+	
+	public static void getDot() throws Exception{
+		Map<String,Object> map=new HashMap<>();
+		String m="";
+		
+		String url=URL+"/api/resource/v1/camera/advance/cameraList";
+		String result=net(url,"POST",null);
+	}
+	
+
+	private static String net(String requestUrl,String method, String outputStr) {
+		StringBuffer buffer=null;
+		try{
+			//创建SSLContext
+			SSLContext sslContext=SSLContext.getInstance("SSL");
+			TrustManager[] tm={new MyX509TrustManager()};
+			//初始化
+			sslContext.init(null, tm, new java.security.SecureRandom());
+			//获取SSLSocketFactory对象
+			SSLSocketFactory ssf=sslContext.getSocketFactory();
+			URL url=new URL(requestUrl);
+			HttpsURLConnection con=(HttpsURLConnection) url.openConnection();
+		    con.setDoOutput(true);
+		    con.setDoInput(true);
+		    con.setUseCaches(false);
+		    con.setRequestMethod(method);
+		    //设置当前实例使用的SSLSocterFactory
+		    con.setSSLSocketFactory(ssf);
+		    con.connect();
+		    //往服务器端写内容
+		    if(null!=outputStr){
+		    	OutputStream os=con.getOutputStream();
+		    	os.write(outputStr.getBytes("utf-8"));
+		    	os.close();
+		    }
+		    //读取服务器端返回的内容
+		    InputStream is=con.getInputStream();
+		    InputStreamReader isr=new InputStreamReader(is,"utf-8");
+		    BufferedReader br=new BufferedReader(isr);
+		    buffer=new StringBuffer();
+		    String line=null;
+		    while((line=br.readLine())!=null){
+		    	buffer.append(line);
+		    }
+		}catch(Exception ex){
+			System.out.println(ex);
+			ex.printStackTrace();
+		}
+		System.out.println(buffer.toString());
+		return buffer.toString();
+	}
+
+}

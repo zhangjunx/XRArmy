@@ -1,0 +1,236 @@
+/*if(window.top.loginid != "administrator"){
+		//$(".add").hide();
+		for(var item of window.top.arr){
+			$("a[data-id="+item+"]").show();
+		}
+}*/
+var getSend;
+layui.use(["form","table"],function(){
+	 var $ = layui.$,
+	  form = layui.form,
+	  table = layui.table;
+	 getReceive();
+	  //监听搜索
+	  form.on('submit(LAY-user-front-search)', function(data){
+	    var field = data.field;
+	    field.loginid=window.top.loginid;
+	    var index=$(".main-tab .label.curr").index();
+	    if(index==0){
+	    	//执行重载
+		    table.reload('LAY-receive-manage', {
+		      where: field
+		    });
+	    }else if(index==1){
+	    	//执行重载
+		    table.reload('LAY-send-manage', {
+		      where: field
+		    });
+	    }
+	  });
+	  
+	  //我接收的消息
+	  function getReceive(){
+		  table.render({
+			    elem: '#LAY-receive-manage',
+			    url:url+'/NoticeUser/getList',
+			    cellMinWidth: 80,
+			    height: "full-232",
+			    method:"POST",
+			    request:{
+			    	pageName:"curpage",
+			    	limitName:"pagesize",
+			    },
+			    where:{
+			    	"loginid":window.top.loginid,
+			    },
+			    parseData: function(res){ //res 即为原始返回的数据
+			    	console.log(res);
+			        return {
+			          "code": res.flag==true?"0":"", //解析接口状态
+			          "msg": res.msg, //解析提示文本
+			          "count": res.count, //解析数据长度
+			          "data": res.result //解析数据列表
+			        };
+			      },
+			    cols:  [[
+			    	{type:'checkbox',title:'全选'},
+			    	  {field:'ID', title:'序号', width:150,sort:true,templet:function(d){
+						  return d.LAY_TABLE_INDEX+1
+					  }},
+					  {field:'title', title:'主题', width:250},
+				      {field:'informer', title:'发布人', width:200,sort:true},
+				     /* {field:'userid', title:'接收人', width:300,sort:true},*/
+				      {field:'createdate', title:'发布时间', width:200,sort:true},
+				      {fixed: 'right', title:'操作', templet:function(d){
+						  var $a1="<a class='layui-btn layui-btn-warm layui-btn-xs' lay-event='watch'>查看</a>";
+						  var $a2="<a class='layui-btn layui-btn-danger layui-btn-xs layui-bg-gray'>删除</a>";
+						  if(window.top.loginid!="administrator"){
+							  for(var item of window.top.arr){
+								  if(item=="删除"){
+									  $a2="<a class='layui-btn layui-btn-danger layui-btn-xs' lay-event='del'>删除</a>";
+								  } 
+							  }
+						  }else{
+							  $a1="<a class='layui-btn layui-btn-warm layui-btn-xs' lay-event='watch'>查看</a>";
+							  $a2="<a class='layui-btn layui-btn-danger layui-btn-xs' lay-event='del'>删除</a>";
+						  }
+						  return $a1+$a2;
+					  }},
+				    ]],
+				page: true,
+			    limit:15,
+				limits:[15,20,30,40,50,60,70,80,90]
+			  });
+	  }
+	  
+	  //我发布的消息
+	  getSend=function(){
+		  table.render({
+			    elem: '#LAY-send-manage',
+			    url:url+'/NoticeInform/getList',
+			    cellMinWidth: 80,
+			    height: "full-232",
+			    method:"POST",
+			    request:{
+			    	pageName:"curpage",
+			    	limitName:"pagesize",
+			    },
+			    where:{
+			    	"loginid":window.top.loginid,
+			    },
+			    parseData: function(res){ //res 即为原始返回的数据
+			    	console.log(res);
+			        return {
+			          "code": res.flag==true?"0":"", //解析接口状态
+			          "msg": res.msg, //解析提示文本
+			          "count": res.count, //解析数据长度
+			          "data": res.result //解析数据列表
+			        };
+			      },
+			    cols:  [[
+			    	{type:'checkbox',title:'全选'},
+			    	  {field:'ID', title:'序号', width:150,sort:true,templet:function(d){
+						  return d.LAY_TABLE_INDEX+1
+					  }},
+					  {field:'title', title:'主题', width:250},
+				      {field:'informer', title:'发布人', width:200,sort:true},
+				      {field:'userlist', title:'接收人', sort:true,templet:function(d){
+				    	  var arr=[];
+				    	  if(d.users==undefined){
+				    		  return "";
+				    	  }else{
+				    		  for(var item of d.users){
+				    			  arr.push(item.userid);
+				    		  }
+				    		  return arr.join(",");
+				    	  }
+				      }},
+				      {field:'createdate', title:'发布时间', width:200,sort:true},
+				      {fixed: 'right', title:'操作',width:250, templet:function(d){
+						  var $a1="<a class='layui-btn layui-btn-warm layui-btn-xs' lay-event='watch'>查看</a>";
+						  var $a2="<a class='layui-btn layui-btn-danger layui-btn-xs layui-bg-gray' lay-event='del'>删除</a>";
+						  if(window.top.loginid!="administrator"){
+							  for(var item of window.top.arr){
+								  if(item=="删除"){
+									  $a2="<a class='layui-btn layui-btn-danger layui-btn-xs' lay-event='del'>删除</a>";
+								  } 
+							  }
+						  }else{
+							  $a1="<a class='layui-btn layui-btn-warm layui-btn-xs' lay-event='watch'>查看</a>";
+							  $a2="<a class='layui-btn layui-btn-danger layui-btn-xs' lay-event='del'>删除</a>";
+						  }
+						  return $a1+$a2;
+					  }},
+				    ]],
+			      page: true,
+				  limit:15,
+			      limits:[15,20,30,40,50,60,70,80,90]
+			  });
+	  }
+	  
+		  //监听工具条 我接收的
+		  table.on('tool(LAY-receive-manage)', function(obj){
+		  	 var data = obj.data;
+		     if(obj.event === 'del'){
+	  			  layer.confirm('确定删除?', function(index){
+	  				$.ajax({
+	  					url:url+'/NoticeUser/delete',
+	  					type:"POST",
+	  					data:{"id":data.id,"loginid":window.top.loginid},
+	  					success:function(res){
+	  						console.log(res);
+	  						layer.close(index);
+	  						if(res.flag){
+	  							layer.msg(res.reason,{time:1000},function(){
+	  								 obj.del();
+	  							})
+	  						}else{
+	  							layer.msg(res.reason,{time:2000});
+	  						}
+	  					}
+	  				})
+	  			  });
+	  			} else if(obj.event === 'watch'){
+	  				 layer.open({
+	  					 type:2,
+	  					 title:"查看",
+	  					 content:"notice_watch.html?watch=0&id="+data.id,
+	  					 area:["90%","91%"],
+	  				 })
+	  			}
+		  });
+		  
+		  //监听工具条 我发布的
+		  table.on('tool(LAY-send-manage)', function(obj){
+		  	 var data = obj.data;
+		     if(obj.event === 'del'){
+	  			  layer.confirm('确定删除?', function(index){
+	  				$.ajax({
+	  					url:url+'/NoticeInform/delete',
+	  					type:"POST",
+	  					data:{"id":data.id,"loginid":window.top.loginid},
+	  					success:function(res){
+	  						console.log(res);
+	  						layer.close(index);
+	  						if(res.flag){
+	  							layer.msg(res.reason,{time:1000},function(){
+	  								 obj.del();
+	  							})
+	  						}else{
+	  							layer.msg(res.reason,{time:2000});
+	  						}
+	  					}
+	  				})
+	  			  });
+	  			} else if(obj.event === 'watch'){
+	  				 layer.open({
+	  					 type:2,
+	  					 title:"查看",
+	  					 content:"notice_watch.html?watch=1&id="+data.id,
+	  					 area:["90%","91%"],
+	  				 })
+	  			}
+		  });
+		  
+		  
+		//点击选项卡
+		  $(".main-tab .label").click(function(){
+			  	$(this).addClass("curr").siblings().removeClass("curr");
+			  	var index=$(this).index();
+			  	$(".layui-card-body").eq(index).show().siblings(".layui-card-body").hide();
+			  	if(index==0){
+			  		getReceive();
+			  	}else if(index==1){
+			  		getSend();
+			  	} 
+		  })
+		  
+})
+
+//点击删除
+$('#del').click(function(){
+	 var index=$(".main-tab .label.curr").index();
+	 if(index==0){
+	 }else if(index==1){
+	 } 
+});

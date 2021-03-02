@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.IssueRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.IssueRecord" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+    <result column="HolderName" property="holdername" jdbcType="VARCHAR" />
+    <result column="PhotoStr" property="photostr" jdbcType="VARCHAR" />
+    <result column="GroupID" property="groupid" jdbcType="INTEGER" />
+    <result column="DeviceNo" property="deviceno" jdbcType="INTEGER" />
+    <result column="DeviceName" property="devicename" jdbcType="VARCHAR" />
+    <result column="DeviceSN" property="devicesn" jdbcType="VARCHAR" />
+    <result column="BoxID" property="boxid" jdbcType="INTEGER" />
+    <result column="BoxName" property="boxname" jdbcType="VARCHAR" />
+    <result column="State" property="state" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, HolderNo, HolderName, PhotoStr, GroupID, DeviceNo, DeviceName, DeviceSN, BoxID, 
+    BoxName, State, CreateDate, UpdateDate
+  </sql>
+  <sql id="c_start">
+	  	select res.*
+  	from (select @num := @num+1 tindex, tmp.* from (
+  </sql>
+	  
+  <sql id="c_end">
+	  ) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+	  	<if test="curpage != null and curpage != ''">
+	  		and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) * CONVERT(#{pagesize},SIGNED)+1 
+	  		and res.tindex &lt;= CONVERT(#{curpage},SIGNED) * CONVERT(#{pagesize},SIGNED)
+	  	</if>	
+  </sql>
+  
+  <select id="getGroupDev" resultType="Map">
+      select dc.deviceno,dc.channelno,d.devicetype,d.devicevender,gc.groupid,
+d.ip,port,d.username,d.userpass,d.boxid from devicechannel dc inner join deviceunit d on d.deviceno=dc.deviceno
+inner join accessgroupchannel gc on gc.channelno=dc.channelno
+where gc.groupid=#{groupid}
+  </select>
+  
+  
+  
+   <select id="getVisit" resultType="Map">
+    select t.id,t.visitorsname,t.visitorsreasontext,t.idcode,t.carplateno,t.photostr,
+ DATE_FORMAT(t.startdate,'%Y-%m-%d %H:%i:%s') startdate,
+DATE_FORMAT(t.enddate,'%Y-%m-%d %H:%i:%s') enddate 
+from (select a.id,a.visitorsname,a.visitorsreasontext,a.idcode,a.carplateno,
+a.startdate,a.enddate,a.groupid,a.photostr from visitorsinfo a 
+where not EXISTS(select id from issuerecord where state='V' and holderno=CONCAT('V_',a.id))
+)t where  LENGTH(t.groupid) >0 and t.enddate>NOW()
+      <if test="carplateno != null and carplateno!=''" >
+        and t.carplateno=#{carplateno}
+      </if>
+      <if test="visitorsname != null and visitorsname!='' " >
+        and t.visitorsname=#{visitorsname}
+      </if>
+  </select>
+  
+    <select id="getLeave" resultType="Map">
+     select t.id ,t.holderno,t.holdername,t.groupid,t.level,t.state,t.type,
+     (select photostr from holderdata where holderno=t.holderno) photostr,
+	DATE_FORMAT(t.startdate,'%Y-%m-%d %H:%i:%s') startdate,
+	DATE_FORMAT(t.enddate,'%Y-%m-%d %H:%i:%s') enddate
+	 from (select a.id,a.holderno,a.holdername,a.groupid,
+	a.applystatus,a.state,a.type,a.startdate,a.enddate,a.level from holderleave a 
+where not EXISTS(select id from issuerecord where state='L' and holderno=CONCAT('L_',id))
+)t where t.applystatus='50' and LENGTH(t.groupid) >0 and t.enddate>NOW()
+      <if test="holderno != null and holderno!=''" >
+        and t.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and t.HolderName=#{holdername}
+      </if>
+  </select>
+  
+  <select id="getHolder" resultType="Map">
+     select t.holderno,t.holdername,t.photostr,t.unitno,t.state 
+from (select a.holderno,a.holdername,a.photostr,a.unitno,a.state from holderdata a 
+where not EXISTS( select * from issuerecord where holderno=a.holderno))t 
+<where>
+      <if test="state != null and state!='' " >
+        and t.state=#{state}
+      </if>
+      <if test="unitno != null and unitno!='' " >
+        and t.unitno=#{unitno}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and t.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and t.HolderName=#{holdername}
+      </if>
+</where>  
+  </select>
+  
+  <select id="getSynVisit" resultType="Map">
+      <include refid="c_start"></include>    
+select i.id,i.holderno,i.holdername,i.state,i.photostr,
+	i.boxname,i.boxid,i.deviceno,i.devicename,i.devicesn,i.groupid,
+	case when  v.id is null then '删除'
+	else '已同步' end synstatus from issuerecord i 
+	left join (select id,visitorsname,visitorsreasontext,idcode,carplateno,startdate,enddate from visitorsinfo 
+<!-- where LENGTH(groupid) >0 and enddate>NOW() -->
+) v on CONCAT('V_',v.id)=i.holderno
+	where i.state='V'
+      <if test="id != null and id!='' " >
+        and i.ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and i.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and i.HolderName=#{holdername}
+      </if>
+      <include refid="c_end"></include>
+  </select>
+  
+  <select id="getSynVisitCount" resultType="Integer">
+   select count(1) from issuerecord i 
+	left join (select id,visitorsname,visitorsreasontext,idcode,carplateno,
+	startdate,enddate from visitorsinfo 
+	<!-- where LENGTH(groupid) >0 and enddate>NOW() -->
+	) v on CONCAT('V_',v.id)=i.holderno
+	where i.state='V'
+      <if test="id != null and id!='' " >
+        and i.ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and i.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and i.HolderName=#{holdername}
+      </if>
+  </select>
+  
+   <select id="getSynLeave" resultType="Map">
+      <include refid="c_start"></include>
+      select i.id,i.holderno,i.holdername,i.state,i.photostr,
+	i.boxname,i.boxid,i.deviceno,i.devicename,i.devicesn,i.groupid,
+     case when h.id is null then '删除'
+	else '已同步' end synstatus from issuerecord i left join (select id ,holderno,holdername,groupid,
+	state,type,startdate,enddate from holderleave where applystatus='50' and LENGTH(groupid) >0 
+	<!-- and enddate>NOW() -->
+	) h
+on concat('L_',h.id)=i.holderno  
+where i.state='L' 
+      <if test="id != null and id!='' " >
+        and i.ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and i.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and i.HolderName=#{holdername}
+      </if>
+      <include refid="c_end"></include>
+  </select>
+  
+  <select id="getSynLeaveCount" resultType="Integer">
+      select count(1) from issuerecord i left join (select id ,holderno,holdername,groupid,
+	state,type,startdate,enddate from holderleave where applystatus='50' and LENGTH(groupid) >0 
+	<!-- and enddate>NOW() -->
+	) h
+on concat('L_',h.id)=i.holderno  
+where i.state='L' 
+      <if test="id != null and id!='' " >
+        and i.ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and i.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and i.HolderName=#{holdername}
+      </if>
+  </select>
+  
+  <select id="getSynHolder" resultType="Map">
+      <include refid="c_start"></include>
+      select i.id,i.holderno,i.holdername,i.state,i.photostr,
+	i.boxname,i.boxid,i.deviceno,i.devicename,i.devicesn,i.groupid,
+	case when h.updatedate>i.createdate then '更新' 
+	when h.holderno is null then '删除'
+	else '已同步' end synstatus from issuerecord i 
+	left join holderdata h on h.holderno=i.holderno
+	where i.state=#{state}  
+      <if test="id != null and id!='' " >
+        and i.ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and i.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and i.HolderName=#{holdername}
+      </if>
+      <include refid="c_end"></include>
+  </select>
+  
+   <select id="getSynHolderCount" resultType="Integer">
+      select count(1) from issuerecord i 
+	left join holderdata h on h.holderno=i.holderno
+	where i.state=#{state}  
+      <if test="id != null and id!='' " >
+        and i.ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and i.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and i.HolderName=#{holdername}
+      </if>
+  </select>
+  
+  
+  <select id="getList" resultType="Map">
+      <include refid="c_start"></include>
+      select id,holderno,holdername,photostr,groupid,groupname,
+      deviceno,devicename,devicesn,boxid,boxname,state,
+      date_format(createdate,'%Y-%m-%d %H:%i:%s') createdate,
+      date_format(updatedate,'%Y-%m-%d %H:%i:%s') updatedate
+      from issuerecord 
+   <where>
+      <if test="id != null and id!='' " >
+        and ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and HolderName=#{holdername}
+      </if>
+      <if test="state != null and state!='' " >
+        and State=#{state}
+      </if>
+   </where>
+      <include refid="c_end"></include>
+  </select>
+  <select id="getListCount" resultType="Integer">
+      select count(1) from issuerecord 
+   <where>
+      <if test="id != null and id!='' " >
+        and ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and HolderName=#{holdername}
+      </if>
+      <if test="state != null and state!='' " >
+        and State=#{state}
+      </if>
+   </where>
+  </select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from issuerecord
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from issuerecord
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.IssueRecord" >
+    insert into issuerecord (ID, HolderNo, HolderName, 
+      PhotoStr, GroupID, DeviceNo, 
+      DeviceName, DeviceSN, BoxID, 
+      BoxName, State, CreateDate, 
+      UpdateDate)
+    values (#{id,jdbcType=INTEGER}, #{holderno,jdbcType=VARCHAR}, #{holdername,jdbcType=VARCHAR}, 
+      #{photostr,jdbcType=VARCHAR}, #{groupid,jdbcType=INTEGER}, #{deviceno,jdbcType=INTEGER}, 
+      #{devicename,jdbcType=VARCHAR}, #{devicesn,jdbcType=VARCHAR}, #{boxid,jdbcType=INTEGER}, 
+      #{boxname,jdbcType=VARCHAR}, #{state,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, 
+      #{updatedate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.IssueRecord" >
+    insert into issuerecord
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+      <if test="holdername != null" >
+        HolderName,
+      </if>
+      <if test="photostr != null" >
+        PhotoStr,
+      </if>
+      <if test="groupid != null" >
+        GroupID,
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo,
+      </if>
+      <if test="devicename != null" >
+        DeviceName,
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN,
+      </if>
+      <if test="boxid != null" >
+        BoxID,
+      </if>
+      <if test="boxname != null" >
+        BoxName,
+      </if>
+      <if test="state != null" >
+        State,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="groupid != null" >
+        #{groupid,jdbcType=INTEGER},
+      </if>
+      <if test="deviceno != null" >
+        #{deviceno,jdbcType=INTEGER},
+      </if>
+      <if test="devicename != null" >
+        #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        #{boxid,jdbcType=INTEGER},
+      </if>
+      <if test="boxname != null" >
+        #{boxname,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.IssueRecord" >
+    update issuerecord
+    <set >
+      <if test="holderno != null" >
+        HolderNo = #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        HolderName = #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        PhotoStr = #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="groupid != null" >
+        GroupID = #{groupid,jdbcType=INTEGER},
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo = #{deviceno,jdbcType=INTEGER},
+      </if>
+      <if test="devicename != null" >
+        DeviceName = #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        BoxID = #{boxid,jdbcType=INTEGER},
+      </if>
+      <if test="boxname != null" >
+        BoxName = #{boxname,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        State = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.IssueRecord" >
+    update issuerecord
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      GroupID = #{groupid,jdbcType=INTEGER},
+      DeviceNo = #{deviceno,jdbcType=INTEGER},
+      DeviceName = #{devicename,jdbcType=VARCHAR},
+      DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      BoxID = #{boxid,jdbcType=INTEGER},
+      BoxName = #{boxname,jdbcType=VARCHAR},
+      State = #{state,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

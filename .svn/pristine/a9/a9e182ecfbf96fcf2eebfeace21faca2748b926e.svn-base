@@ -1,0 +1,2 @@
+#配置properties文件
+spring.profiles.active=local,parm

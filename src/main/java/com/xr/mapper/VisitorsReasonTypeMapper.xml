@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.VisitorsReasonTypeMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.VisitorsReasonType" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="Name" property="name" jdbcType="VARCHAR" />
+    <result column="Note" property="note" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, Name, Note
+  </sql>
+  
+  <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id asc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+	
+	 
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select  id,name,note from visitorsreasontype
+		<where>
+			<if test="id != null and id!='' ">
+				and ID=#{id}
+			</if>
+			<if test="reasonname != null and reasonname!='' ">
+				and name like concat('%',#{reasonname},'%')
+			</if>
+			<if test="name != null and name!='' ">
+				and name =#{name}
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+	
+	<select id="getListCount" resultType="integer">
+		select count(1)	from visitorsreasontype
+		<where>
+			<if test="id != null and id!='' ">
+				and ID=#{id}
+			</if>
+			<if test="reasonname != null and reasonname!='' ">
+				and name like concat('%',#{reasonname},'%')
+			</if>
+			<if test="name != null and name!='' ">
+				and name =#{name}
+			</if>
+		</where>
+	</select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from visitorsreasontype
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from visitorsreasontype
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.VisitorsReasonType" >
+    insert into visitorsreasontype (ID, Name, Note
+      )
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.VisitorsReasonType" >
+    insert into visitorsreasontype
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="name != null" >
+        Name,
+      </if>
+      <if test="note != null" >
+        Note,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        #{note,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.VisitorsReasonType" >
+    update visitorsreasontype
+    <set >
+      <if test="name != null" >
+        Name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null" >
+        Note = #{note,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.VisitorsReasonType" >
+    update visitorsreasontype
+    set Name = #{name,jdbcType=VARCHAR},
+      Note = #{note,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,82 @@
+.drawout-select .layui-form-select{
+	width:30%;
+	display:inline-block;
+}
+.drawout-ipt{
+	width: 67%;
+    display: inline-block;
+}
+/* 查询统计页面开始 */
+.carBox{
+	display:flex;
+	padding-left:18px;
+}
+.carBox li{
+	border:1px solid #ddd;
+	padding:5px 10px;
+	box-sizing:border-box;
+	border-radius:5px;
+	margin-right:10px;
+	cursor:pointer;
+}
+.carBox li.curr{
+	border-color:#039BDD;
+	color:#039BDD;
+}
+
+/* 查询统计页面结束 */
+/* 选择报批领导开始 */
+.peopleBox{
+	display: flex;
+	flex-wrap: wrap;
+}
+.peopleBox .people-item{
+	border: 1px solid #ddd;
+	color: #666;
+	padding: 10px 15px;
+	box-sizing: border-box;
+	margin: 10px;
+	cursor: pointer;
+	border-radius: 5px;
+	display: inline-block;
+}
+.peopleBox .people-item.curr{
+	background: url(../../img/right-role.png) no-repeat right 40px;
+	border-color: #039BDD;
+}
+.peopleBox .people-item p label{
+	width: 70px;
+	display: inline-block;
+	text-align: right;
+}
+.peopleBox .people-item p span{
+	width: 130px;
+	display: inline-block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	vertical-align: middle;
+	margin-left: 10px;
+}
+/* 选择报批领导结束 */
+.approver{
+	display:flex;
+}
+.approver li{
+	padding:10px;
+	box-sizing:border-box;
+	border:1px solid #ddd;
+	margin-right:10px;
+	margin-top:10px;
+	border-radius:5px;
+	cursor:pointer;
+}
+
+.approverPer {
+	padding:10px 24px;
+	box-sizing:border-box;
+	border-radius:3px;
+	margin-left:10px;
+	border:1px solid #ddd;
+	cursor:pointer;
+}

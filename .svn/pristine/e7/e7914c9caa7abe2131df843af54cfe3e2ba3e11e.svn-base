@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.AccessGroupMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.AccessGroup" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="Name" property="name" jdbcType="VARCHAR" />
+    <result column="Remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, Name, Remark
+  </sql>
+  
+  <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id asc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+
+
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select id,name,remark from AccessGroup
+		<where>
+			<if test="id != null and id!='' ">
+				and id=#{id}
+			</if>
+			<if test="name != null and name!='' ">
+				and name=#{name}
+			</if>
+			<if test="permname != null and permname!='' ">
+				and name like concat('%',#{permname},'%')
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="Integer">
+		select count(1) from AccessGroup
+		<where>
+			<if test="id != null and id!='' ">
+				and id=#{id}
+			</if>
+			<if test="name != null and name!='' ">
+				and name=#{name}
+			</if>
+			<if test="permname != null and permname!='' ">
+				and name like concat('%',#{permname},'%')
+			</if>
+		</where>
+	</select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from AccessGroup
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from AccessGroup
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.AccessGroup" >
+    insert into AccessGroup (ID, Name, Remark
+      )
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.AccessGroup" >
+    insert into AccessGroup
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="name != null" >
+        Name,
+      </if>
+      <if test="remark != null" >
+        Remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.AccessGroup" >
+    update AccessGroup
+    <set >
+      <if test="name != null" >
+        Name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        Remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.AccessGroup" >
+    update AccessGroup
+    set Name = #{name,jdbcType=VARCHAR},
+      Remark = #{remark,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

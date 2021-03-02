@@ -1,0 +1,100 @@
+package com.xr.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.xr.entry.IOData;
+import com.xr.service.IIODataService;
+import com.xr.tools.ImagePathConfig;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+
+@Controller
+@RequestMapping("IOData")
+@Api(tags="IODataController",description="接口标题：人员进出记录层接口")
+public class IODataController {
+	@Autowired
+	private IIODataService ics;
+	 
+	 
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="curpage",value="参数：当前页数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="pagesize",value="参数：每页显示数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="datano",value="参数：记录id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="holderno",value="参数：人员编号或军人证号",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="holdername",value="参数：人员名称",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="name",value="参数：人员名称：模糊查询时传参",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="iostatus",value="参数：人员进出状态",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getList",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getList(IOData record,String date1,String date2,String loginid,Integer curpage,Integer pagesize){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			if(loginid!=null && !"".equals(loginid) && "administrator".equals(loginid)){
+				loginid="";
+			}
+			//m.put("loginid", loginid);
+			m.put("datano", record.getDatano());
+			m.put("holderno", record.getHolderno());
+			m.put("holdername", record.getHoldername());
+			m.put("channelno", record.getChannelno());
+			m.put("channelname", record.getChannelname());
+			m.put("iostatus", record.getIostatus());
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			m.put("date1", date1);
+			m.put("date2", date2);
+			List<Map<String,Object>> list=ics.getListService(m);
+			List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
+			for(int i=0;i<list.size();i++){
+				Map<String,Object> m1=list.get(i);
+				String photostr=String.valueOf(m1.get("photostr"));
+				if(photostr!=null &&!"".equals(photostr) && !"null".equals(photostr)){
+					String imgUrl=ImagePathConfig.peopleiopic+"/"+photostr;
+					String base64=ImagePathConfig.readPicPath(imgUrl);
+					m1.put("photo", base64);
+				}
+				result.add(m1);
+			}
+			int count=ics.getListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", result);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	 
+
+}

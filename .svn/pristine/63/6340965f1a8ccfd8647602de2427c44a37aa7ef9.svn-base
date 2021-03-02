@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.MonitorDotMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.MonitorDot" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="Name" property="name" jdbcType="VARCHAR" />
+    <result column="LocatName" property="locatname" jdbcType="VARCHAR" />
+    <result column="IP" property="ip" jdbcType="VARCHAR" />
+    <result column="XDot" property="xdot" jdbcType="VARCHAR" />
+    <result column="YDot" property="ydot" jdbcType="VARCHAR" />
+    <result column="Remark" property="remark" jdbcType="VARCHAR" />
+    <result column="AreaID" property="areaid" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, Name, LocatName, IP, XDot, YDot, Remark, AreaID
+  </sql>
+  
+  <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id asc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+	
+	<select id="getTree" resultType="Map">
+	    
+select CONCAT("al",al.AreaID) "id",al.AreaName "title", CONCAT("al",al.ParentID) "parent" 
+from arealist al inner join monitordot m on m.areaid=al.areaid
+
+UNION ALL
+
+select concat("md",m.id) "id",m.name "title", CONCAT("al",m.areaid) "parent" 
+from arealist al inner join monitordot m on m.areaid=al.areaid
+
+UNION ALL
+
+select concat("dd",d.deviceno) "id",d.devicename "title",concat("md",dd.dotid) "parent"
+ from DeviceUnit d 
+inner join monitordotdevice dd on d.deviceno=dd.deviceno
+	</select>
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select d.id,d.name,d.locatname,d.remark,d.xdot,d.ydot,
+		d.ip,d.areaid,al.areaname from MonitorDot d
+		left join AreaList al on al.areaid=d.areaid
+		<where>
+			 <if test="id != null and id!='' ">
+				and d.id=#{id}
+			</if>
+			<if test="name != null and name!='' ">
+				and d.name=#{name}
+			</if>
+			<if test="names != null and names!='' ">
+				and d.name like concat('%',#{names},'%') 
+			</if>
+			<if test="areaid != null and areaid!='' ">
+				and d.areaid=#{areaid}
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="Integer">
+		select count(1) from MonitorDot d
+		left join AreaList al on al.areaid=d.areaid
+		<where>
+			 <if test="id != null and id!='' ">
+				and d.id=#{id}
+			</if>
+			<if test="name != null and name!='' ">
+				and d.name=#{name}
+			</if>
+			<if test="names != null and names!='' ">
+				and d.name like concat('%',#{names},'%') 
+			</if>
+			<if test="areaid != null and areaid!='' ">
+				and d.areaid=#{areaid}
+			</if>
+		</where>
+	</select>
+	
+	
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from monitordot
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from monitordot
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.MonitorDot" >
+    insert into monitordot (ID, Name, LocatName, 
+      IP, XDot, YDot, Remark, 
+      AreaID)
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{locatname,jdbcType=VARCHAR}, 
+      #{ip,jdbcType=VARCHAR}, #{xdot,jdbcType=VARCHAR}, #{ydot,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, 
+      #{areaid,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.MonitorDot" >
+    insert into monitordot
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="name != null" >
+        Name,
+      </if>
+      <if test="locatname != null" >
+        LocatName,
+      </if>
+      <if test="ip != null" >
+        IP,
+      </if>
+      <if test="xdot != null" >
+        XDot,
+      </if>
+      <if test="ydot != null" >
+        YDot,
+      </if>
+      <if test="remark != null" >
+        Remark,
+      </if>
+      <if test="areaid != null" >
+        AreaID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="locatname != null" >
+        #{locatname,jdbcType=VARCHAR},
+      </if>
+      <if test="ip != null" >
+        #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="xdot != null" >
+        #{xdot,jdbcType=VARCHAR},
+      </if>
+      <if test="ydot != null" >
+        #{ydot,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="areaid != null" >
+        #{areaid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.MonitorDot" >
+    update monitordot
+    <set >
+      <if test="name != null" >
+        Name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="locatname != null" >
+        LocatName = #{locatname,jdbcType=VARCHAR},
+      </if>
+      <if test="ip != null" >
+        IP = #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="xdot != null" >
+        XDot = #{xdot,jdbcType=VARCHAR},
+      </if>
+      <if test="ydot != null" >
+        YDot = #{ydot,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        Remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="areaid != null" >
+        AreaID = #{areaid,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.MonitorDot" >
+    update monitordot
+    set Name = #{name,jdbcType=VARCHAR},
+      LocatName = #{locatname,jdbcType=VARCHAR},
+      IP = #{ip,jdbcType=VARCHAR},
+      XDot = #{xdot,jdbcType=VARCHAR},
+      YDot = #{ydot,jdbcType=VARCHAR},
+      Remark = #{remark,jdbcType=VARCHAR},
+      AreaID = #{areaid,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

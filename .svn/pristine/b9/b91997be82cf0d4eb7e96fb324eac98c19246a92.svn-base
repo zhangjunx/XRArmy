@@ -1,0 +1,402 @@
+package com.xr.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.xr.configure.MethodLog;
+import com.xr.entry.ACL_Menu;
+import com.xr.service.IACL_MenuService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+
+@Controller
+@RequestMapping("ACL_Menu")
+@Api(tags="ACL_MenuController",description="接口标题：菜单层接口")
+public class ACL_MenuController {
+	@Autowired
+	private IACL_MenuService ics;
+	
+	/**
+	 * 获取下一个菜单id getNextMenuid
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：获取下一个菜单id接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="parentid",value="参数：父级id",required=true,dataType="String",paramType="path")
+		})
+	@MethodLog(methodName="查询",remark="获取下一个子菜单id")
+	@RequestMapping(value="/getNextid",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getNextid(String parentid,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("parentid", parentid);
+			String maxid=ics.getNextidService(m);
+			String nextid=null;
+			if((parentid==null || "".equals(parentid) || "0".equals(parentid)) 
+				&& (maxid==null || "".equals(maxid) )  ){
+				nextid="001";
+			}else if((parentid==null || "".equals(parentid) || "0".equals(parentid)) 
+				&& (maxid!=null && !"".equals(maxid) )  ){
+				//上级为空  即为添加菜单  
+				String s=maxid.substring(0,3);
+				Integer t=Integer.valueOf(s)+1;
+				if(t<10){
+					nextid="00"+t;
+				}else if(t>=10 && t<100){
+					nextid="0"+t;
+				}else if(t>=100 && t<1000){
+					nextid=String.valueOf(t);
+				}else{
+					map.put("flag", false);
+					map.put("reason", "对不起，该菜单下的子菜单已达到最大值！");
+					map.put("result", maxid);
+					return map;
+				}
+			}else if((parentid!=null && !"".equals(parentid) && !"0".equals(parentid)) 
+					&& (maxid!=null && !"".equals(maxid) )  ){
+				    //上级不为空  添加页面或按钮
+					String s=maxid.substring(maxid.length()-3);
+					Integer t=Integer.valueOf(s)+1;
+					if(t<10){
+						nextid=parentid+"00"+t;
+					}else if(t>=10 && t<100){
+						nextid=parentid+"0"+t;
+					}else if(t>=100 && t<1000){
+						nextid=parentid+t;
+					}else{
+						map.put("flag", false);
+						map.put("reason", "对不起，该菜单下的子菜单已达到最大值！");
+						map.put("result", maxid);
+						return map;
+					}
+				}else if((parentid!=null && !"".equals(parentid) && !"0".equals(parentid)) 
+					&& (maxid==null || "".equals(maxid) )  ){
+				    //上级不为空  下级为空 添加第一个子菜单
+					nextid=parentid+"001";
+				}
+			map.put("flag", true);
+			map.put("reason", "获取成功！");
+			map.put("result", nextid);
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	
+	/**
+	 * 新增
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：新增接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：菜单主键",required=true,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="code",value="参数：菜单编码",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="name",value="参数：菜单名称",required=true,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="parentid",value="参数：父级菜单",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="iconsrc",value="参数：菜单图标",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="menuurl",value="参数：菜单功能路径",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="ifscreen",value="参数：是否全屏",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="ifshow",value="参数：是否显示",required=false,dataType="String",paramType="path")
+		})
+	@MethodLog(methodName="新增",remark="新增菜单")
+	@RequestMapping(value="/insert",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> insert(ACL_Menu record,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			String id=record.getId();
+			m.put("id", id);
+			List<Map<String,Object>> exist=ics.getListService(m);
+			if(exist!=null && exist.size()>0){
+				map.put("flag", false);
+				map.put("reason", "对不起，主键重复了！");
+				return map;
+			}
+			m.clear();
+			m.put("name", record.getName());
+			m.put("parentid", record.getParentid());
+			List<Map<String,Object>> list=ics.getListService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", false);
+				map.put("reason", "对不起，同一父级下名称不能重复！");
+				return map;
+			}
+			String s=id.substring(id.length()-3);
+			Integer t=Integer.valueOf(s);
+			record.setSort(String.valueOf(t));
+			//int n=id.length()/3;
+			//record.setLevel(String.valueOf(n));
+			int i=ics.insertSelectiveService(record);
+			if(i>0){
+				map.put("flag", true);
+				map.put("reason", "添加成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "添加失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 修改
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：修改接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：菜单主键",required=true,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="code",value="参数：菜单编码",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="name",value="参数：菜单名称",required=true,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="parentid",value="参数：父级菜单",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="iconsrc",value="参数：菜单图标",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="menuurl",value="参数：菜单功能路径",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="ifscreen",value="参数：是否全屏",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="ifshow",value="参数：是否显示",required=false,dataType="String",paramType="path")
+		})
+	@MethodLog(methodName="修改",remark="修改菜单")
+	@RequestMapping(value="/update",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> update(ACL_Menu record,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			String id=record.getId();
+			m.put("name", record.getName());
+			m.put("parentid", record.getParentid());
+			List<Map<String,Object>> list=ics.getListService(m);
+			if(list!=null && list.size()>0){
+				String idd=String.valueOf(list.get(0).get("id"));
+				if(id!=idd && !id.equals(idd)){
+					map.put("flag", false);
+					map.put("reason", "对不起，同一父级下名称不能重复！");
+					return map;
+				}
+			}
+			//String s=id.substring(id.length()-3);
+			//Integer t=Integer.valueOf(s);
+			//record.setSort(String.valueOf(t));
+			//int n=id.length()/3;
+			//record.setLevel(String.valueOf(n));
+			int i=ics.updateByPrimaryKeySelectiveService(record);
+			if(i>0){
+				map.put("flag", true);
+				map.put("reason", "更新成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "更新失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 删除
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：删除接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：菜单主键",required=true,dataType="String",paramType="path")
+		})
+	@MethodLog(methodName="删除",remark="删除菜单")
+	@RequestMapping(value="/delete",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> delete(String id,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("parentid", id);
+			List<Map<String,Object>> list=ics.getListService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", false);
+				map.put("reason", "对不起，该菜单有下一级，不能删除，请先删除下级！");
+				return map;
+			}
+			int i=ics.deleteByPrimaryKeyService(id); 
+			if(i>0){
+				map.put("flag", true);
+				map.put("reason", "删除成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "删除失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：菜单主键",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="code",value="参数：菜单编码",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="name",value="参数：菜单名称",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="parentid",value="参数：父级菜单",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="iconsrc",value="参数：菜单图标",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="menuurl",value="参数：菜单功能路径",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="ifscreen",value="参数：是否全屏",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="ifshow",value="参数：是否显示",required=false,dataType="String",paramType="path")
+		})
+	@RequestMapping(value="/getList",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getList(ACL_Menu record,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
+		try{
+			m.put("id", record.getId());
+			m.put("name", record.getName());
+			m.put("level", record.getLevel());
+			m.put("parentid", record.getParentid());
+			m.put("ifscreen", record.getIfscreen());
+			m.put("ifshow", record.getIfscreen());
+			List<Map<String,Object>> list=ics.getListService(m);
+			for(int i=0;i<list.size();i++){
+				Map<String,Object> m1=list.get(i);
+				String parentid=String.valueOf(m1.get("parentid"));
+				if(parentid!=null && !"".equals(parentid) && !"0".equals(parentid) && !"null".equals(parentid)){
+					ACL_Menu menu=ics.selectByPrimaryKeyService(parentid);
+					m1.put("parentname", menu.getName());
+				}
+				result.add(m1);
+			}
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", result);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	
+	 
+	
+	/**
+	 * 查询下拉树
+	 * @param record
+	 * @param pageinfo
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询下拉树接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：菜单主键",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="code",value="参数：菜单编码",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="name",value="参数：菜单名称",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="parentid",value="参数：父级菜单",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="ifscreen",value="参数：是否全屏",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="ifshow",value="参数：是否显示",required=false,dataType="String",paramType="path")
+		})
+	@RequestMapping(value="/getTree",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getTree(){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			List<Map<String,Object>> list=ics.getTreeService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 上移或下移
+	 * @param record
+	 * @param pageinfo
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：上移或下移接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：主键id",required=true,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="type",value="参数：上移或下移类别",required=true,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",required=true,dataType="String",paramType="path")
+		})
+	@RequestMapping(value="/upDownMove",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> upDownMove(String id,String nextid,String type,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		try{
+			/*if(id==null || "".equals(id) || "0".equals(id)){
+				map.put("flag", true);
+				map.put("reason", "操作成功！");
+				return map;
+			}
+			String s=id.substring(id.length()-3);//后三位
+			Integer t=Integer.valueOf(s); 
+			ACL_Menu data=new ACL_Menu();
+			data.setId(id);
+			if(type.equals("up")){
+				String sort=String.valueOf((t-1));
+				data.setSort(sort);
+			}else if(type.equals("down")){
+				String sort=String.valueOf((t+1));
+				data.setSort(sort);
+			}
+			*/
+			ACL_Menu data=new ACL_Menu();
+			int i=ics.updateByPrimaryKeySelectiveService(data);
+			if(i>0){
+				map.put("flag", true);
+				map.put("reason", "操作成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "操作失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	
+}

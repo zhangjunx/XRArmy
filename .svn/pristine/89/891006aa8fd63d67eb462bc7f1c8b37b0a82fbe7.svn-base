@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.HolderLeaveMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.HolderLeave" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+    <result column="HolderName" property="holdername" jdbcType="VARCHAR" />
+    <result column="UnitNo" property="unitno" jdbcType="VARCHAR" />
+    <result column="UnitName" property="unitname" jdbcType="VARCHAR" />
+    <result column="State" property="state" jdbcType="VARCHAR" />
+    <result column="Type" property="type" jdbcType="VARCHAR" />
+    <result column="Reason" property="reason" jdbcType="VARCHAR" />
+    <result column="StartDate" property="startdate" jdbcType="TIMESTAMP" />
+    <result column="EndDate" property="enddate" jdbcType="TIMESTAMP" />
+    <result column="ApproverOne" property="approverone" jdbcType="VARCHAR" />
+    <result column="ApproveDateOne" property="approvedateone" jdbcType="TIMESTAMP" />
+    <result column="ApproverTwo" property="approvertwo" jdbcType="VARCHAR" />
+    <result column="ApproveDateTwo" property="approvedatetwo" jdbcType="TIMESTAMP" />
+    <result column="FailReason" property="failreason" jdbcType="VARCHAR" />
+    <result column="Remark" property="remark" jdbcType="VARCHAR" />
+    <result column="ApplyStatus" property="applystatus" jdbcType="VARCHAR" />
+    <result column="FlowTracing" property="flowtracing" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, HolderNo, HolderName, UnitNo, UnitName, State, Type, Reason, StartDate, EndDate, 
+    ApproverOne, ApproveDateOne, ApproverTwo, ApproveDateTwo, FailReason, Remark, ApplyStatus, 
+    FlowTracing, CreateDate
+  </sql>
+  
+  <sql id="c_start">
+  	select res.*
+ 		  from (select @num := @num+1 tindex, tmp.* from (
+  </sql>
+  
+  <sql id="c_end">
+  	) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+  	<if test="curpage != null and curpage != ''">
+  		and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) * CONVERT(#{pagesize},SIGNED)+1 
+  		and res.tindex &lt;= CONVERT(#{curpage},SIGNED) * CONVERT(#{pagesize},SIGNED)
+  	</if>
+  </sql>
+  
+  <select id="getMyList" resultType="Map">
+    <include refid="c_start"></include>
+     select id,holderno,holdername,unitno,unitname,state,type,reason,
+     date_format(startdate,'%Y-%m-%d %H:%i:%s') startdate,
+     date_format(enddate,'%Y-%m-%d %H:%i:%s') enddate,
+     applystatus,approverone,approvertwo,failreason,remark,flowtracing,
+     date_format(createdate,'%Y-%m-%d %H:%i:%s') createdate  from HolderLeave 
+     where (applystatus='10' and approverone=#{loginid}) 
+     or (applystatus='20' and approvertwo=#{loginid})
+      <include refid="c_end"></include>
+  </select>
+  
+  <select id="getMyListCount" resultType="integer">
+		select count(1) from HolderLeave 
+     where (applystatus='10' and approverone=#{loginid}) 
+     or (applystatus='20' and approvertwo=#{loginid})
+ </select>
+ 
+ 
+ <!-- 带我审批 -->
+ <select id="getUnaudited" resultType="Map">
+     select id,holderno,holdername,unitno,unitname,state,type,reason,
+     date_format(startdate,'%Y-%m-%d %H:%i:%s') startdate,
+     date_format(enddate,'%Y-%m-%d %H:%i:%s') enddate,
+     applystatus,approverone,approvertwo,failreason,remark,flowtracing,
+     date_format(createdate,'%Y-%m-%d %H:%i:%s') createdate from holderleave 
+     where (ApplyStatus='10' 
+          <if test="loginid != null and loginid!='' " >
+	       and ApproverOne=#{loginid}
+	      </if>
+	       <if test="state != null and state!='' " >
+	        and state=#{state}
+	      </if>
+	      <if test="date != null and date!='' " >
+	        and  date_format(createdate,'%Y-%m-%d')=#{date}
+	      </if>
+	       <if test="name != null and name!='' " >
+	        and HolderName like concat('%',#{name},'%')
+	      </if>
+         )
+        or  (ApplyStatus='20' 
+	      <if test="loginid != null and loginid!='' " >
+		       and ApproverTwo=#{loginid}
+		  </if>
+		   <if test="state != null and state!='' " >
+	        and state=#{state}
+	      </if>
+	      <if test="date != null and date!='' " >
+	        and  date_format(createdate,'%Y-%m-%d')=#{date}
+	      </if>
+	       <if test="name != null and name!='' " >
+	        and HolderName like concat('%',#{name},'%')
+	      </if>
+        ) 
+ </select>
+ 
+  <select id="getUnauditedCount" resultType="Integer">
+     select count(1) from holderleave 
+     where (ApplyStatus='10' 
+          <if test="loginid != null and loginid!='' " >
+	       and ApproverOne=#{loginid}
+	      </if>
+	       <if test="state != null and state!='' " >
+	        and state=#{state}
+	      </if>
+	      <if test="date != null and date!='' " >
+	        and  date_format(createdate,'%Y-%m-%d')=#{date}
+	      </if>
+	       <if test="name != null and name!='' " >
+	        and HolderName like concat('%',#{name},'%')
+	      </if>
+         )
+        or  (ApplyStatus='20' 
+	      <if test="loginid != null and loginid!='' " >
+		       and ApproverTwo=#{loginid}
+		  </if>
+		   <if test="state != null and state!='' " >
+	        and state=#{state}
+	      </if>
+	      <if test="date != null and date!='' " >
+	        and  date_format(createdate,'%Y-%m-%d')=#{date}
+	      </if>
+	       <if test="name != null and name!='' " >
+	        and HolderName like concat('%',#{name},'%')
+	      </if>
+        ) 
+ </select>
+  
+  
+ <select id="getList" resultType="Map">
+ <include refid="c_start"></include>
+     select id,holderno,holdername,unitno,unitname,state,type,reason,
+     date_format(startdate,'%Y-%m-%d %H:%i:%s') startdate,
+     date_format(enddate,'%Y-%m-%d %H:%i:%s') enddate,
+     applystatus,approverone,approvertwo,failreason,remark,flowtracing,
+     date_format(createdate,'%Y-%m-%d %H:%i:%s') createdate  from HolderLeave 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="holderno != null and holderno!='' " >
+	        and holderno=#{holderno}
+	      </if>
+	       <if test="name != null and name!='' " >
+	        and HolderName like concat('%',#{name},'%')
+	      </if>
+	      <if test="state != null and state!='' " >
+	        and state=#{state}
+	      </if>
+	      <if test="applystatus != null and applystatus!='' " >
+	        and applystatus=#{applystatus}
+	      </if>
+	      <if test="apply != null and apply!='' and apply=='y' " >
+	        and applystatus in (20,10)
+	      </if>
+	       <if test="apply != null and apply!='' and apply=='n' " >
+	        and applystatus in (21,31,30)
+	      </if>
+	      <if test="date != null and date!='' " >
+	        and  date_format(createdate,'%Y-%m-%d')=#{date}
+	      </if>
+	      <if test="date1 != null and date1!='' " >
+	        and  date_format(startdate,'%Y-%m-%d %H:%i:%s') &lt;=#{date1}  and  date_format(enddate,'%Y-%m-%d %H:%i:%s') &gt;=#{date1}
+	      </if>
+	      <if test="date2 != null and date2!='' " >
+	        and  date_format(startdate,'%Y-%m-%d %H:%i:%s') &lt;=#{date2} and date_format(enddate,'%Y-%m-%d %H:%i:%s') &gt;=#{date2}
+	      </if>
+     </where>
+      <include refid="c_end"></include>
+  </select>
+  
+  
+  <select id="getListCount" resultType="integer">
+		select count(1) from HolderLeave 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="holderno != null and holderno!='' " >
+	        and holderno=#{holderno}
+	      </if>
+	       <if test="name != null and name!='' " >
+	        and HolderName like concat('%',#{name},'%')
+	      </if>
+	      <if test="state != null and state!='' " >
+	        and state=#{state}
+	      </if>
+	      <if test="applystatus != null and applystatus!='' " >
+	        and applystatus=#{applystatus}
+	      </if>
+	      <if test="apply != null and apply!='' and apply=='y' " >
+	        and applystatus in (20,10)
+	      </if>
+	       <if test="apply != null and apply!='' and apply=='n' " >
+	        and applystatus in (21,31,30)
+	      </if>
+	      <if test="date != null and date!='' " >
+	        and  date_format(createdate,'%Y-%m-%d')=#{date}
+	      </if>
+	      <if test="date1 != null and date1!='' " >
+	        and  date_format(startdate,'%Y-%m-%d %H:%i:%s') &lt;=#{date1}  and  date_format(enddate,'%Y-%m-%d %H:%i:%s') &gt;=#{date1}
+	      </if>
+	      <if test="date2 != null and date2!='' " >
+	        and  date_format(startdate,'%Y-%m-%d %H:%i:%s') &lt;=#{date2} and date_format(enddate,'%Y-%m-%d %H:%i:%s') &gt;=#{date2}
+	      </if>
+     </where>
+ </select>
+  
+  
+  
+  
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from holderleave
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from holderleave
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.HolderLeave" >
+    insert into holderleave (ID, HolderNo, HolderName, 
+      UnitNo, UnitName, State, 
+      Type, Reason, StartDate, 
+      EndDate, ApproverOne, ApproveDateOne, 
+      ApproverTwo, ApproveDateTwo, FailReason, 
+      Remark, ApplyStatus, FlowTracing, 
+      CreateDate)
+    values (#{id,jdbcType=INTEGER}, #{holderno,jdbcType=VARCHAR}, #{holdername,jdbcType=VARCHAR}, 
+      #{unitno,jdbcType=VARCHAR}, #{unitname,jdbcType=VARCHAR}, #{state,jdbcType=VARCHAR}, 
+      #{type,jdbcType=VARCHAR}, #{reason,jdbcType=VARCHAR}, #{startdate,jdbcType=TIMESTAMP}, 
+      #{enddate,jdbcType=TIMESTAMP}, #{approverone,jdbcType=VARCHAR}, #{approvedateone,jdbcType=TIMESTAMP}, 
+      #{approvertwo,jdbcType=VARCHAR}, #{approvedatetwo,jdbcType=TIMESTAMP}, #{failreason,jdbcType=VARCHAR}, 
+      #{remark,jdbcType=VARCHAR}, #{applystatus,jdbcType=VARCHAR}, #{flowtracing,jdbcType=VARCHAR}, 
+      #{createdate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.HolderLeave" >
+    insert into holderleave
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+      <if test="holdername != null" >
+        HolderName,
+      </if>
+      <if test="unitno != null" >
+        UnitNo,
+      </if>
+      <if test="unitname != null" >
+        UnitName,
+      </if>
+      <if test="state != null" >
+        State,
+      </if>
+      <if test="type != null" >
+        Type,
+      </if>
+      <if test="reason != null" >
+        Reason,
+      </if>
+      <if test="startdate != null" >
+        StartDate,
+      </if>
+      <if test="enddate != null" >
+        EndDate,
+      </if>
+      <if test="approverone != null" >
+        ApproverOne,
+      </if>
+      <if test="approvedateone != null" >
+        ApproveDateOne,
+      </if>
+      <if test="approvertwo != null" >
+        ApproverTwo,
+      </if>
+      <if test="approvedatetwo != null" >
+        ApproveDateTwo,
+      </if>
+      <if test="failreason != null" >
+        FailReason,
+      </if>
+      <if test="remark != null" >
+        Remark,
+      </if>
+      <if test="applystatus != null" >
+        ApplyStatus,
+      </if>
+      <if test="flowtracing != null" >
+        FlowTracing,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="unitno != null" >
+        #{unitno,jdbcType=VARCHAR},
+      </if>
+      <if test="unitname != null" >
+        #{unitname,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="reason != null" >
+        #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="startdate != null" >
+        #{startdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="enddate != null" >
+        #{enddate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="approverone != null" >
+        #{approverone,jdbcType=VARCHAR},
+      </if>
+      <if test="approvedateone != null" >
+        #{approvedateone,jdbcType=TIMESTAMP},
+      </if>
+      <if test="approvertwo != null" >
+        #{approvertwo,jdbcType=VARCHAR},
+      </if>
+      <if test="approvedatetwo != null" >
+        #{approvedatetwo,jdbcType=TIMESTAMP},
+      </if>
+      <if test="failreason != null" >
+        #{failreason,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="applystatus != null" >
+        #{applystatus,jdbcType=VARCHAR},
+      </if>
+      <if test="flowtracing != null" >
+        #{flowtracing,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.HolderLeave" >
+    update holderleave
+    <set >
+      <if test="holderno != null" >
+        HolderNo = #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        HolderName = #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="unitno != null" >
+        UnitNo = #{unitno,jdbcType=VARCHAR},
+      </if>
+      <if test="unitname != null" >
+        UnitName = #{unitname,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        State = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        Type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="reason != null" >
+        Reason = #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="startdate != null" >
+        StartDate = #{startdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="enddate != null" >
+        EndDate = #{enddate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="approverone != null" >
+        ApproverOne = #{approverone,jdbcType=VARCHAR},
+      </if>
+      <if test="approvedateone != null" >
+        ApproveDateOne = #{approvedateone,jdbcType=TIMESTAMP},
+      </if>
+      <if test="approvertwo != null" >
+        ApproverTwo = #{approvertwo,jdbcType=VARCHAR},
+      </if>
+      <if test="approvedatetwo != null" >
+        ApproveDateTwo = #{approvedatetwo,jdbcType=TIMESTAMP},
+      </if>
+      <if test="failreason != null" >
+        FailReason = #{failreason,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        Remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="applystatus != null" >
+        ApplyStatus = #{applystatus,jdbcType=VARCHAR},
+      </if>
+      <if test="flowtracing != null" >
+        FlowTracing = #{flowtracing,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.HolderLeave" >
+    update holderleave
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      UnitNo = #{unitno,jdbcType=VARCHAR},
+      UnitName = #{unitname,jdbcType=VARCHAR},
+      State = #{state,jdbcType=VARCHAR},
+      Type = #{type,jdbcType=VARCHAR},
+      Reason = #{reason,jdbcType=VARCHAR},
+      StartDate = #{startdate,jdbcType=TIMESTAMP},
+      EndDate = #{enddate,jdbcType=TIMESTAMP},
+      ApproverOne = #{approverone,jdbcType=VARCHAR},
+      ApproveDateOne = #{approvedateone,jdbcType=TIMESTAMP},
+      ApproverTwo = #{approvertwo,jdbcType=VARCHAR},
+      ApproveDateTwo = #{approvedatetwo,jdbcType=TIMESTAMP},
+      FailReason = #{failreason,jdbcType=VARCHAR},
+      Remark = #{remark,jdbcType=VARCHAR},
+      ApplyStatus = #{applystatus,jdbcType=VARCHAR},
+      FlowTracing = #{flowtracing,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

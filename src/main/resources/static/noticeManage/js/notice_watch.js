@@ -1,0 +1,83 @@
+if(getUrlParam("watch") == 0){
+	getReceive();
+} else if(getUrlParam("watch") == 1){
+	getSend();
+}
+layui.use(["form","table","laydate"],function(){
+	 var $ = layui.$,
+	  form = layui.form,
+	  table = layui.table,
+	  laydate = layui.laydate;
+	  
+	 lay('.date').each(function() {
+			laydate.render({
+				elem : this,//元素
+				trigger : 'click',//怎么触发
+			});
+	 });
+})
+//获取接收消息
+function getReceive(){
+	$.ajax({
+		url:url+"/NoticeUser/getList",
+		type:"POST",
+		data:{"id":getUrlParam("id"),"loginid":window.top.loginid},
+		success:function(data){
+			console.log(data);
+			if(data.flag){
+				var res=data.result[0];
+				$("#title").val(res.title);
+				$("#content").val(res.content);
+				$("#receiver").html(res.userid);
+				$("#informer").val(res.informer);
+				//修改状态
+				update();
+				//parent.getReceive();
+			}
+		}
+	})
+}
+//获取发布消息
+function getSend(){
+	$.ajax({
+		url:url+"/NoticeInform/getList",
+		type:"POST",
+		data:{"id":getUrlParam("id"),"loginid":window.top.loginid},
+		success:function(data){
+			console.log(data);
+			if(data.flag){
+				var res=data.result[0];
+				$("#title").val(res.title);
+				$("#content").val(res.content);
+				$("#informer").val(res.informer);
+				var arr=[];
+				for(var item of res.users){
+					arr.push(item.userid);
+				}
+				arr=arr.join(",");
+				$("#receiver").html(arr);
+				//修改状态
+				update();
+				//parent.getSend();
+			}
+		}
+	})
+}
+
+function update(){
+	$.ajax({
+		url:url+"/NoticeUser/update",
+		type:"POST",
+		data:{"id":getUrlParam("id"),"state":"1","loginid":window.top.loginid},
+		success:function(data){
+			console.log(data);
+		}
+	})
+}
+
+//url地址中解析参数
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return decodeURIComponent(r[2]); return null;
+}

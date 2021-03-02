@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.AreaListMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.AreaList" >
+    <id column="AreaID" property="areaid" jdbcType="VARCHAR" />
+    <result column="AreaName" property="areaname" jdbcType="VARCHAR" />
+    <result column="ParentID" property="parentid" jdbcType="VARCHAR" />
+    <result column="Sort" property="sort" jdbcType="VARCHAR" />
+    <result column="Level" property="level" jdbcType="VARCHAR" />
+     <result column="Remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    AreaID, AreaName, ParentID, Sort, Level,Remark
+  </sql>
+  
+   
+  
+  <!-- 批量添加 -->
+  <insert id="addExcel" parameterType="java.util.List">
+      insert into AreaList (AreaID, ParentNo,AreaName, Level,sort,Remark)
+      <foreach collection="list" item="item" separator="union all" index="index">
+          (select #{item.areaid}, 
+          #{item.parentid},  
+          left(#{item.areaid},(#{item.level}-1)*2),
+          #{item.areaname}, 
+          #{item.level},
+           CAST(CAST(right(#{item.areaid},2) as SIGNED) as char),
+           #{item.remark}
+          )
+      </foreach>
+  </insert>
+  
+  
+  <!-- 查询列表 -->
+  <select id="getNextid" resultType="java.lang.String">
+       select max(areaid) from AreaList
+     <where>
+        <if test="parentid != null and parentid!='' " >
+          and parentid=#{parentid} 
+        </if>
+     </where>
+  </select>
+  
+  <!-- 查询列表 -->
+  <select id="getList" resultType="Map">
+      select t.areaid,t.areaname,t.parentid,
+      (select areaname from arealist where areaid=t.parentid) parentname,
+      t.level,t.sort,t.remark from AreaList t
+      <where>
+      <if test="areaid != null and areaid!='' " >
+        and t.AreaID=#{areaid}
+      </if>
+      <if test="areaname != null and areaname!='' " >
+        and t.AreaName=#{areaname}
+      </if>
+       <if test="parentid != null and parentid!='' " >
+        and t.parentid=#{parentid} 
+      </if>
+      </where>
+  </select>
+  
+   
+  
+  <!-- 查询列表 -->
+  <select id="getTree" resultType="Map">
+      select AreaID "id",AreaName "title",
+  case when parentid is null then '' else parentid end "parent",
+ '' as "children",level,sort,remark from AreaList
+<!-- order by cast(IFNULL(level,0) as SIGNED) asc,
+cast(IFNULL(sort,0) as SIGNED) asc -->
+  </select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from arealist
+    where AreaID = #{areaid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from arealist
+    where AreaID = #{areaid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.AreaList" >
+    insert into arealist (AreaID, AreaName, ParentID, 
+      Sort, Level,Remark)
+    values (#{areaid,jdbcType=VARCHAR}, #{areaname,jdbcType=VARCHAR}, #{parentid,jdbcType=VARCHAR}, 
+      #{sort,jdbcType=VARCHAR}, #{level,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.AreaList" >
+    insert into arealist
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="areaid != null" >
+        AreaID,
+      </if>
+      <if test="areaname != null" >
+        AreaName,
+      </if>
+      <if test="parentid != null" >
+        ParentID,
+      </if>
+      <if test="sort != null" >
+        Sort,
+      </if>
+      <if test="level != null" >
+        Level,
+      </if>
+       <if test="remark != null" >
+        Remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="areaid != null" >
+        #{areaid,jdbcType=VARCHAR},
+      </if>
+      <if test="areaname != null" >
+        #{areaname,jdbcType=VARCHAR},
+      </if>
+      <if test="parentid != null" >
+        #{parentid,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        #{level,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.AreaList" >
+    update arealist
+    <set >
+      <if test="areaname != null" >
+        AreaName = #{areaname,jdbcType=VARCHAR},
+      </if>
+      <if test="parentid != null" >
+        ParentID = #{parentid,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        Sort = #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        Level = #{level,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        Remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where AreaID = #{areaid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.AreaList" >
+    update arealist
+    set AreaName = #{areaname,jdbcType=VARCHAR},
+      ParentID = #{parentid,jdbcType=VARCHAR},
+      Sort = #{sort,jdbcType=VARCHAR},
+      Level = #{level,jdbcType=VARCHAR},
+      Remark = #{remark,jdbcType=VARCHAR}
+    where AreaID = #{areaid,jdbcType=VARCHAR}
+  </update>
+</mapper>

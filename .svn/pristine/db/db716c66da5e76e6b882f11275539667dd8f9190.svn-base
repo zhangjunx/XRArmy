@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.AlarmPeopleMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.AlarmPeople" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+    <result column="HolderName" property="holdername" jdbcType="VARCHAR" />
+    <result column="ChannelNo" property="channelno" jdbcType="INTEGER" />
+    <result column="ChannelName" property="channelname" jdbcType="VARCHAR" />
+    <result column="IOStatus" property="iostatus" jdbcType="VARCHAR" />
+    <result column="Source" property="source" jdbcType="VARCHAR" />
+    <result column="SourceName" property="sourcename" jdbcType="VARCHAR" />
+    <result column="IODate" property="iodate" jdbcType="TIMESTAMP" />
+    <result column="DeviceNo" property="deviceno" jdbcType="INTEGER" />
+    <result column="DeviceName" property="devicename" jdbcType="VARCHAR" />
+    <result column="DeviceSN" property="devicesn" jdbcType="VARCHAR" />
+    <result column="DoorName" property="doorname" jdbcType="VARCHAR" />
+    <result column="LocatName" property="locatname" jdbcType="VARCHAR" />
+    <result column="State" property="state" jdbcType="VARCHAR" />
+    <result column="PhotoStr" property="photostr" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.xr.entry.AlarmPeople" extends="BaseResultMap" >
+    <result column="Photo" property="photo" jdbcType="LONGVARBINARY" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, HolderNo, HolderName, ChannelNo, ChannelName, IOStatus, Source, SourceName, IODate, 
+    DeviceNo, DeviceName, DeviceSN, DoorName, LocatName, State, PhotoStr
+  </sql>
+  <sql id="Blob_Column_List" >
+    Photo
+  </sql>
+  
+  <sql id="c_start">
+	  	select res.*
+  		  from (select @num := @num+1 tindex, tmp.* from (
+	  </sql>
+	  
+	  <sql id="c_end">
+	  	) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+	  	<if test="curpage != null and curpage != ''">
+	  		and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) * CONVERT(#{pagesize},SIGNED)+1 
+	  		and res.tindex &lt;= CONVERT(#{curpage},SIGNED) * CONVERT(#{pagesize},SIGNED)
+	  	</if>
+	  </sql>
+  
+ <select id="getList" resultType="Map">
+ <include refid="c_start"></include>
+     select id,holderno,holdername,iostatus,
+     sourcename, channelname,locatname,state,photostr,
+     date_format(iodate,'%Y-%m-%d %H:%i:%s') iodate from AlarmPeople 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="channelno != null and channelno!='' " >
+	        and channelno=#{channelno}
+	      </if>
+	      <if test="holdername != null and holdername!='' " >
+	        and holdername like concat('%',#{holdername},'%')
+	      </if>
+	      <if test="sourcename != null and sourcename!='' " >
+	        and sourcename like concat('%',#{sourcename},'%')
+	      </if>
+     </where>
+      <include refid="c_end"></include>
+  </select>
+  
+  
+  <select id="getListCount" resultType="integer">
+		select count(1) from AlarmPeople 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="channelno != null and channelno!='' " >
+	        and channelno=#{channelno}
+	      </if>
+	      <if test="holdername != null and holdername!='' " >
+	        and holdername like concat('%',#{holdername},'%')
+	      </if>
+	      <if test="sourcename != null and sourcename!='' " >
+	        and sourcename like concat('%',#{sourcename},'%')
+	      </if>
+     </where>
+ </select>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from alarmpeople
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from alarmpeople
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.AlarmPeople" >
+    insert into alarmpeople (ID, HolderNo, HolderName, 
+      ChannelNo, ChannelName, IOStatus, 
+      Source, SourceName, IODate, 
+      DeviceNo, DeviceName, DeviceSN, 
+      DoorName, LocatName, State, 
+      PhotoStr, Photo)
+    values (#{id,jdbcType=INTEGER}, #{holderno,jdbcType=VARCHAR}, #{holdername,jdbcType=VARCHAR}, 
+      #{channelno,jdbcType=INTEGER}, #{channelname,jdbcType=VARCHAR}, #{iostatus,jdbcType=VARCHAR}, 
+      #{source,jdbcType=VARCHAR}, #{sourcename,jdbcType=VARCHAR}, #{iodate,jdbcType=TIMESTAMP}, 
+      #{deviceno,jdbcType=INTEGER}, #{devicename,jdbcType=VARCHAR}, #{devicesn,jdbcType=VARCHAR}, 
+      #{doorname,jdbcType=VARCHAR}, #{locatname,jdbcType=VARCHAR}, #{state,jdbcType=VARCHAR}, 
+      #{photostr,jdbcType=VARCHAR}, #{photo,jdbcType=LONGVARBINARY})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.AlarmPeople" >
+    insert into alarmpeople
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+      <if test="holdername != null" >
+        HolderName,
+      </if>
+      <if test="channelno != null" >
+        ChannelNo,
+      </if>
+      <if test="channelname != null" >
+        ChannelName,
+      </if>
+      <if test="iostatus != null" >
+        IOStatus,
+      </if>
+      <if test="source != null" >
+        Source,
+      </if>
+      <if test="sourcename != null" >
+        SourceName,
+      </if>
+      <if test="iodate != null" >
+        IODate,
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo,
+      </if>
+      <if test="devicename != null" >
+        DeviceName,
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN,
+      </if>
+      <if test="doorname != null" >
+        DoorName,
+      </if>
+      <if test="locatname != null" >
+        LocatName,
+      </if>
+      <if test="state != null" >
+        State,
+      </if>
+      <if test="photostr != null" >
+        PhotoStr,
+      </if>
+      <if test="photo != null" >
+        Photo,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="channelno != null" >
+        #{channelno,jdbcType=INTEGER},
+      </if>
+      <if test="channelname != null" >
+        #{channelname,jdbcType=VARCHAR},
+      </if>
+      <if test="iostatus != null" >
+        #{iostatus,jdbcType=VARCHAR},
+      </if>
+      <if test="source != null" >
+        #{source,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcename != null" >
+        #{sourcename,jdbcType=VARCHAR},
+      </if>
+      <if test="iodate != null" >
+        #{iodate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deviceno != null" >
+        #{deviceno,jdbcType=INTEGER},
+      </if>
+      <if test="devicename != null" >
+        #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="doorname != null" >
+        #{doorname,jdbcType=VARCHAR},
+      </if>
+      <if test="locatname != null" >
+        #{locatname,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="photo != null" >
+        #{photo,jdbcType=LONGVARBINARY},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.AlarmPeople" >
+    update alarmpeople
+    <set >
+      <if test="holderno != null" >
+        HolderNo = #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        HolderName = #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="channelno != null" >
+        ChannelNo = #{channelno,jdbcType=INTEGER},
+      </if>
+      <if test="channelname != null" >
+        ChannelName = #{channelname,jdbcType=VARCHAR},
+      </if>
+      <if test="iostatus != null" >
+        IOStatus = #{iostatus,jdbcType=VARCHAR},
+      </if>
+      <if test="source != null" >
+        Source = #{source,jdbcType=VARCHAR},
+      </if>
+      <if test="sourcename != null" >
+        SourceName = #{sourcename,jdbcType=VARCHAR},
+      </if>
+      <if test="iodate != null" >
+        IODate = #{iodate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo = #{deviceno,jdbcType=INTEGER},
+      </if>
+      <if test="devicename != null" >
+        DeviceName = #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="doorname != null" >
+        DoorName = #{doorname,jdbcType=VARCHAR},
+      </if>
+      <if test="locatname != null" >
+        LocatName = #{locatname,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        State = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        PhotoStr = #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="photo != null" >
+        Photo = #{photo,jdbcType=LONGVARBINARY},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.xr.entry.AlarmPeople" >
+    update alarmpeople
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      ChannelNo = #{channelno,jdbcType=INTEGER},
+      ChannelName = #{channelname,jdbcType=VARCHAR},
+      IOStatus = #{iostatus,jdbcType=VARCHAR},
+      Source = #{source,jdbcType=VARCHAR},
+      SourceName = #{sourcename,jdbcType=VARCHAR},
+      IODate = #{iodate,jdbcType=TIMESTAMP},
+      DeviceNo = #{deviceno,jdbcType=INTEGER},
+      DeviceName = #{devicename,jdbcType=VARCHAR},
+      DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      DoorName = #{doorname,jdbcType=VARCHAR},
+      LocatName = #{locatname,jdbcType=VARCHAR},
+      State = #{state,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      Photo = #{photo,jdbcType=LONGVARBINARY}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.AlarmPeople" >
+    update alarmpeople
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      ChannelNo = #{channelno,jdbcType=INTEGER},
+      ChannelName = #{channelname,jdbcType=VARCHAR},
+      IOStatus = #{iostatus,jdbcType=VARCHAR},
+      Source = #{source,jdbcType=VARCHAR},
+      SourceName = #{sourcename,jdbcType=VARCHAR},
+      IODate = #{iodate,jdbcType=TIMESTAMP},
+      DeviceNo = #{deviceno,jdbcType=INTEGER},
+      DeviceName = #{devicename,jdbcType=VARCHAR},
+      DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      DoorName = #{doorname,jdbcType=VARCHAR},
+      LocatName = #{locatname,jdbcType=VARCHAR},
+      State = #{state,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

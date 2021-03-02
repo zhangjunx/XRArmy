@@ -1,0 +1,114 @@
+package com.xr.https;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+/**
+ * java代码访问基于https安全协议的网址或服务器
+ * java代码访问基于https安全协议的网址或服务器，一般分为有证书和无证书两种，下面是有证书的：
+ * 证书类型：pfx,(个人证书带密码)
+ * 服务器配置：基于SSL加密模式（我这边是基于nginx配置的https安全验证）
+ * keytool是jdk自带的一个秘钥工具，源文件时客户端证书client.pfx,类型未pkcs12,
+ * 密码是111111，目标秘钥文件是client.jks,目标类型是jks
+ * @author Administrator
+ *
+ */
+public class MarketReplyTest {
+	public static String HTTPSURL="";
+
+	public static void main(String[] args) {
+		testHttpsPost();
+	}
+	
+	public static void testHttpsPost(){
+		String keystorefile="";//个人pfx证书转换为jks秘钥文件，该秘钥文件可以用程序进行访问
+		String keystorepw="";//证书密码
+		KeyStore keystore=null;
+		try{
+			keystore=KeyStore.getInstance("JKS");//秘钥类型为jks
+			keystore.load(new FileInputStream(keystorefile),keystorepw.toCharArray());//加载秘钥文件
+			KeyManagerFactory keymanagerfactory=KeyManagerFactory.getInstance("SunX509");//获取秘钥管理类的工厂
+			keymanagerfactory.init(keystore,keystorepw.toCharArray());//工厂类初始化秘钥文件，这里依然需要密码
+			KeyManager[] akeymanager=keymanagerfactory.getKeyManagers();//获取秘钥管理类
+			TrustManager[] atrustmanager={new TrustAnyManager()};//获取受信任的证书
+			SSLContext ssl=SSLContext.getInstance("TLS");//获取安全协议上下文
+			ssl.init(akeymanager, atrustmanager, null);//初始化安全协议
+			SSLSocketFactory sslsocketfactory=ssl.getSocketFactory();//获取协议通信
+			URL uri=new URL(HTTPSURL);
+			HttpsURLConnection https=(HttpsURLConnection) uri.openConnection();
+			https.setSSLSocketFactory(sslsocketfactory);
+			https.setHostnameVerifier(new TrustAnyHostnameVerifier());
+			https.setDoInput(true);
+			https.setDoOutput(true);
+			https.setUseCaches(false);
+			https.setRequestMethod("POST");
+			https.connect();
+			InputStream in=https.getInputStream();
+			BufferedReader reader=new BufferedReader(new InputStreamReader(in));
+			String result="";
+			String line="";
+			while((line=reader.readLine())!=null){
+				result+=line+"\\r";
+			}
+			System.out.println(result);//输出结果值
+			reader.close();
+			https.disconnect();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 信任所有证书（个人证书本来就不受信任，所以在此做处理）
+	 */
+	private static class TrustAnyManager implements X509TrustManager{
+		 
+
+		@Override
+		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public X509Certificate[] getAcceptedIssuers() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	}
+	
+	/**
+	 * 验证ip
+	 */
+     public static class TrustAnyHostnameVerifier implements HostnameVerifier{
+
+		public boolean verify(String hostname, SSLSession session) {
+			// TODO Auto-generated method stub
+			return hostname.equals(session.getPeerHost());
+		}
+    	 
+     }
+	
+}

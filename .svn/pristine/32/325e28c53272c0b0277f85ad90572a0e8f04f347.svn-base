@@ -1,0 +1,120 @@
+getTree();//初始化用车单位下拉框
+getDriver();//初始化驾驶员下拉框
+getOneInfo();
+layui.use(["form","table","laydate"],function(){
+	 var $ = layui.$,
+	  form = layui.form,
+	  table = layui.table,
+	  laydate = layui.laydate;
+	 //点击取消
+	 $("#resetData").click(function(){
+		parent.layer.closeAll();
+	 })
+	 /* 自定义验证规则 */
+    form.verify({
+    });
+})
+//获取单位下拉
+function getTree(){
+	$.ajax({
+		url:url+"/UnitList/getTree",
+		type:"POST",
+		data:{"loginid":window.top.loginid}, 
+		async:false,
+		success:function(res){
+			console.log(res)
+			if(res.flag){
+				layui.use(['element', 'tree', 'layer', 'form', 'upload'], function () {
+				    var $ = layui.jquery, tree = layui.tree;
+				    tree.render({
+				        elem: "#classtree",
+				        data: res.result,
+				        onlyIconControl:true,
+				        click: function (node) {
+				        	$("#unitno").val(node.data.id);
+				        	$("#unitname").html(node.data.title);
+				            var $select = $($(this)[0].elem).parents(".layui-form-select");
+				            $select.removeClass("layui-form-selected").find(".layui-select-title span").html(node.name).end().find("input:hidden[name='departmentno']").val(node.id);
+				        }
+				    });
+			    	$(".downpanel").on("click", ".layui-select-title", function (e) {
+				        $(".layui-form-select").not($(this).parents(".layui-form-select")).removeClass("layui-form-selected");
+				        $(this).parents(".downpanel").toggleClass("layui-form-selected");
+				        layui.stope(e);
+				    }).on("click", "dl i", function (e) {
+				        layui.stope(e);
+				    });
+				});
+			}
+		}
+	})
+}
+//编辑时获取一条信息
+function getOneInfo(){
+	$.ajax({
+		url:carUrl+"car/carBill/getBillList",
+		type:"POST",
+		data:{"billNo":getUrlParam("billNo")},
+		async:false,
+		success:function(res){
+			console.log(res);
+			if(res.result){
+				var data=res.data[0];
+				$("#carNum").val(data.carNum);
+				$("#driver").val(data.driver);
+				$("#useDeptName").val(data.useDeptName);
+				$("#contacts").val(data.contacts);
+				$("#route").val(data.route);
+				$("#outCarTime").val(data.outCarTime);
+				$("#returnCarTime").val(data.returnCarTime);
+				$("#billRemark").val(data.billRemark);
+				$("#useTask").val(data.useTask);
+				$("#reportLocal").val(data.reportLocal);
+				$("#basis").val(data.basis);
+				$("#task").val(data.task);
+				$("#sentry").val(data.sentry);
+				$("#outTime").val(data.outTime);
+				$("#returnTime").val(data.returnTime);
+				$("#sentryRemark").val(data.sentryRemark);
+				$("input[value="+data.taskType+"]").attr("checked",true);
+				for(var item of data.approverList){
+					var $li=$("<li class='approver-item'>"+item.approverName+"</li>");
+					$("#approver").append($li);
+				}
+				layui.use('form', function(){
+					 var form = layui.form; 
+					 form.render('checkbox');
+				})
+			}
+		}
+	})
+}
+//获取人员数据
+function getDriver(){
+	$.ajax({
+		url:url+"/HolderData/getList",
+		type:"POST",
+		data:{"state":0},
+		async:false,
+		success:function(data){
+			console.log(data);
+			$("#driver option").not("option:first").remove();
+			if(data.flag){
+				for(var item of data.result){
+					var $opt=$("<option value="+item.holderno+">"+item.holdername+"</option>");
+					$("#driver").append($opt);
+				}
+				layui.use("form",function(){
+					var form=layui.form;
+					form.render("select");
+				})
+			}
+		}
+	})
+}
+//url地址中解析参数
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return decodeURIComponent(r[2]); return null;
+}

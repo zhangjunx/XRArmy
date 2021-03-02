@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.ACL_MenuMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.ACL_Menu" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="Code" property="code" jdbcType="VARCHAR" />
+    <result column="Name" property="name" jdbcType="VARCHAR" />
+    <result column="ParentID" property="parentid" jdbcType="VARCHAR" />
+    <result column="MenuURL" property="menuurl" jdbcType="VARCHAR" />
+    <result column="IconSrc" property="iconsrc" jdbcType="VARCHAR" />
+    <result column="Level" property="level" jdbcType="VARCHAR" />
+    <result column="Sort" property="sort" jdbcType="VARCHAR" />
+    <result column="IfScreen" property="ifscreen" jdbcType="VARCHAR" />
+    <result column="IfShow" property="ifshow" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.xr.entry.ACL_Menu" extends="BaseResultMap" >
+    <result column="Icon" property="icon" jdbcType="LONGVARBINARY" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, Code, Name, ParentID, MenuURL, IconSrc, Level, Sort, IfScreen, IfShow, CreateDate, 
+    UpdateDate
+  </sql>
+  <sql id="Blob_Column_List" >
+    Icon
+  </sql>
+  
+   <sql id="c_start">
+	  	select res.*
+  		  from (select @num := @num+1 tindex, tmp.* from (
+	  </sql>
+	  
+	  <sql id="c_end">
+	  	) tmp , (SELECT @num := 0) var order by id asc) res where 1=1
+	  	<if test="curpage != null and curpage != ''">
+	  		and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) * CONVERT(#{pagesize},SIGNED)+1 
+	  		and res.tindex &lt;= CONVERT(#{curpage},SIGNED) * CONVERT(#{pagesize},SIGNED)
+	  	</if>
+	  </sql>
+  
+  <select id="getNextid" resultType="String">
+      select max(id) from ACL_Menu
+	   <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="parentid != null and parentid!='' " >
+	        and ParentID=#{parentid}
+	      </if>
+	      <if test="level != null and level!='' " >
+	        and Level=#{level}
+	      </if>
+	      </where>
+	  </select>
+  
+  <select id="getList" resultType="Map">
+       select id,code,name ,parentid,menuurl,iconsrc,level,
+      sort,ifscreen,ifshow from acl_menu
+      <where>
+      <if test="id != null and id!='' " >
+        and ID=#{id}
+      </if>
+      <if test="code != null and code!='' " >
+        and Code=#{code}
+      </if>
+      <if test="name != null and name!='' " >
+        and Name=#{name}
+      </if>
+      <if test="menuname != null and menuname!='' " >
+        and Name like concat('%',#{menuname},'%')
+      </if>
+      <if test="parentid != null and parentid!='' " >
+        and ParentID=#{parentid}
+      </if>
+      <if test="level != null and level!='' " >
+        and Level=#{level}
+      </if>
+      <if test="ifscreen != null and ifscreen!='' " >
+        and IfScreen=#{ifscreen}
+      </if>
+      <if test="ifshow != null and ifshow!='' " >
+        and  IfShow=#{ifshow}
+      </if>
+      </where>
+  </select>
+  
+  
+  <select id="getTree" resultType="Map">
+  select '0' as "id", '系统菜单' as "title",'' as"parent",
+      '' code,'' menuurl,'' iconsrc,'1' level,
+      '0' sort,'0' ifscreen,'0' ifshow from dual
+     UNION ALL
+       select id "id", name "title",
+       case when parentid is null  then '0' 
+       when parentid='' then '0' else parentid end "parent",
+      code,menuurl,iconsrc,level,
+      sort,ifscreen,ifshow from acl_menu
+      <where>
+      <if test="id != null and id!='' " >
+        and ID=#{id}
+      </if>
+      <if test="parentid != null and parentid!='' " >
+        and ParentID=#{parentid}
+      </if>
+      </where>
+      order by level asc,cast(sort as SIGNED) asc;
+  </select>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from acl_menu
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from acl_menu
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.ACL_Menu" >
+    insert into acl_menu (ID, Code, Name, 
+      ParentID, MenuURL, IconSrc, 
+      Level, Sort, IfScreen, 
+      IfShow, CreateDate, UpdateDate, 
+      Icon)
+    values (#{id,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{parentid,jdbcType=VARCHAR}, #{menuurl,jdbcType=VARCHAR}, #{iconsrc,jdbcType=VARCHAR}, 
+      #{level,jdbcType=VARCHAR}, #{sort,jdbcType=VARCHAR}, #{ifscreen,jdbcType=VARCHAR}, 
+      #{ifshow,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, #{updatedate,jdbcType=TIMESTAMP}, 
+      #{icon,jdbcType=LONGVARBINARY})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.ACL_Menu" >
+    insert into acl_menu
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="code != null" >
+        Code,
+      </if>
+      <if test="name != null" >
+        Name,
+      </if>
+      <if test="parentid != null" >
+        ParentID,
+      </if>
+      <if test="menuurl != null" >
+        MenuURL,
+      </if>
+      <if test="iconsrc != null" >
+        IconSrc,
+      </if>
+      <if test="level != null" >
+        Level,
+      </if>
+      <if test="sort != null" >
+        Sort,
+      </if>
+      <if test="ifscreen != null" >
+        IfScreen,
+      </if>
+      <if test="ifshow != null" >
+        IfShow,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+      <if test="icon != null" >
+        Icon,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null" >
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="parentid != null" >
+        #{parentid,jdbcType=VARCHAR},
+      </if>
+      <if test="menuurl != null" >
+        #{menuurl,jdbcType=VARCHAR},
+      </if>
+      <if test="iconsrc != null" >
+        #{iconsrc,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        #{level,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="ifscreen != null" >
+        #{ifscreen,jdbcType=VARCHAR},
+      </if>
+      <if test="ifshow != null" >
+        #{ifshow,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="icon != null" >
+        #{icon,jdbcType=LONGVARBINARY},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.ACL_Menu" >
+    update acl_menu
+    <set >
+      <if test="code != null" >
+        Code = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        Name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="parentid != null" >
+        ParentID = #{parentid,jdbcType=VARCHAR},
+      </if>
+      <if test="menuurl != null" >
+        MenuURL = #{menuurl,jdbcType=VARCHAR},
+      </if>
+      <if test="iconsrc != null" >
+        IconSrc = #{iconsrc,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        Level = #{level,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        Sort = #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="ifscreen != null" >
+        IfScreen = #{ifscreen,jdbcType=VARCHAR},
+      </if>
+      <if test="ifshow != null" >
+        IfShow = #{ifshow,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="icon != null" >
+        Icon = #{icon,jdbcType=LONGVARBINARY},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.xr.entry.ACL_Menu" >
+    update acl_menu
+    set Code = #{code,jdbcType=VARCHAR},
+      Name = #{name,jdbcType=VARCHAR},
+      ParentID = #{parentid,jdbcType=VARCHAR},
+      MenuURL = #{menuurl,jdbcType=VARCHAR},
+      IconSrc = #{iconsrc,jdbcType=VARCHAR},
+      Level = #{level,jdbcType=VARCHAR},
+      Sort = #{sort,jdbcType=VARCHAR},
+      IfScreen = #{ifscreen,jdbcType=VARCHAR},
+      IfShow = #{ifshow,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      Icon = #{icon,jdbcType=LONGVARBINARY}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.ACL_Menu" >
+    update acl_menu
+    set Code = #{code,jdbcType=VARCHAR},
+      Name = #{name,jdbcType=VARCHAR},
+      ParentID = #{parentid,jdbcType=VARCHAR},
+      MenuURL = #{menuurl,jdbcType=VARCHAR},
+      IconSrc = #{iconsrc,jdbcType=VARCHAR},
+      Level = #{level,jdbcType=VARCHAR},
+      Sort = #{sort,jdbcType=VARCHAR},
+      IfScreen = #{ifscreen,jdbcType=VARCHAR},
+      IfShow = #{ifshow,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

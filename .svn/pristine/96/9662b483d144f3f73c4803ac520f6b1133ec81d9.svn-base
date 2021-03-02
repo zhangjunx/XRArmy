@@ -1,0 +1,358 @@
+package com.xr.controller;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import com.alibaba.fastjson.JSONObject;
+import com.hikvision.artemis.sdk.ArtemisHttpUtil;
+import com.xr.entry.AreaList;
+import com.xr.https.HKPlat;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+@Controller
+@RequestMapping("HKPlat")
+@Api(tags="HKPlatController",description="接口标题：海康ISC平台对接接口")
+public class HKPlatController {
+	private static final String appKey="24949434";
+	private static final String appSecret="85q63mc5ZX51IzU390Rj";
+	
+	
+	
+	
+	
+	
+	/**
+	 * 获取根区域信息  ：/api/resource/v1/regions/root
+	 * @throws Exception 
+	 */
+	public static String root() throws Exception{
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		String url="https://192.168.1.250/artemis/api/resource/v1/regions/root";
+		String token="";//getSign();
+		System.out.println(token);
+		m.put("Appkey", appKey);
+		m.put("Secret", appSecret);
+		m.put("tagId", token);
+		String result=net(url,m,"POST");
+		System.out.println(result);
+		String rootcode="";
+		if(result!=null && !"".equals(result)){
+			JSONObject o=JSONObject.parseObject(result);
+			JSONObject data=o.getJSONObject("data");
+			if(data!=null && !"".equals(data)){
+				rootcode=data.getString("indexCode");
+			}
+		}
+		return rootcode;
+	}
+	
+	 
+	
+	
+	@ApiOperation(httpMethod="POST",value="接口说明：获取平台区域接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",required=true,dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getArea",method=RequestMethod.GET)
+	@ResponseBody
+	public static Map<String,Object>  getArea(){
+		Map<String,Object> map=new HashMap<String,Object>();
+		String result=HKPlat.nodesByParams();
+		System.out.println(result);
+		map.put("result", result);
+		map.put("reason", "查询成功！");
+		map.put("flag", true);
+		return map;
+	}
+	
+	@ApiOperation(httpMethod="POST",value="接口说明：获取平台设备列表接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",required=true,dataType="String",paramType="path")
+		})
+	@RequestMapping(value="/getDev",method=RequestMethod.GET)
+	@ResponseBody
+	public static Map<String,Object>  getDev(){
+		Map<String,Object> map=new HashMap<String,Object>();
+		String result=HKPlat.getDev();
+		System.out.println(result);
+		map.put("result", result);
+		map.put("reason", "查询成功！");
+		map.put("flag", true);
+		return map;
+	}
+	
+
+	@ApiOperation(httpMethod="POST",value="接口说明：获取平台监控点接口",notes="接口的note说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",required=true,dataType="String",paramType="path")
+		})
+	@RequestMapping(value="/getDot",method=RequestMethod.GET)
+	@ResponseBody
+	public static Map<String,Object>  getDot(){
+		Map<String,Object> map=new HashMap<String,Object>();
+		String result=HKPlat.cameraList();
+		System.out.println(result);
+		map.put("result", result);
+		map.put("reason", "查询成功！");
+		map.put("flag", true);
+		return map;
+	}
+	
+	public static void main(String[] args) {
+		JSONObject m=new JSONObject();
+		m.put("pageNo", "1");
+		m.put("pageNo", "30");
+		m.put("resourceType", "camera");
+		getSignstr(m);
+	}
+	
+	
+ 
+	
+	 public static String getSignstr(JSONObject params){
+		    //String url="/artemis/api/resource/v1/regions/root";
+		    String url="/artemis/api/resource/v1/camera/advance/cameraList";
+	    	String method="POST";
+	    	String accept="*/*";
+	    	String contentType="application/json";
+	    	String xcakey="24949434";
+	    	String signstr=method+"\n"+accept+"\n"+contentType+"\n"+"x-ca-key:"+xcakey+"\n"+url;
+	    	System.out.println(signstr);
+	    	String sign=getSign(signstr);
+	    	System.out.println(sign);
+	    	StringBuilder result=new StringBuilder();
+	    	String header="x-ca-key";
+	    	BufferedReader in=null;
+	    	String json=params.toJSONString();
+	    	try{
+	    		url="https://192.168.1.250"+url;;
+	    		URL uri=new URL(url);
+	    		HttpURLConnection conn=(HttpURLConnection) uri.openConnection();
+	    	    conn.setDoOutput(true);
+	    	    conn.setDoInput(true);
+	    	    conn.setRequestMethod("POST");
+	    	    conn.setUseCaches(false);
+	    	    conn.setRequestProperty("Accept", "*/*");
+	    	    conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+	    	    conn.setRequestProperty("connection", "Keep-Alive");
+	    	    conn.setRequestProperty("x-ca-key", appKey);
+	    	    conn.setRequestProperty("x-ca-signature", sign);
+	    	    conn.setRequestProperty("x-ca-signature-headers", header);
+	    	   
+	    	    // 得到请求的输出流对象
+	   		 DataOutputStream out = new DataOutputStream(conn.getOutputStream());
+	   		 out.write(params.getBytes("UTF-8"));
+	   		 out.flush();
+	   		 out.close();
+	   	
+	   		 // 建立实际的连接
+	   		 conn.connect();
+	   		 // 获取所有响应头字段
+	   		 Map<String, List<String>> headers = conn.getHeaderFields();
+	   		 // 遍历所有的响应头字段
+	   		 for (String key : headers.keySet()) {
+	   			 //System.out.println(key + "--->" + headers.get(key));
+	   		 }
+	   		 // 定义 BufferedReader输入流来读取URL的响应
+	   		 BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+	   		 String res = "";
+	   		 String getLine;
+	   		 while ((getLine = in.readLine()) != null) {
+	   			 res += getLine;
+	   		 }
+	   		 in.close();
+	   		 JSONObject jsonObject = JSONObject.parseObject(res);
+	   		 //System.out.println(jsonObject);
+	   		 String str=jsonObject.toString();
+	    	    /*if (!StringUtils.isEmpty(json)) {
+	                byte[] writebytes =json.getBytes();
+	                conn.setRequestProperty("Content-Length",String.valueOf(writebytes.length));
+	                OutputStream outwritestream = conn.getOutputStream();
+	                outwritestream.write(json.getBytes());
+	                outwritestream.flush();
+	                outwritestream.close();
+	            }
+	            if (conn.getResponseCode() == 200 || conn.getResponseCode() == 201) {
+	                in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+	                String line;
+	                while ((line = in.readLine()) != null) {
+	                    result.append(line);
+	                }
+	            }  
+	    	    System.out.println(result);
+	    	
+	    	*/
+	    	}catch(Exception e){
+	    		e.printStackTrace();
+	    	}
+			return null;
+	    }
+	 
+	 
+	 public static String getSign(String signstr){
+		 //String signstr=getSignstr();
+		   Mac sha256_HMAC;
+			try {
+				sha256_HMAC = Mac.getInstance("HmacSHA256");
+				SecretKeySpec secret_key=new SecretKeySpec(appSecret.getBytes(),"HmacSHA256");
+			     sha256_HMAC.init(secret_key);
+			     String hash=Base64.encodeBase64String(sha256_HMAC.doFinal(signstr.getBytes()));
+			     System.out.println(hash);
+			     return hash;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+	 
+	 
+	
+	/**
+	 * 生成签名
+	 * @param urlStr
+	 * @param map
+	 * @param method
+	 * @return
+	 */
+	public static String sign(String url){
+		StringBuilder result=new StringBuilder();
+		BufferedReader in=null;
+		String sign="lcbeqmS0ISGvZQnRAsK/yqODvqPe81EfKhSJY78oqP4=";
+		try {
+			URL uri=new URL(url);
+			URLConnection con=uri.openConnection();
+			con.setRequestProperty("x-ca-signature", appKey);
+			con.setRequestProperty("x-ca-signature-headers", appKey);
+			con.setRequestProperty("Accept", "*/*");
+			con.setRequestProperty("Content-Type", "application/json");
+			con.setRequestProperty("x-ca-key", appKey);
+			con.connect();
+			in=new BufferedReader(new InputStreamReader(con.getInputStream()));
+			String line;
+			while((line=in.readLine())!=null){
+				result.append(line);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		return url;
+		
+	}
+	
+	
+	/**
+	 * 请求连接
+	 * @param urlStr
+	 * @param map
+	 * @param method
+	 * @param token
+	 * @return
+	 * @throws Exception
+	 */
+	public static String net(String urlStr, Map<String, Object> map, String method) throws Exception {
+		 JSONObject jsonObj=new JSONObject(map);
+		 String params = jsonObj.toString();
+	     URL url = new URL(urlStr);
+		 // 打开和URL之间的连接
+		 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		 connection.setConnectTimeout(8000);
+		 // 设置通用的请求属性
+		 connection.setRequestMethod(method);
+		 connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+		 connection.setRequestProperty("Connection", "Keep-Alive");
+		 //connection.setRequestProperty("token", token);
+		 connection.setUseCaches(false);
+		 connection.setDoOutput(true);
+		 connection.setDoInput(true);
+	
+		 // 得到请求的输出流对象
+		 DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+		 out.write(params.getBytes("UTF-8"));
+		 out.flush();
+		 out.close();
+	
+		 // 建立实际的连接
+		 connection.connect();
+		 // 获取所有响应头字段
+		 Map<String, List<String>> headers = connection.getHeaderFields();
+		 // 遍历所有的响应头字段
+		 for (String key : headers.keySet()) {
+			 //System.out.println(key + "--->" + headers.get(key));
+		 }
+		 // 定义 BufferedReader输入流来读取URL的响应
+		 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+		 String result = "";
+		 String getLine;
+		 while ((getLine = in.readLine()) != null) {
+			 result += getLine;
+		 }
+		 in.close();
+		 JSONObject jsonObject = JSONObject.parseObject(result);
+		 //System.out.println(jsonObject);
+		 String str=jsonObject.toString();
+		 //Map<String, Object> resultMap = (Map) jsonObject;
+		 return str;
+	}
+	
+	
+	 
+		
+	 
+
+	
+	 
+ 
+    /**
+     * 将map型转为请求参数型
+     * @param data
+     * @return
+     */
+    public static String urlencode(Map<String,String> data) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry i : data.entrySet()) {
+            try {
+                sb.append(i.getKey()).append("=").append(URLEncoder.encode(i.getValue()+"","UTF-8")).append("&");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return sb.toString();
+    }
+	
+	
+	
+	
+	
+}
+
+

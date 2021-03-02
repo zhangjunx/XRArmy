@@ -1,0 +1,209 @@
+package com.xr.entry;
+
+import java.util.Date;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.alibaba.fastjson.annotation.JSONField;
+
+public class HolderLeave {
+    private Integer id;
+
+    private String holderno;
+
+    private String holdername;
+
+    private String unitno;
+
+    private String unitname;
+
+    private String state;
+
+    private String type;
+
+    private String reason;
+
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
+    private Date startdate;
+
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
+    private Date enddate;
+
+    private String approverone;
+
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
+    private Date approvedateone;
+
+    private String approvertwo;
+
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
+    private Date approvedatetwo;
+
+    private String failreason;
+
+    private String remark;
+
+    private String applystatus;
+
+    private String flowtracing;
+
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
+    private Date createdate;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getHolderno() {
+        return holderno;
+    }
+
+    public void setHolderno(String holderno) {
+        this.holderno = holderno == null ? null : holderno.trim();
+    }
+
+    public String getHoldername() {
+        return holdername;
+    }
+
+    public void setHoldername(String holdername) {
+        this.holdername = holdername == null ? null : holdername.trim();
+    }
+
+    public String getUnitno() {
+        return unitno;
+    }
+
+    public void setUnitno(String unitno) {
+        this.unitno = unitno == null ? null : unitno.trim();
+    }
+
+    public String getUnitname() {
+        return unitname;
+    }
+
+    public void setUnitname(String unitname) {
+        this.unitname = unitname == null ? null : unitname.trim();
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state == null ? null : state.trim();
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type == null ? null : type.trim();
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason == null ? null : reason.trim();
+    }
+
+    public Date getStartdate() {
+        return startdate;
+    }
+
+    public void setStartdate(Date startdate) {
+        this.startdate = startdate;
+    }
+
+    public Date getEnddate() {
+        return enddate;
+    }
+
+    public void setEnddate(Date enddate) {
+        this.enddate = enddate;
+    }
+
+    public String getApproverone() {
+        return approverone;
+    }
+
+    public void setApproverone(String approverone) {
+        this.approverone = approverone == null ? null : approverone.trim();
+    }
+
+    public Date getApprovedateone() {
+        return approvedateone;
+    }
+
+    public void setApprovedateone(Date approvedateone) {
+        this.approvedateone = approvedateone;
+    }
+
+    public String getApprovertwo() {
+        return approvertwo;
+    }
+
+    public void setApprovertwo(String approvertwo) {
+        this.approvertwo = approvertwo == null ? null : approvertwo.trim();
+    }
+
+    public Date getApprovedatetwo() {
+        return approvedatetwo;
+    }
+
+    public void setApprovedatetwo(Date approvedatetwo) {
+        this.approvedatetwo = approvedatetwo;
+    }
+
+    public String getFailreason() {
+        return failreason;
+    }
+
+    public void setFailreason(String failreason) {
+        this.failreason = failreason == null ? null : failreason.trim();
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark == null ? null : remark.trim();
+    }
+
+    public String getApplystatus() {
+        return applystatus;
+    }
+
+    public void setApplystatus(String applystatus) {
+        this.applystatus = applystatus == null ? null : applystatus.trim();
+    }
+
+    public String getFlowtracing() {
+        return flowtracing;
+    }
+
+    public void setFlowtracing(String flowtracing) {
+        this.flowtracing = flowtracing == null ? null : flowtracing.trim();
+    }
+
+    public Date getCreatedate() {
+        return createdate;
+    }
+
+    public void setCreatedate(Date createdate) {
+        this.createdate = createdate;
+    }
+}

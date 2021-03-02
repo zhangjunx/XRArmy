@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.UserDataMapper">
+	<resultMap id="BaseResultMap" type="com.xr.entry.UserData">
+		<id column="UserID" property="userid" jdbcType="VARCHAR" />
+		<result column="UserName" property="username" jdbcType="VARCHAR" />
+		<result column="Phone" property="phone" jdbcType="VARCHAR" />
+		<result column="UserPass" property="userpass" jdbcType="VARCHAR" />
+		<result column="RoleID" property="roleid" jdbcType="INTEGER" />
+		<result column="UnitNo" property="unitno" jdbcType="VARCHAR" />
+		<result column="Title" property="title" jdbcType="VARCHAR" />
+		<result column="VersionNo" property="versionno" jdbcType="VARCHAR" />
+		<result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+		<result column="Deleted" property="deleted" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="ResultMapWithBLOBs" type="com.xr.entry.UserData" extends="BaseResultMap">
+		<result column="Logo" property="logo" jdbcType="LONGVARBINARY" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		UserID, UserName, Phone, UserPass, RoleID, UnitNo, Title, VersionNo,
+		CreateDate,
+		Deleted
+	</sql>
+	<sql id="Blob_Column_List">
+		Logo
+	</sql>
+
+	<sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by createdate desc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+	
+	
+	<insert id="add" parameterType="java.util.List">
+	    <foreach collection="list" item="item" separator=";" index="index">
+	          <if test="item.type!=null and item.type!='' and item.type=='aa'">
+	              insert into userdata (UserID, UserName,
+				UserPass, RoleID, UnitNo)
+				values (#{item.userid}, #{item.username},
+				#{item.userpass}, #{item.roleid}, #{item.unitno})
+	          </if>
+	          <if test="item.type!=null and item.type!='' and item.type=='uu'">
+	               update userdata
+				set UserName = #{item.username},
+				RoleID = #{item.roleid},
+				UnitNo = #{item.unitno} 
+		        where UserID = #{item.userid}
+	          </if>
+	          <if test="item.type!=null and item.type!='' and item.type=='dd'">
+	               delete from userdata
+		           where UserID = #{item.userid}
+	          </if>
+	    </foreach>
+	</insert>
+
+	<select id="getLoginCheck" resultType="Map">
+		select	userid,username,roleid,unitno,deleted from UserData
+		where deleted='0' and userid=#{userid} and
+		userpass=#{userpass}
+	</select>
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select t.userid,t.username,t.phone,t.userpass,t.title,t.versionno,
+		DATE_FORMAT(t.createdate,'%Y-%c-%d %H:%i:%s') createdate,
+		t.roleid,r.name as rolename,
+		t.unitno,ul.unitname,t.deleted,t.logo from
+		UserData t
+		left join ACL_Role r on r.id=t.roleid
+		left join UnitList ul on
+		t.unitno=ul.unitno
+		<where>
+			<if test="userid != null and userid!='' ">
+				and t.UserID=#{userid}
+			</if>
+			<if test="username != null and username!='' ">
+				and t.UserName=#{username}
+			</if>
+			<if test="name != null and name!='' ">
+				and t.UserName like concat('%',#{name},'%')
+			</if>
+			<if test="userpass != null and userpass!='' ">
+				and t.UserPass=#{userpass}
+			</if>
+			<if test="roleid != null and roleid!='' ">
+				and t.RoleID=#{roleid}
+			</if>
+			<if test="unitno != null and unitno!=''">
+				and t.UnitNo=#{unitno}
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="integer">
+		select count(1)	from UserData t
+		left join ACL_Role r on r.id=t.roleid
+		left join UnitList ul on
+		t.unitno=ul.unitno
+		<where>
+			<if test="userid != null and userid!='' ">
+				and t.UserID=#{userid}
+			</if>
+			<if test="username != null and username!='' ">
+				and t.UserName=#{username}
+			</if>
+			<if test="name != null and name!='' ">
+				and t.UserName like concat('%',#{name},'%')
+			</if>
+			<if test="userpass != null and userpass!='' ">
+				and t.UserPass=#{userpass}
+			</if>
+			<if test="roleid != null and roleid!='' ">
+				and t.RoleID=#{roleid}
+			</if>
+			<if test="unitno != null and unitno!=''">
+				and t.UnitNo=#{unitno}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getMyMenu" resultType="Map">
+  select t.menuid "id",m.name "title",
+case when m.parentid is NULL then '' else m.parentid end "parent",m.code,m.iconsrc,m.menuurl,
+m.level,m.sort,m.ifshow,m.ifshow  from acl_menu m 
+inner join (select menuid from acl_role_menu 
+where roleid=(select roleid from userdata 
+where userid=#{loginid}))t on t.menuid=m.id
+order by id asc
+  </select>
+	<select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		,
+		<include refid="Blob_Column_List" />
+		from userdata
+		where UserID = #{userid,jdbcType=VARCHAR}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+		delete from userdata
+		where UserID = #{userid,jdbcType=VARCHAR}
+	</delete>
+	<insert id="insert" parameterType="com.xr.entry.UserData">
+		insert into userdata (UserID, UserName, Phone,
+		UserPass, RoleID, UnitNo,
+		Title, VersionNo, CreateDate,
+		Deleted, Logo)
+		values (#{userid,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR},
+		#{phone,jdbcType=VARCHAR},
+		#{userpass,jdbcType=VARCHAR}, #{roleid,jdbcType=INTEGER}, #{unitno,jdbcType=VARCHAR},
+		#{title,jdbcType=VARCHAR}, #{versionno,jdbcType=VARCHAR},
+		#{createdate,jdbcType=TIMESTAMP},
+		#{deleted,jdbcType=VARCHAR}, #{logo,jdbcType=LONGVARBINARY})
+	</insert>
+	<insert id="insertSelective" parameterType="com.xr.entry.UserData">
+		insert into userdata
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="userid != null">
+				UserID,
+			</if>
+			<if test="username != null">
+				UserName,
+			</if>
+			<if test="phone != null">
+				Phone,
+			</if>
+			<if test="userpass != null">
+				UserPass,
+			</if>
+			<if test="roleid != null">
+				RoleID,
+			</if>
+			<if test="unitno != null">
+				UnitNo,
+			</if>
+			<if test="title != null">
+				Title,
+			</if>
+			<if test="versionno != null">
+				VersionNo,
+			</if>
+			<if test="createdate != null">
+				CreateDate,
+			</if>
+			<if test="deleted != null">
+				Deleted,
+			</if>
+			<if test="logo != null">
+				Logo,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="userid != null">
+				#{userid,jdbcType=VARCHAR},
+			</if>
+			<if test="username != null">
+				#{username,jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				#{phone,jdbcType=VARCHAR},
+			</if>
+			<if test="userpass != null">
+				#{userpass,jdbcType=VARCHAR},
+			</if>
+			<if test="roleid != null">
+				#{roleid,jdbcType=INTEGER},
+			</if>
+			<if test="unitno != null">
+				#{unitno,jdbcType=VARCHAR},
+			</if>
+			<if test="title != null">
+				#{title,jdbcType=VARCHAR},
+			</if>
+			<if test="versionno != null">
+				#{versionno,jdbcType=VARCHAR},
+			</if>
+			<if test="createdate != null">
+				#{createdate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deleted != null">
+				#{deleted,jdbcType=VARCHAR},
+			</if>
+			<if test="logo != null">
+				#{logo,jdbcType=LONGVARBINARY},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.UserData">
+		update userdata
+		<set>
+			<if test="username != null">
+				UserName = #{username,jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				Phone = #{phone,jdbcType=VARCHAR},
+			</if>
+			<if test="userpass != null">
+				UserPass = #{userpass,jdbcType=VARCHAR},
+			</if>
+			<if test="roleid != null">
+				RoleID = #{roleid,jdbcType=INTEGER},
+			</if>
+			<if test="unitno != null">
+				UnitNo = #{unitno,jdbcType=VARCHAR},
+			</if>
+			<if test="title != null">
+				Title = #{title,jdbcType=VARCHAR},
+			</if>
+			<if test="versionno != null">
+				VersionNo = #{versionno,jdbcType=VARCHAR},
+			</if>
+			<if test="createdate != null">
+				CreateDate = #{createdate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deleted != null">
+				Deleted = #{deleted,jdbcType=VARCHAR},
+			</if>
+			<if test="logo != null">
+				Logo = #{logo,jdbcType=LONGVARBINARY},
+			</if>
+		</set>
+		where UserID = #{userid,jdbcType=VARCHAR}
+	</update>
+	<update id="updateByPrimaryKeyWithBLOBs" parameterType="com.xr.entry.UserData">
+		update userdata
+		set UserName = #{username,jdbcType=VARCHAR},
+		Phone = #{phone,jdbcType=VARCHAR},
+		UserPass = #{userpass,jdbcType=VARCHAR},
+		RoleID = #{roleid,jdbcType=INTEGER},
+		UnitNo = #{unitno,jdbcType=VARCHAR},
+		Title = #{title,jdbcType=VARCHAR},
+		VersionNo = #{versionno,jdbcType=VARCHAR},
+		CreateDate = #{createdate,jdbcType=TIMESTAMP},
+		Deleted = #{deleted,jdbcType=VARCHAR},
+		Logo = #{logo,jdbcType=LONGVARBINARY}
+		where UserID = #{userid,jdbcType=VARCHAR}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.xr.entry.UserData">
+		update userdata
+		set UserName = #{username,jdbcType=VARCHAR},
+		Phone = #{phone,jdbcType=VARCHAR},
+		UserPass = #{userpass,jdbcType=VARCHAR},
+		RoleID = #{roleid,jdbcType=INTEGER},
+		UnitNo = #{unitno,jdbcType=VARCHAR},
+		Title = #{title,jdbcType=VARCHAR},
+		VersionNo = #{versionno,jdbcType=VARCHAR},
+		CreateDate = #{createdate,jdbcType=TIMESTAMP},
+		Deleted = #{deleted,jdbcType=VARCHAR}
+		where UserID = #{userid,jdbcType=VARCHAR}
+	</update>
+</mapper>

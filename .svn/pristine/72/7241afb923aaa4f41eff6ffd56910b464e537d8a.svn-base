@@ -1,0 +1,29 @@
+show variables like '%max_connections%';
+set GLOBAL max_connections=1000;
+show full processlist;
+
+2021-01-16 lwb
+监控管理添加证书：
+1.cmd 打开jdk安装目录回车键进入
+windows  cmd进入D:\Program Files\Java\jdk1.7.0_67\bin 目录
+keytool -import -keystore "%JAVA_HOME%\jre\lib\security\cacerts" -file D:/jxust_CertKey.cer -alias ssodemo
+keytool -import -keystore "%JAVA_HOME%\jre\lib\security\cacerts" -file D:/a.cer -alias ssodemo
+然后回车，输入changeit  Y
+即可添加证书到jdk
+
+https://www.zzsyris.com
+
+https://zzsyris.com
+
+www.zzsyris.com
+
+问题罗列：
+1.请假问题：四级，最高四级，最低一级，请假审批成功下发人脸权限，请假结束时间移除权限，逾期返回报警处理。车辆类似
+难点在于怎么判断
+2.通知公告时可以导入Word，Excel文件，读取里面数据显示，保持原样格式。
+3.人事调动时的资料导入时变更：
+文件资料可以是图片，pdf,word,excel等，不限制类型。
+4.黑名单人员同步整合（查询，新增，修改），同步删除：
+同步时要有同步记录：针对不同盒子，同步返回结果，状态显示
+5.人事里面同步人员整合（查询，新增，修改），同步删除
+同步时要有同步记录：针对不同盒子，同步返回结果，状态显示

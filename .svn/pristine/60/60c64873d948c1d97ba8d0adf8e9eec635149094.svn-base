@@ -1,0 +1,222 @@
+package com.xr.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSONArray;
+import com.xr.configure.MethodLog;
+import com.xr.configure.SysOptLog;
+import com.xr.entry.MonitorDotDevice;
+import com.xr.service.IMonitorDotDeviceService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+
+@Controller
+@RequestMapping("MonitorDotDevice")
+@Api(tags="MonitorDotDeviceController",description="接口标题：监控点设备关联类的接口")
+public class MonitorDotDeviceController {
+    private static Logger logger = LoggerFactory.getLogger(MonitorDotDeviceController.class);
+	
+	@Autowired
+	private HttpServletRequest request;
+	 
+	@Autowired
+	private HttpServletResponse response;
+	
+	@Autowired
+	private IMonitorDotDeviceService ics;
+	
+
+	/**
+	 * 查询列表
+	 * @param record
+	 * @param pageinfo
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：监控点id",required=false,dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="dotid",value="参数：监控点id",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="deviceno",value="参数：设备id",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",required=false,dataType="String",paramType="path")
+		})
+	@RequestMapping("/getList")
+	@ResponseBody
+	public Map<String,Object> getList(Integer curpage,Integer pagesize,MonitorDotDevice record,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("id", record.getId());
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			m.put("dotid", record.getDotid());
+			m.put("deviceno", record.getDeviceno());
+			List<Map<String,Object>> list=ics.getListService(m);
+			int count = ics.getListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	 
+	/**
+	 * 新增
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：新增接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="dotid",value="参数：监控点id",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="arr",value="参数：int数组：[1,2,3],存的是设备id的值",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",required=false,dataType="String",paramType="path")
+		})
+	@MethodLog(methodName="新增",remark="新增监控点")
+	@SysOptLog(description="新增监控点",optCURD="新增")
+	@RequestMapping(value="/add",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> add(Integer dotid,String str,String type,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		try{
+			List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
+			JSONArray arr=JSONArray.parseArray(str);
+			for(int i=0;i<arr.size();i++){
+				Map<String,Object> m=new HashMap<String,Object>();
+				Map<String,Object> m1=new HashMap<String,Object>();
+				int deviceno=arr.getInteger(i);
+				m.put("deviceno", deviceno);
+				List<Map<String,Object>> exist=ics.getListService(m);
+				if(exist!=null && exist.size()==1){
+					Integer id=Integer.valueOf(String.valueOf(exist.get(0).get("id")));
+					Integer dotid2=Integer.valueOf(String.valueOf(exist.get(0).get("dotid")));
+					if(type.equals("aa")){
+						if(!dotid.equals(dotid2)){
+							m1.put("id", id);
+							m1.put("dotid", dotid);
+							m1.put("deviceno", deviceno);
+							m1.put("type", "uu");
+							result.add(m1);
+						}
+					}else if(type.equals("dd")){
+						m1.put("id", id);
+						m1.put("type", "dd");
+						result.add(m1);
+					}
+					
+				}else if(exist==null || exist.size()==0){
+					if(type.equals("aa")){
+						m1.put("dotid", dotid);
+						m1.put("deviceno", deviceno);
+						m1.put("type", "aa");
+						result.add(m1);
+					}
+					
+				}else{
+					for(int j=0;j<exist.size();j++){
+						Map<String,Object> m2=exist.get(j);
+						m2.put("type", "dd");
+						result.add(m2);
+					}
+				}
+			}
+			
+			
+			List<Map<String,Object>> pici=new ArrayList<Map<String,Object>>();
+			for(int i=0;i<result.size();i++){
+				pici.add(result.get(i));
+				if(pici.size()==100 || i==result.size()-1){
+					ics.addService(pici);
+					pici.clear();
+				}
+			}
+			
+			if(result!=null && result.size()>0){
+				map.put("flag", true);
+				map.put("reason", "操作成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "操作失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @param pageinfo
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="id",value="参数：监控点id",required=false,dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="name",value="参数：监控点名称",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="areaid",value="参数：监控点所属区域",required=false,dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",required=false,dataType="String",paramType="path")
+		})
+	@RequestMapping("/getDevList")
+	@ResponseBody
+	public Map<String,Object> getDevList(Integer curpage,Integer pagesize,Integer dotid,String devicename,String devicetype,String devicevender,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			m.put("devicename", devicename);
+			m.put("devicetype", devicetype);
+			m.put("devicevender", devicevender);
+			m.put("dotid", dotid);
+			List<Map<String,Object>> list=ics.getDevListService(m);
+			int count = ics.getDevListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end 
+	
+	
+	
+
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html style="height:100%">
+<head>
+  <meta charset="utf-8">
+  <title>图上监控</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../css/public.css">
+  <link rel="stylesheet" href="css/electronicMap.css">
+  <link rel="stylesheet" href="../css/viewer.min.css">
+</head>
+<body style="height:100%">
+  <div class="layui-fluid" style="height:100%">
+	  <div class="main-tab">
+		  <div class="label fl curr">
+			  <a href="javascript:;">图上监控</a>
+		  </div>
+	  </div>
+    <div class=" layui-con" style="height: calc(100% - 50px);">
+     	<div class="layui-row monitorPoint">
+     		<div class="layui-col-md2 box_left">
+     			<h2>区域监控点</h2>
+     			<div class="monitorBox" id="monitroBox">
+     			</div>
+     		</div>
+     		<div class="layui-col-md10 box_right" style="height:100%">
+     			<ul class="cameraBox" id="cameraBox">
+     				<li style="width:30px;"><img src="img/link.png" class="imgLink" title="添加图片链接"></li>
+     				<!-- <li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera" title="北门"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li>
+     				<li data-code="cameraIndexCode"><img src="../img/camera.png" class="camera"><p>北门</p></li> -->
+     			</ul>
+     			<!-- <div class="imgBox"><img src="img/link.png" class="imgLink" title="添加图片链接"></div> -->
+     			<div class="imgArea">
+     				<img src="img/bigImg.png" id="imgBox">
+     			</div>
+     		</div>
+     	</div>
+    </div>
+  </div>
+  
+   <!-- 上传图片弹出层 -->
+  <div class="uploadBox" id="uploadBox" style="display:none">
+  		<div class="layui-form-item" id="parentDept">
+			<div class="layui-col-lg4">
+				<label class="layui-form-label">选择图片</label>
+				<div class="layui-input-block">
+					<img src="../img/add_img.png" class="imgMap" id="imgMap" style="width: 240px;height: 240px;object-fit: cover;">
+					<input type="file" class="imgFile" id="imgFile" title="点击更换图片" accept=".jpg,.png,.gif">
+				</div>
+			</div>
+		</div> 
+  </div>
+  <!-- 图片添加链接或者删除弹出层 -->
+  <dl class="hover">
+  	<dt class="cellDt jump">跳转</dt>
+  	<dt class="cellDt imgup">上传图片</dt>
+  	<dt class="cellDt delete">删除</dt>
+  </dl>
+   <script src="../js/path.js"></script>
+   <script src="js/jquery-1.12.4.min.js"></script>
+   <script src="js/jsencrypt.min.js"></script>            <!-- 用于RSA加密 -->
+   <script src="js/jsWebControl-1.0.0.min.js"></script>   <!-- 用于前端与插件交互 -->
+   <script src="../layui/layui.js"></script>
+   <script src="js/Tdrag.js"></script>
+   <script src="../js/viewer.min.js"></script>
+   <script src="js/monitorImg.js"></script>
+</body>
+
+</html>

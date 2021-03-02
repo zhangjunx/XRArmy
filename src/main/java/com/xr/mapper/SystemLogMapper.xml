@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.SystemLogMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.SystemLog" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="UserID" property="userid" jdbcType="VARCHAR" />
+    <result column="UserName" property="username" jdbcType="VARCHAR" />
+    <result column="Type" property="type" jdbcType="VARCHAR" />
+    <result column="Content" property="content" jdbcType="VARCHAR" />
+    <result column="NetIP" property="netip" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, UserID, UserName, Type, Content, NetIP, CreateDate
+  </sql>
+  
+   <sql id="c_start" >
+     select res.* from (
+    select @num:=@num+1 tindex,tmp.* from (
+  </sql>
+  
+   <sql id="c_end" >
+    ) tmp,(select @num :=0) var order by id desc) res where 1=1
+    <if test="curpage!=null and curpage!='' ">
+        and res.tindex &gt;=(convert(#{curpage},SIGNED)-1)
+        *convert(#{pagesize},SIGNED)+1
+        and res.tindex &lt;=
+        convert(#{curpage},SIGNED)*
+        convert(#{pagesize},SIGNED)
+    </if>
+  </sql>
+  
+  <select id="getList" resultType="Map">
+  <include refid="c_start"></include>
+     select id,userid,username,type,content,netip,
+     date_format(createdate,'%Y-%m-%d %H:%i:%s') createdate from SystemLog
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="userid != null and userid!='' " >
+	        and UserID=#{userid}
+	      </if>
+	      <if test="username != null and username!='' " >
+	        and UserName like concat('%',#{username},'%')
+	      </if>
+	      <if test="type != null and type!='' " >
+	        and Type=#{type}
+	      </if>
+	      <if test="date1 != null and date1!='' " >
+	        and date_format(createdate,'%Y-%m-%d %H:%i:%s') &gt;=#{date1}
+	      </if>
+	      <if test="date2 != null and date2!='' " >
+	        and date_format(createdate,'%Y-%m-%d %H:%i:%s') &lt;=#{date2}
+	      </if>
+     </where>
+     <include refid="c_end"></include>
+  </select>
+  <select id="getListCount" resultType="Integer">
+     select count(1) from SystemLog
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="userid != null and userid!='' " >
+	        and UserID=#{userid}
+	      </if>
+	      <if test="username != null and username!='' " >
+	        and UserName like concat('%',#{username},'%')
+	      </if>
+	      <if test="type != null and type!='' " >
+	        and Type=#{type}
+	      </if>
+	      <if test="date1 != null and date1!='' " >
+	        and date_format(createdate,'%Y-%m-%d') &gt;=#{date1}
+	      </if>
+	      <if test="date2 != null and date2!='' " >
+	        and date_format(createdate,'%Y-%m-%d') &lt;=#{date2}
+	      </if>
+     </where>
+  </select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from systemlog
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from systemlog
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.SystemLog" >
+    insert into systemlog (ID, UserID, UserName, 
+      Type, Content, NetIP, 
+      CreateDate)
+    values (#{id,jdbcType=INTEGER}, #{userid,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, 
+      #{type,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, #{netip,jdbcType=VARCHAR}, 
+      #{createdate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.SystemLog" >
+    insert into systemlog
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="userid != null" >
+        UserID,
+      </if>
+      <if test="username != null" >
+        UserName,
+      </if>
+      <if test="type != null" >
+        Type,
+      </if>
+      <if test="content != null" >
+        Content,
+      </if>
+      <if test="netip != null" >
+        NetIP,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="netip != null" >
+        #{netip,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.SystemLog" >
+    update systemlog
+    <set >
+      <if test="userid != null" >
+        UserID = #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        UserName = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        Type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        Content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="netip != null" >
+        NetIP = #{netip,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.SystemLog" >
+    update systemlog
+    set UserID = #{userid,jdbcType=VARCHAR},
+      UserName = #{username,jdbcType=VARCHAR},
+      Type = #{type,jdbcType=VARCHAR},
+      Content = #{content,jdbcType=VARCHAR},
+      NetIP = #{netip,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,175 @@
+getTree();//获取单位下拉
+layui.use(["form","table","laydate","layer"],function(){
+	 var $ = layui.$,
+	  form = layui.form,
+	  table = layui.table,
+	  laydate = layui.laydate,
+	 layer=layui.layer;
+	  
+	 getRoles();//角色数据
+	 if(getUrlParam("id")!=undefined&&getUrlParam("id")!=null&&getUrlParam("id")!=""){//编辑
+			getOneInfo();
+		}
+	 
+	 lay('.date').each(function() {
+			laydate.render({
+				elem : this,//元素
+				trigger : 'click',//怎么触发
+			});
+	 });
+	 //监听单位
+	 form.on('select(unitno)',function(data){
+		 var id=$("#unitno option:selected").attr("data-id");
+		 getTree(id);
+	 })
+	//监听提交按钮    
+	 form.on('submit(component-form-demo1)', function(data){
+	     var obj=data.field;
+	     var unitno=$("#unitno").val();
+	     obj.unitno=unitno;
+		 var src=$("#img").attr("src");
+		 var parm={"file":"","obj":JSON.stringify(obj),"loginid":window.top.loginid};
+		 if(src.indexOf("data:image") !=-1){
+			 parm={"file":src,"obj":JSON.stringify(obj),"loginid":window.top.loginid};
+		 }
+		 var toggle="/UserData/insert";
+	     if(getUrlParam("id")!=undefined&&getUrlParam("id")!=null&&getUrlParam("id")!=""){//编辑
+			toggle="/UserData/update";
+	     }
+	    console.log(parm);
+	     $.ajax({
+	    	 url:url+toggle,
+	    	 type:"POST",
+	    	 data:parm,
+	    	 success:function(res){
+	    		 console.log(res);
+	    		 if(res.flag){
+					 layer.msg(res.reason,{time:1000},function(){
+						 parent.layer.closeAll();
+						 window.parent.location.reload();
+					 })
+	    		 }else{
+						layer.msg(res.reason,{time:2000});
+	    		 }
+	    	 }
+	     })
+    });
+	 //点击取消
+	 $("#resetData").click(function(){
+		parent.layer.closeAll();
+	 })
+})
+
+//编辑时获取一条信息
+function getOneInfo(){
+	$.ajax({
+		url:url+"/UserData/getList",
+		type:"POST",
+		data:{"userid":getUrlParam("id")},
+		success:function(data){
+			console.log(data);
+			if(data.flag){
+				var res=data.result[0];
+				 $("#username").val(res.username);
+				 $("#roleid").val(res.roleid);
+				 $("#unitno").val(res.unitno);
+				 $("#unitname").html(res.unitname);
+				 $("#userid").val(res.userid).attr("readonly","true");
+				 $("#userpass").val(res.userpass);
+				 if(res.logo!=undefined&&res.logo!=null&&res.logo!=""){
+						$("#img").attr("src","data:image/png;base64,"+res.logo);
+				}
+				$("input[value="+res.deleted+"]").attr("checked",true);
+				layui.use("form",function(){
+						var form=layui.form;
+						form.render();
+				})
+			}
+		}
+	})
+}
+
+//获取角色
+function getRoles(){
+	$.ajax({
+		url:url+'/ACL_Role/getList',
+		type:"POST",
+		async:false,
+		success:function(res){
+			console.log(res);
+			$("#roleid option").find("not:first").remove();
+			if(res.flag){
+				for(var item of res.result){
+					var $opt=$("<option value="+item.id+">"+item.name+"</option>");
+					$("#roleid").append($opt);
+				}
+				layui.use('form', function(){
+					 var form = layui.form; 
+					 form.render('select');
+				})
+			}else{
+				layer.msg(res.reason,{time:2000});
+			}
+		}
+	})
+}
+
+//获取单位下拉
+function getTree(){
+	$.ajax({
+		url:url+"/UnitList/getTree",
+		type:"POST",
+		async:false,
+		data:{"loginid":window.top.loginid}, 
+		success:function(res){
+			console.log(res)
+			if(res.flag){
+				layui.use(['element', 'tree', 'layer', 'form', 'upload'], function () {
+				    var $ = layui.jquery, tree = layui.tree;
+				    tree.render({
+				        elem: "#classtree",
+				        data: res.result,
+				        onlyIconControl:true,
+				        click: function (node) {
+				        	console.log(node)
+				        	$("#unitno").val(node.data.id);
+				        	$("#unitname").html(node.data.title);
+				            var $select = $($(this)[0].elem).parents(".layui-form-select");
+				            $select.removeClass("layui-form-selected").find(".layui-select-title span").html(node.name).end().find("input:hidden[name='departmentno']").val(node.id);
+				        }
+				    });
+				    
+				    $(".downpanel").on("click", ".layui-select-title", function (e) {
+				        $(".layui-form-select").not($(this).parents(".layui-form-select")).removeClass("layui-form-selected");
+				        $(this).parents(".downpanel").toggleClass("layui-form-selected");
+				        layui.stope(e);
+				    }).on("click", "dl i", function (e) {
+				        layui.stope(e);
+				    });
+				    
+				});
+			}
+		}
+	})
+}
+
+
+
+
+
+$("#logoIpt").change(function(e){
+	var imgUrl=this.files[0];
+	var reader = new FileReader();
+    reader.readAsDataURL(e.target.files[0]); // 读出 base64
+    reader.onloadend = function () {
+          // 图片的 base64 格式, 可以直接当成 img 的 src 属性值        
+         var dataURL = reader.result;//base64
+         $("#img").attr("src",dataURL);
+    };
+})
+//url地址中解析参数
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return decodeURIComponent(r[2]); return null;
+}

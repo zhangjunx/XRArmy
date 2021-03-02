@@ -1,0 +1,201 @@
+package com.xr.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+import com.alibaba.fastjson.JSONObject;
+import com.xr.entry.DeviceUnit;
+
+import io.swagger.annotations.Api;
+@Controller
+@RequestMapping("BoxPlat")
+@Api(tags="BoxPlat",description="接口标题：盒子平台对接接口")
+public class BoxPlatController {
+	
+	public static void main(String[] args) throws Exception {
+		getDev();
+	}
+	
+	/**
+	 * 同步盒子设备查询接口
+	 */
+	@RequestMapping(value="/getDev",method=RequestMethod.POST)
+	@ResponseBody
+	public static String getDev() throws Exception{
+		Map<String,Object> m=new HashMap<String,Object>();
+		String url="http://192.168.1.147/yunapi/?action=device";
+		String result= net(url,m,"GET");
+		System.out.println(result);
+		return null;
+	}
+	
+	/**
+	 * 同步盒子设备新增接口  ： 
+	 * @throws Exception 
+	 */
+	@RequestMapping(value="/addDev",method=RequestMethod.POST)
+	@ResponseBody
+	public static String addDev(DeviceUnit record) throws Exception{
+		Map<String,Object> m=new HashMap<String,Object>();
+		String url="http://192.168.1.147/yunapi/?action=faceIssue";
+		m.put("device_id", record.getDeviceno());
+		m.put("device_name", record.getDevicename());
+		m.put("device_type", record.getDevicetype());
+		m.put("device_vender", record.getDevicevender());
+		m.put("device_no", record.getDevicesn());
+		m.put("device_mac", record.getDevicemodel());
+		m.put("device_ip", record.getIp());
+		m.put("device_port", record.getPort());
+		m.put("device_username", record.getUsername());
+		m.put("device_password", record.getUserpass());
+		m.put("device_status", "1");//1启用，0停用
+		String iostatus=record.getIostatus();
+		if(iostatus.equals("11")){
+			iostatus="1";
+		}if(iostatus.equals("12")){
+			iostatus="2";
+		}else{
+			iostatus="0";
+		}
+		m.put("device_direction", iostatus);//1入，2出，0未知
+		String result= net(url,m,"POST");
+		System.out.println(result);
+		return null;
+	}
+	
+	
+	 
+	/**
+	 * 同步盒子设备修改接口
+	 */
+	@RequestMapping(value="/editDev",method=RequestMethod.POST)
+	@ResponseBody
+	public static String editDev(DeviceUnit record) throws Exception{
+		Map<String,Object> m=new HashMap<String,Object>();
+		String url="http://192.168.1.147/yunapi/?action=device";
+		m.put("device_id", record.getDeviceno());
+		m.put("device_name", record.getDevicename());
+		m.put("device_type", record.getDevicetype());
+		m.put("device_vender", record.getDevicevender());
+		m.put("device_no", record.getDevicesn());
+		m.put("device_mac", record.getDevicemodel());
+		m.put("device_ip", record.getIp());
+		m.put("device_port", record.getPort());
+		m.put("device_username", record.getUsername());
+		m.put("device_password", record.getUserpass());
+		m.put("device_status", "1");//1启用，0停用
+		String iostatus=record.getIostatus();
+		if(iostatus.equals("11")){
+			iostatus="1";
+		}if(iostatus.equals("12")){
+			iostatus="2";
+		}else{
+			iostatus="0";
+		}
+		m.put("device_direction", iostatus);//1入，2出，0未知
+		String result= net(url,m,"PATCH");
+		System.out.println(result);
+		return null;
+	}
+	
+	/**
+	 * 同步盒子设备删除接口
+	 */
+	@RequestMapping(value="/delDev",method=RequestMethod.POST)
+	@ResponseBody
+	public static String delDev(Integer deviceno) throws Exception{
+		Map<String,Object> m=new HashMap<String,Object>();
+		String url="http://192.168.1.147/yunapi/?action=device";
+		m.put("device_id", deviceno);
+		String result= net(url,m,"DELETE");
+		System.out.println(result);
+		return null;
+	}
+	
+	/**
+	 * 请求连接
+	 * @throws Exception
+	 */
+	public static String net(String urlStr, Map<String, Object> map, String method) throws Exception {
+		 JSONObject jsonObj=new JSONObject(map);
+		 String params = jsonObj.toString();
+	     URL url = new URL(urlStr);
+		 // 打开和URL之间的连接
+		 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		 connection.setConnectTimeout(8000);
+		 // 设置通用的请求属性
+		 connection.setRequestMethod(method);
+		 connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+		 connection.setRequestProperty("Connection", "Keep-Alive");
+		 //connection.setRequestProperty("token", token);
+		 connection.setUseCaches(false);
+		 connection.setDoOutput(true);
+		 connection.setDoInput(true);
+	
+		 // 得到请求的输出流对象
+		 DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+		 out.write(params.getBytes("UTF-8"));
+		 out.flush();
+		 out.close();
+		 // 建立实际的连接
+		 connection.connect();
+		 // 获取所有响应头字段
+		 Map<String, List<String>> headers = connection.getHeaderFields();
+		 // 遍历所有的响应头字段
+		 for (String key : headers.keySet()) {
+			 //System.out.println(key + "--->" + headers.get(key));
+		 }
+		 // 定义 BufferedReader输入流来读取URL的响应
+		 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+		 String result = "";
+		 String getLine;
+		 while ((getLine = in.readLine()) != null) {
+			 result += getLine;
+		 }
+		 in.close();
+		 JSONObject jsonObject = JSONObject.parseObject(result);
+		 //System.out.println(jsonObject);
+		 String str=jsonObject.toString();
+		 //Map<String, Object> resultMap = (Map) jsonObject;
+		 return str;
+	}
+	
+ 
+    /**
+     * 将map型转为请求参数型
+     * @param data
+     * @return
+     */
+    public static String urlencode(Map<String,String> data) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry i : data.entrySet()) {
+            try {
+                sb.append(i.getKey()).append("=").append(URLEncoder.encode(i.getValue()+"","UTF-8")).append("&");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return sb.toString();
+    }
+	
+	
+	
+	
+	
+}
+
+

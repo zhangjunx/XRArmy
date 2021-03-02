@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.SynBoxRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.SynBoxRecord" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+    <result column="HolderName" property="holdername" jdbcType="VARCHAR" />
+    <result column="PhotoStr" property="photostr" jdbcType="VARCHAR" />
+    <result column="BoxID" property="boxid" jdbcType="VARCHAR" />
+    <result column="BoxIP" property="boxip" jdbcType="VARCHAR" />
+    <result column="BoxName" property="boxname" jdbcType="VARCHAR" />
+    <result column="State" property="state" jdbcType="VARCHAR" />
+    <result column="Message" property="message" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, HolderNo, HolderName,PhotoStr, BoxID, BoxIP, BoxName, State, Message, CreateDate, UpdateDate
+  </sql>
+  <sql id="c_start">
+	  	select res.*
+  	from (select @num := @num+1 tindex, tmp.* from (
+  </sql>
+	  
+  <sql id="c_end">
+	  ) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+	  	<if test="curpage != null and curpage != ''">
+	  		and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) * CONVERT(#{pagesize},SIGNED)+1 
+	  		and res.tindex &lt;= CONVERT(#{curpage},SIGNED) * CONVERT(#{pagesize},SIGNED)
+	  	</if>	
+  </sql>
+  
+  <insert id="add" parameterType="Map">
+      <foreach collection="list" item="item" separator=";" index="index">
+          <if test="type!=null and type!='' and type=='aa'">
+             insert into synboxrecord (HolderNo, HolderName, PhotoStr,
+              BoxID, BoxIP, BoxName,State, Message)
+            values (#{holderno}, #{holdername}, #{photostr},
+             #{boxid}, #{boxip}, #{boxname}, #{state}, #{message})
+          </if>
+      </foreach>
+  </insert>
+  
+  <select id="getHolder" resultType="Map">
+       select t.holderno,t.holdername,t.state,t.photostr,t.unitno,t.unitname
+ from (select h.holderno,h.holdername,h.state,h.photostr,h.unitno,a.unitname from holderdata h 
+left join unitlist a on a.unitno=h.unitno) t 
+where not EXISTS(select * from synboxrecord  where holderno=t.holderno and boxid=#{boxid})
+<if test="state!=null and state!='' ">
+   and t.state=#{state}
+</if>
+</select>
+  
+  <select id="getBlack" resultType="Map">
+select r.id,r.photostr,r.holdername,r.idcode  from blackpeople r 
+where not EXISTS(select * from synboxrecord  
+where holderno=concat('B_',r.id) and state='B' and boxid=#{boxid})
+
+  </select>
+  
+  
+  <select id="getSynBlack" resultType="Map">
+       select t.id,t.holderno,t.holdername,t.bid,t.boxid,t.boxip,t.photostr,
+       t.synstatus from (select r.id,r.holderno,r.holdername,r.boxid,r.boxip,r.photostr,r.state, b.id bid,
+ case when b.updatedate >= r.updatedate then '更新'
+	   				when b.id is null then '删除'
+		 			else '已同步' end synstatus
+ from synboxrecord r left join   blackpeople b on concat('B_',b.id)=r.holderno
+where r.state='B' and r.boxid=#{boxid}  ) t
+ <where>
+      <if test="synstatus != null and synstatus!='' " >
+        and t.synstatus=#{synstatus}
+      </if>
+   </where>
+  </select>
+  
+  <select id="getSynBlackCount" resultType="Integer">
+       select count(1) from (select r.id,r.holderno,r.holdername,r.boxid,r.boxip,r.photostr, b.id bid,
+ case when b.updatedate >= r.updatedate then '更新'
+	   				when b.id is null then '删除'
+		 			else '已同步' end synstatus
+ from synboxrecord r left join   blackpeople b on concat('B_',b.id)=r.holderno
+where r.state='B' and r.boxid=#{boxid}  ) t
+ <where>
+      <if test="synstatus != null and synstatus!='' " >
+        and t.synstatus=#{synstatus}
+      </if>
+   </where>
+  </select>
+  
+  <select id="getSynHolder" resultType="Map">
+       select t.id,t.holderno,t.holdername,t.boxid,t.boxip,t.photostr,
+       t.synstatus from (select r.id,r.holderno,h.holdername,r.boxid,r.boxip,r.photostr,
+ case when h.updatedate >= r.updatedate then '更新'
+	   				when h.holderno is null then '删除'
+		 			else '已同步' end synstatus
+ from synboxrecord r left join  holderdata  h on h.holderno=r.holderno
+where r.boxid=#{boxid} and r.state=#{state} and r.state in ('0','1')) t
+ <where>
+      <if test="synstatus != null and synstatus!='' " >
+        and t.synstatus=#{synstatus}
+      </if>
+   </where>
+  </select>
+   <select id="getSynHolderCount" resultType="Integer">
+      select count(1) from (select r.id,r.holderno,r.holdername,r.boxid,r.boxip,r.photostr,
+ case when h.updatedate >= r.updatedate then '更新'
+	   				when h.holderno is null then '删除'
+		 			else '已同步' end synstatus
+ from synboxrecord r left join  holderdata h on h.holderno=r.holderno
+where r.boxid=#{boxid} and r.state=#{state} and r.state in ('0','1')) t
+ <where>
+      <if test="synstatus != null and synstatus!='' " >
+        and t.synstatus=#{synstatus}
+      </if>
+   </where>
+  </select>
+  
+  
+  <select id="getList" resultType="Map">
+      <include refid="c_start"></include>
+      select id,holderno,holdername,photostr,boxid,
+      boxip,boxname,state,message from synboxrecord
+   <where>
+      <if test="id != null and id!='' " >
+        and ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and HolderName=#{holdername}
+      </if>
+      <if test="boxid != null and boxid!='' " >
+        and BoxID=#{boxid}
+      </if>
+      <if test="boxip != null and boxip!='' " >
+        and BoxIP=#{boxip}
+      </if>
+      <if test="state != null and state!='' " >
+        and State=#{state}
+      </if>
+   </where>
+      <include refid="c_end"></include>
+  </select>
+  <select id="getListCount" resultType="Integer">
+      select count(1) from synboxrecord
+       <where>
+      <if test="id != null and id!='' " >
+        and ID=#{id}
+      </if>
+      <if test="holderno != null and holderno!=''" >
+        and HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+        and HolderName=#{holdername}
+      </if>
+      <if test="boxid != null and boxid!='' " >
+        and BoxID=#{boxid}
+      </if>
+      <if test="boxip != null and boxip!='' " >
+        and BoxIP=#{boxip}
+      </if>
+      <if test="state != null and state!='' " >
+        and State=#{state}
+      </if>
+   </where>
+  </select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from synboxrecord
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from synboxrecord
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.SynBoxRecord" >
+    insert into synboxrecord (ID, HolderNo, HolderName, PhotoStr,
+      BoxID, BoxIP, BoxName, 
+      State, Message, CreateDate, 
+      UpdateDate)
+    values (#{id,jdbcType=INTEGER}, #{holderno,jdbcType=VARCHAR}, 
+    #{holdername,jdbcType=VARCHAR}, #{photostr,jdbcType=VARCHAR}, 
+      #{boxid,jdbcType=VARCHAR}, #{boxip,jdbcType=VARCHAR}, #{boxname,jdbcType=VARCHAR}, 
+      #{state,jdbcType=VARCHAR}, #{message,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, 
+      #{updatedate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.SynBoxRecord" >
+    insert into synboxrecord
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+      <if test="holdername != null" >
+        HolderName,
+      </if>
+      <if test="photostr != null" >
+        PhotoStr,
+      </if>
+      <if test="boxid != null" >
+        BoxID,
+      </if>
+      <if test="boxip != null" >
+        BoxIP,
+      </if>
+      <if test="boxname != null" >
+        BoxName,
+      </if>
+      <if test="state != null" >
+        State,
+      </if>
+      <if test="message != null" >
+        Message,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        #{boxid,jdbcType=VARCHAR},
+      </if>
+      <if test="boxip != null" >
+        #{boxip,jdbcType=VARCHAR},
+      </if>
+      <if test="boxname != null" >
+        #{boxname,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="message != null" >
+        #{message,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.SynBoxRecord" >
+    update synboxrecord
+    <set >
+      <if test="holderno != null" >
+        HolderNo = #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        HolderName = #{holdername,jdbcType=VARCHAR},
+      </if>
+       <if test="photostr != null" >
+        PhotoStr = #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        BoxID = #{boxid,jdbcType=VARCHAR},
+      </if>
+      <if test="boxip != null" >
+        BoxIP = #{boxip,jdbcType=VARCHAR},
+      </if>
+      <if test="boxname != null" >
+        BoxName = #{boxname,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        State = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="message != null" >
+        Message = #{message,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.SynBoxRecord" >
+    update synboxrecord
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      BoxID = #{boxid,jdbcType=VARCHAR},
+      BoxIP = #{boxip,jdbcType=VARCHAR},
+      BoxName = #{boxname,jdbcType=VARCHAR},
+      State = #{state,jdbcType=VARCHAR},
+      Message = #{message,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,315 @@
+package com.xr.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSONArray;
+import com.xr.configure.MethodLog;
+import com.xr.entry.DeviceChannel;
+import com.xr.entry.DeviceUnit;
+import com.xr.service.IDeviceChannelService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+
+@Controller
+@RequestMapping("DeviceChannel")
+@Api(tags="DeviceChannel",description="接口标题：设备层接口")
+public class DeviceChannelController {
+	@Autowired
+	private IDeviceChannelService ics;
+	
+	/**
+	 * 新增
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：通道绑定设备接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="str",value="参数：json数组(存的是设备id值)：[1,2,3]",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="channelno",value="参数：通道id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="type",value="参数：通道类型aa表示保存，dd表示移除",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数:登录人id",dataType="String",paramType="path"),
+	})
+	@MethodLog(methodName="保存",remark="通道绑定设备")
+	@RequestMapping(value="/addBatch",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> addBatch(Integer channelno,String str,String type,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			JSONArray arr=JSONArray.parseArray(str);
+			List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
+			for(int i=0;i<arr.size();i++){
+				Map<String,Object> m1=new HashMap<String,Object>();
+				Integer deviceno=arr.getInteger(i);
+				m.put("deviceno", deviceno);
+				List<Map<String,Object>> exist=ics.getListService(m);
+				if(exist!=null && exist.size()==1){
+					m1=exist.get(0);
+					Integer channelno2=Integer.valueOf(String.valueOf(m1.get("channelno")));
+					if(type.equals("aa")){
+						if(!channelno.equals(channelno2)&& channelno!=channelno2){
+							m1.put("type", "uu");
+							m1.put("channelno", channelno);
+							result.add(m1);
+						}
+					}else if(type.equals("dd")){
+						m1.put("type", "dd");
+						result.add(m1);
+					}
+					
+				}else if(exist==null || exist.size()==0){
+					if(type.equals("aa")){
+						m1.put("type", "aa");
+						m1.put("deviceno", deviceno);
+						m1.put("channelno", channelno);
+						result.add(m1);
+					}
+				}else{
+					for(int j=0;j<exist.size();j++){
+					    m1=exist.get(j);
+						m1.put("type", "dd");
+						result.add(m1);
+					}
+				}
+			}
+			
+			//分批次操作
+			List<Map<String,Object>> pici=new ArrayList<Map<String,Object>>();
+			for(int i=0;i<result.size();i++){
+				pici.add(result.get(i));
+				if(pici.size()==100 || i==result.size()-1){
+					int t=ics.addService(pici);
+					pici.clear();
+				}
+			}
+			 
+			if(result!=null && result.size()>0){
+				map.put("flag", true);
+				map.put("reason", "操作成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "操作失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	
+	/**
+	 * 新增
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：设备选择通道接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="deviceno",value="参数：设备id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="channelno",value="参数：通道id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数:登录人id",dataType="String",paramType="path"),
+	})
+	@MethodLog(methodName="保存",remark="设备选择通道")
+	@RequestMapping(value="/add",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> insert(Integer deviceno,Integer channelno,String type,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("deviceno", deviceno);
+			List<Map<String,Object>> exist=ics.getListService(m);
+			List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
+			if(exist!=null && exist.size()==1){
+				 m=exist.get(0);
+				 Integer channelno2=Integer.valueOf(String.valueOf(m.get("channelno")));
+				 if(type.equals("aa")){
+					 if(!channelno.equals(channelno2) && channelno!=channelno2){
+						 m.put("type", "uu");
+						 m.put("channelno", channelno);
+						 result.add(m);
+					 }
+				 }else if(type.equals("dd")){
+					 m.put("type", "dd");
+					 result.add(m);
+				 }
+				 
+			}else if(exist!=null && exist.size()==0){
+			    if(type.equals("aa")){
+			    	m.put("deviceno", deviceno);
+					m.put("channelno", channelno);
+					m.put("type", "aa");
+					result.add(m);
+			    }
+			}else{
+				for(int i=0;i<exist.size();i++){
+					Map<String,Object> m1=exist.get(i);
+					m1.put("type", "dd");
+					result.add(m1);
+				}
+			}
+			int i=0;
+			if(result!=null && result.size()>0){
+				i=ics.addService(result);
+			}
+			if(i>=0){
+				map.put("flag", true);
+				map.put("reason", "操作成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "操作失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	 
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="curpage",value="参数：当前页数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="pagesize",value="参数：每页显示数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="deviceno",value="参数：设备id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="channelno",value="参数：通道id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="name",value="参数：设备名称，模糊查询时传参",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getList",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getList(DeviceChannel record,String name,Integer curpage,Integer pagesize){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			m.put("deviceno", record.getDeviceno());
+			m.put("channelno", record.getChannelno());
+			m.put("name", name);
+			List<Map<String,Object>> list=ics.getListService(m);
+			int count=ics.getListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="curpage",value="参数：当前页数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="pagesize",value="参数：每页显示数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="deviceno",value="参数：设备id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="type",value="参数：通道类型",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getChannelList",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getChannelList(Integer  deviceno,Integer channelno,String type,Integer curpage,Integer pagesize){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			m.put("deviceno", deviceno);
+			m.put("channelno", channelno);
+			m.put("type", type);
+			List<Map<String,Object>> list=ics.getChannelListService(m);
+			int count=ics.getChannelListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="curpage",value="参数：当前页数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="pagesize",value="参数：每页显示数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="deviceno",value="参数：设备id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="type",value="参数：通道类型",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getDevList",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getDevList(DeviceUnit record,Integer channelno,Integer curpage,Integer pagesize){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			m.put("devicetype", record.getDevicetype());
+			m.put("devicename", record.getDevicename());
+			m.put("devicevender", record.getDevicevender());
+			m.put("channelno", channelno);
+			m.put("deviceno", record.getDeviceno());
+			List<Map<String,Object>> list=ics.getDevListService(m);
+			int count=ics.getDevListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+}

@@ -1,0 +1,136 @@
+.cameraList{
+	height:100%;
+	margin-left:20px;
+	padding-left:20px;
+	box-sizing:border-box;
+	overflow:auto;
+	border-left:1px solid #ddd;
+}
+.cameraList li{
+	display:inline-block;
+	padding:10px 15px;
+	box-sizing:border-box;
+	border:1px solid #ddd;
+	border-radius:5px;
+	margin:10px;
+	cursor:pointer;
+}
+.cameraList li.curr{
+	border-color:#039BDD;
+	color:#039BDD;
+}
+.uploadBox{
+	padding-top:20px;
+	box-sizing:border-box;	
+}
+.imgFile{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 240px;
+    height: 240px;
+    opacity: 0;
+}
+/* 图上监控 */
+.monitorPoint{
+	height:100%;
+	border:1px solid #ddd;
+}
+.monitorPoint .box_left{
+	border-right:1px solid #ddd;
+	height:100%;
+}
+.monitorPoint .box_left h2{
+	padding: 10px 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 18px;
+    color: #333;
+    background: #F5F7FA;
+}
+.monitorPoint .box_left .monitorBox{
+	width: 100%;
+    height: calc(100% - 45px);
+    box-sizing: border-box;
+    padding-bottom: 20px;
+}
+.monitorPoint .box_right{
+	height:100%;
+}
+.imgBox{
+	position:absolute;
+	right:0;
+	top:0;
+	background:#fff;
+	width:50px;
+	height:50px;
+	text-align:center;
+	line-height:50px;
+}
+.imgBox .imgLink{
+	width:30px;
+	cursor:pointer;
+}
+
+/* 图上监控 */
+.cameraBox{
+	margin:20px;
+	height: 56px;
+    overflow-x: auto;
+    border:1px solid #ddd;
+    border-radius:3px;
+    line-height:77px;
+    overflow-y:hidden;
+    white-space:nowrap;
+}
+.cameraBox li{
+	display: inline-block;
+    height: 30px;
+    margin: 0 10px;
+    line-height:30px;
+}
+.camera{
+	cursor:pointer;
+	width:23px;
+}
+.thirstEle{
+	cursor:pointer;
+	width:23px;
+}
+.imgLink{
+	cursor:pointer;
+	width:23px;
+}
+.cameraBox li p{
+	padding-left:27px;
+	box-sizing:border-box;
+	overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+.imgArea{
+	height:calc(100% - 97px);
+	overflow:auto;
+	position:relative;
+}
+.hover{
+	background: #fff;
+    width: 80px;
+    padding: 8px;
+    border-radius: 5px;
+    text-align: center;
+    color: #333;
+    border: 1px solid #69C0FF;
+    z-index: 2000;
+    display:none;
+}
+.hover .cellDt{
+    height: 20px;
+    line-height: 20px;
+    margin: 2px 0;
+    cursor: pointer;
+}
+.hover .cellDt:hover{
+	background:#69C0FF;
+	color:#fff;
+}

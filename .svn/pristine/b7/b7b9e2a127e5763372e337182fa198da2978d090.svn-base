@@ -1,0 +1,219 @@
+package com.xr.https;
+
+import org.apache.commons.codec.binary.Base64;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.hikvision.artemis.sdk.ArtemisHttpUtil;
+import com.hikvision.artemis.sdk.config.ArtemisConfig;
+import com.xr.entry.AreaList;
+
+ 
+public class HKPlat {
+	 
+	public static void main(String[] args) {
+		//nodesByParams();
+		//properties();
+		//add();
+		root();
+		//update();
+	}
+	static{
+		ArtemisConfig.host="192.168.1.250";
+		ArtemisConfig.appKey="24949434";
+		ArtemisConfig.appSecret="85q63mc5ZX51IzU390Rj";
+	}
+	
+	final static String ARTEMIS_PATH="/artemis";
+	
+	/**
+	 * 批量添加区域
+	 * /api/resource/v1/region/batch/add
+	 */
+	public static String add(JSONArray arr){
+		//Map<String,Object> map=new HashMap<String,Object>();
+		String url="/api/resource/v1/region/batch/add";
+		Map<String,String> path=new HashMap<String,String>(2){
+			{put("https://",ARTEMIS_PATH+url);}
+		};
+		/*List<Map<String,Object>> list=ials.getListService(m);
+		JSONArray arr=new JSONArray();
+		for(int i=0;i<list.size();i++){
+			Map<String,Object> m1=list.get(i);
+			String areaid=String.valueOf(m1.get("areaid"));
+			String areaname=String.valueOf(m1.get("areaname"));
+			String parentid=String.valueOf(m1.get("parentid"));
+			String remark=String.valueOf(m1.get("remark"));
+			String s=areaid.substring(areaid.length()-3, areaid.length());
+			if(parentid==null || "".equals(parentid) || "null".equals(parentid)){
+				parentid=root();
+			}
+			Integer t=Integer.valueOf(s);
+			JSONObject o=new JSONObject();
+			o.put("clientId", t);
+			o.put("regionIndexCode", areaid);
+			o.put("parentIndexCode", parentid);
+			o.put("regionName", areaname);
+			o.put("regionCode", areaid);
+			o.put("regionType", 10);
+			o.put("description", remark);
+			arr.add(o);
+		}*/
+		String body=arr.toString();
+		String result=ArtemisHttpUtil.doPostStringArtemis(path, body, null,null, "application/json");//
+		System.out.println(result); 
+		return result;
+	}
+	
+	/**
+	 * 修改区域
+	 * /api/resource/v1/region/single/update
+	 * @return
+	 */
+	public static String update(JSONObject obj){
+		String url="/api/resource/v1/region/single/update";
+		Map<String,String> path=new HashMap<String,String>(2){
+			{put("https://",ARTEMIS_PATH+url);}
+		};
+		/*JSONObject obj=new JSONObject();
+		obj.put("regionIndexCode", "001");//必填
+		obj.put("regionName", "区域XR1");
+		obj.put("regionCode", "001");
+		obj.put("regionType", 10);
+		obj.put("description", "区域XR1备注");*/
+		String body=obj.toString();
+		String result=ArtemisHttpUtil.doPostStringArtemis(path, body, null,null, "application/json");//
+		System.out.println(result);
+		return result;
+	}
+	
+	
+	/**
+	 * 获取根区域信息  ：/api/resource/v1/regions/root
+	 * doPostStringArtemis(无header参数）
+	 * 封装无header参数的post请求，请求body为json字符串
+	 * 方法签名：public static String doPostStringArtemis(Map<String,String> path,string body,Map<String,String> querys,String accept,String contentType);
+	   path:Map类型，必填，
+	   body:String,不必填，JSON格式的请求参数，徐转化为字符串
+	   querys:Map,不必填，请求URL的查询参数，
+	   accept:String,不必填，指定客户端能够接收的数据类型，该参数传空时默认设置接收全部类型
+	   contentType:String,不必填，请求实体正文的媒体类型，
+	   该参数传空时设置为默认值application/text,该方法调用时传application/json;
+	 */
+	public static String root(){
+		//Map<String,Object> map=new HashMap<String,Object>();
+		String url="/api/resource/v1/regions/root";
+		Map<String,String> path=new HashMap<String,String>(2){
+			{put("https://",ARTEMIS_PATH+url);}
+		};
+		JSONObject obj=new JSONObject();
+		AreaList al=new AreaList();
+		obj.put("Object", al);
+		String body=obj.toJSONString();
+		String result=ArtemisHttpUtil.doPostStringArtemis(path, body, null,null, "application/json");
+		System.out.println(result);//sPTT0as56broDKJh3piSTNFZYKbIHQ4PCkqmNgfOZmU=
+		JSONObject o=JSONObject.parseObject(result);
+		JSONObject data=o.getJSONObject("data");
+		String rootcode="";
+		if(data!=null && !"".equals(data)){
+			rootcode=data.getString("indexCode");
+		}
+		return rootcode;
+	}
+	
+	/**获取资源接口属性
+	 * /api/resource/v1/resource/properties
+	 */
+	public static void properties(){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,String> m=new HashMap<String,String>();
+		String url="/api/resource/v1/resource/properties";
+		Map<String,String> path=new HashMap<String,String>(2){
+			{put("https://",ARTEMIS_PATH+url);}
+		};
+		JSONObject obj=new JSONObject();
+		AreaList al=new AreaList();
+		obj.put("Object", al);
+		obj.put("resourceType", "region");
+		String body=obj.toJSONString();
+		String result=ArtemisHttpUtil.doPostStringArtemis(path, body, null,null, "application/json");
+		System.out.println(result);//sPTT0as56broDKJh3piSTNFZYKbIHQ4PCkqmNgfOZmU=
+		
+	}
+	
+	/**
+	 * 查询区域列表  ：/api/irds/v1/region/nodesByParams
+	 * Object:必填，
+	 * resourceType:必填，资源类型，详见数据字典，资源类型/资源权限码；查询资源的类型，
+	 * 传region时查询的为用户有配置权限的区域树，传资源类型如：camera,encodeDevice查询用户对该类资源有权限的区域树；
+	 * 注：资源iasDevice\reader\floor不进行权限校验，即不传authCodes.
+	 * 
+	 */
+	public static void nodesByParams(){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,String> m=new HashMap<String,String>();
+		String url="/api/irds/v2/region/nodesByParams";//"/api/irds/v1/region/nodesByParams";
+		Map<String,String> path=new HashMap<String,String>(2){
+			{put("https://",ARTEMIS_PATH+url);}
+		};
+		JSONObject obj=new JSONObject();
+		AreaList al=new AreaList();
+		obj.put("Object", al);
+		/**
+		 * region 区域，org 组织，
+		 * acsDevice 门禁控制器，
+		 * door 门禁点，encodeDevice
+		 * camera:监控点 
+		 * ioIn:报警输入
+		 * ioOut:报警输出
+		 * iasDevice:入侵报警-报警主机
+		 * subSys:入侵报警-子系统通道
+		 * defence:入侵报警-防区通道
+		 * visDeviceInDoor:可视对讲机-室内机
+		 * 
+		 */
+		 
+		obj.put("resourceType", "camera");
+		obj.put("pageNo", 1);
+		obj.put("pageSize", 30);
+		String body=obj.toJSONString();
+		String result=ArtemisHttpUtil.doPostStringArtemis(path, body, null,null, "application/json");
+		System.out.println(result);//sPTT0as56broDKJh3piSTNFZYKbIHQ4PCkqmNgfOZmU=
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public static void getToken(){
+		String appKey="24949434";
+		String appSecret="85q63mc5ZX51IzU390Rj";
+	     Mac sha256_HMAC;
+		try {
+			sha256_HMAC = Mac.getInstance("HmacSHA256");
+			SecretKeySpec secret_key=new SecretKeySpec(appSecret.getBytes(),"HmacSHA256");
+		     sha256_HMAC.init(secret_key);
+		     String hash=Base64.encodeBase64String(sha256_HMAC.doFinal(appKey.getBytes()));
+		     System.out.println(hash);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	 
+  
+	
+}
+
+

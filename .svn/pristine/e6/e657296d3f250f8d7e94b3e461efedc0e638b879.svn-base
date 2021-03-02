@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.HolderDataMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.HolderData" >
+    <id column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+    <result column="HolderName" property="holdername" jdbcType="VARCHAR" />
+    <result column="UnitNo" property="unitno" jdbcType="VARCHAR" />
+    <result column="TitleNo" property="titleno" jdbcType="VARCHAR" />
+    <result column="Rank" property="rank" jdbcType="VARCHAR" />
+    <result column="SexName" property="sexname" jdbcType="VARCHAR" />
+    <result column="IDCode" property="idcode" jdbcType="VARCHAR" />
+    <result column="NationName" property="nationname" jdbcType="VARCHAR" />
+    <result column="Address" property="address" jdbcType="VARCHAR" />
+    <result column="Education" property="education" jdbcType="VARCHAR" />
+    <result column="StartDate" property="startdate" jdbcType="TIMESTAMP" />
+    <result column="EndDate" property="enddate" jdbcType="TIMESTAMP" />
+    <result column="State" property="state" jdbcType="VARCHAR" />
+    <result column="EmpType" property="emptype" jdbcType="VARCHAR" />
+    <result column="PhotoStr" property="photostr" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+    <result column="UpdatePerson" property="updateperson" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.xr.entry.HolderData" extends="BaseResultMap" >
+    <result column="Photo" property="photo" jdbcType="LONGVARBINARY" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    HolderNo, HolderName, UnitNo, TitleNo, Rank, SexName, IDCode, NationName, Address, 
+    Education, StartDate, EndDate, State,EmpType, PhotoStr, CreateDate, UpdateDate, UpdatePerson
+  </sql>
+  <sql id="Blob_Column_List" >
+    Photo
+  </sql>
+  
+   <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by createdate desc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+  
+  
+  <select id="getList" resultType="Map">
+  <include refid="c_start"></include>
+      select h.holderno,h.holdername,h.unitno,ul.unitname,h.titleno,h.rank,
+      h.emptype,h.photostr,h.sexname,h.idcode, 
+      date_format(h.startdate,'%Y-%m-%d') startdate,
+      date_format(h.enddate,'%Y-%m-%d')  enddate,
+       date_format(h.createdate,'%Y-%m-%d')  createdate
+       from holderdata h 
+      left join unitlist ul on ul.unitno=h.unitno
+      <where>
+      <if test="holderno != null and holderno!='' " >
+        and h.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+         and h.HolderName=#{holdername}
+      </if>
+      <if test="name != null and name!='' " >
+         and h.HolderName like concat('%',#{name},'%')
+      </if>
+      <if test="unitno != null and unitno!='' " >
+         and h.UnitNo=#{unitno}
+      </if>
+      <if test="unitname != null and unitname!='' " >
+         and ul.UnitName like concat('%',#{unitname},'%')
+      </if>
+      <if test="date1!= null and date1!='' " >
+         and date_format(h.startdate,'%Y-%m-%d')=#{date1}  
+      </if>
+      <if test="date2 != null and date2!=''" >
+         and date_format(h.enddate,'%Y-%m-%d %H:%i:%s') &lt;=#{date2}
+      </if>
+      <if test="date!= null and date!='' " >
+         and date_format(h.createdate,'%Y-%m-%d')=#{date} 
+      </if>
+      <if test="emptype != null and emptype!='' " >
+         and h.EmpType=#{emptype}
+      </if>
+      <if test="state != null and state!='' " >
+         and h.State=#{state}
+      </if>
+      </where>
+      <include refid="c_end"></include>
+  </select>
+  
+  <select id="getListCount" resultType="Integer">
+      select count(1)  from holderdata h 
+      left join unitlist ul on ul.unitno=h.unitno
+      <where>
+      <if test="holderno != null and holderno!='' " >
+        and h.HolderNo=#{holderno}
+      </if>
+      <if test="holdername != null and holdername!='' " >
+         and h.HolderName=#{holdername}
+      </if>
+      <if test="name != null and name!='' " >
+         and h.HolderName like concat('%',#{name},'%')
+      </if>
+      <if test="unitno != null and unitno!='' " >
+         and h.UnitNo=#{unitno}
+      </if>
+      <if test="date != null and date!='' " >
+         and date_format(h.startdate,'%Y-%m-%d')=#{date}
+      </if>
+      <if test="date2 != null and date2!=''" >
+         and date_format(h.enddate,'%Y-%m-%d %H:%i:%s') &lt;=#{date2}
+      </if>
+      <if test="emptype != null and emptype!='' " >
+         and h.EmpType=#{emptype}
+      </if>
+       <if test="state != null and state!='' " >
+         and h.State=#{state}
+      </if>
+      </where>
+  </select>
+  
+  <insert id="addExcel" parameterType="java.util.List">
+  <foreach collection="list" item="item" separator=";" index="index">
+  insert into holderdata (HolderNo, HolderName, UnitNo, 
+      TitleNo, Rank, SexName, 
+      IDCode, NationName, Address, 
+      Education, StartDate, EndDate,State, 
+      EmpType, PhotoStr, UpdatePerson, Photo
+      )
+    values (#{item.holderno}, #{item.holdername}, #{item.unitno}, 
+      #{item.titleno}, #{item.rank}, #{item.sexname}, 
+      #{item.idcode}, #{item.nationname}, #{item.address}, 
+      #{item.education}, #{item.startdate}, #{item.enddate}, 
+      #{item.state}, #{item.emptype}, #{item.photostr},
+      #{item.updateperson}, #{item.photo}
+      )
+  
+  </foreach>
+     
+  
+  </insert>
+  
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from holderdata
+    where HolderNo = #{holderno,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from holderdata
+    where HolderNo = #{holderno,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.HolderData" >
+    insert into holderdata (HolderNo, HolderName, UnitNo, 
+      TitleNo, Rank, SexName, 
+      IDCode, NationName, Address, 
+      Education, StartDate, EndDate,State, 
+      EmpType, PhotoStr, CreateDate, 
+      UpdateDate, UpdatePerson, Photo
+      )
+    values (#{holderno,jdbcType=VARCHAR}, #{holdername,jdbcType=VARCHAR}, #{unitno,jdbcType=VARCHAR}, 
+      #{titleno,jdbcType=VARCHAR}, #{rank,jdbcType=VARCHAR}, #{sexname,jdbcType=VARCHAR}, 
+      #{idcode,jdbcType=VARCHAR}, #{nationname,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, 
+      #{education,jdbcType=VARCHAR}, #{startdate,jdbcType=TIMESTAMP}, #{enddate,jdbcType=TIMESTAMP}, 
+      #{state,jdbcType=VARCHAR}, #{emptype,jdbcType=VARCHAR}, #{photostr,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, 
+      #{updatedate,jdbcType=TIMESTAMP}, #{updateperson,jdbcType=VARCHAR}, #{photo,jdbcType=LONGVARBINARY}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.HolderData" >
+    insert into holderdata
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+      <if test="holdername != null" >
+        HolderName,
+      </if>
+      <if test="unitno != null" >
+        UnitNo,
+      </if>
+      <if test="titleno != null" >
+        TitleNo,
+      </if>
+      <if test="rank != null" >
+        Rank,
+      </if>
+      <if test="sexname != null" >
+        SexName,
+      </if>
+      <if test="idcode != null" >
+        IDCode,
+      </if>
+      <if test="nationname != null" >
+        NationName,
+      </if>
+      <if test="address != null" >
+        Address,
+      </if>
+      <if test="education != null" >
+        Education,
+      </if>
+      <if test="startdate != null" >
+        StartDate,
+      </if>
+      <if test="enddate != null" >
+        EndDate,
+      </if>
+      <if test="state != null" >
+        State,
+      </if>
+      <if test="emptype != null" >
+        EmpType,
+      </if>
+      <if test="photostr != null" >
+        PhotoStr,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+      <if test="updateperson != null" >
+        UpdatePerson,
+      </if>
+      <if test="photo != null" >
+        Photo,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="unitno != null" >
+        #{unitno,jdbcType=VARCHAR},
+      </if>
+      <if test="titleno != null" >
+        #{titleno,jdbcType=VARCHAR},
+      </if>
+      <if test="rank != null" >
+        #{rank,jdbcType=VARCHAR},
+      </if>
+      <if test="sexname != null" >
+        #{sexname,jdbcType=VARCHAR},
+      </if>
+      <if test="idcode != null" >
+        #{idcode,jdbcType=VARCHAR},
+      </if>
+      <if test="nationname != null" >
+        #{nationname,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="education != null" >
+        #{education,jdbcType=VARCHAR},
+      </if>
+      <if test="startdate != null" >
+        #{startdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="enddate != null" >
+        #{enddate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+       <if test="emptype != null" >
+        #{emptype,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateperson != null" >
+        #{updateperson,jdbcType=VARCHAR},
+      </if>
+      <if test="photo != null" >
+        #{photo,jdbcType=LONGVARBINARY},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.HolderData" >
+    update holderdata
+    <set >
+      <if test="holdername != null" >
+        HolderName = #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="unitno != null" >
+        UnitNo = #{unitno,jdbcType=VARCHAR},
+      </if>
+      <if test="titleno != null" >
+        TitleNo = #{titleno,jdbcType=VARCHAR},
+      </if>
+      <if test="rank != null" >
+        Rank = #{rank,jdbcType=VARCHAR},
+      </if>
+      <if test="sexname != null" >
+        SexName = #{sexname,jdbcType=VARCHAR},
+      </if>
+      <if test="idcode != null" >
+        IDCode = #{idcode,jdbcType=VARCHAR},
+      </if>
+      <if test="nationname != null" >
+        NationName = #{nationname,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        Address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="education != null" >
+        Education = #{education,jdbcType=VARCHAR},
+      </if>
+      <if test="startdate != null" >
+        StartDate = #{startdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="enddate != null" >
+        EndDate = #{enddate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="state != null" >
+        State = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="emptype != null" >
+        EmpType = #{emptype,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        PhotoStr = #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateperson != null" >
+        UpdatePerson = #{updateperson,jdbcType=VARCHAR},
+      </if>
+      <if test="photo != null" >
+        Photo = #{photo,jdbcType=LONGVARBINARY},
+      </if>
+    </set>
+    where HolderNo = #{holderno,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.xr.entry.HolderData" >
+    update holderdata
+    set HolderName = #{holdername,jdbcType=VARCHAR},
+      UnitNo = #{unitno,jdbcType=VARCHAR},
+      TitleNo = #{titleno,jdbcType=VARCHAR},
+      Rank = #{rank,jdbcType=VARCHAR},
+      SexName = #{sexname,jdbcType=VARCHAR},
+      IDCode = #{idcode,jdbcType=VARCHAR},
+      NationName = #{nationname,jdbcType=VARCHAR},
+      Address = #{address,jdbcType=VARCHAR},
+      Education = #{education,jdbcType=VARCHAR},
+      StartDate = #{startdate,jdbcType=TIMESTAMP},
+      EndDate = #{enddate,jdbcType=TIMESTAMP},
+      State = #{state,jdbcType=VARCHAR},
+      EmpType = #{emptype,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      UpdatePerson = #{updateperson,jdbcType=VARCHAR},
+      Photo = #{photo,jdbcType=LONGVARBINARY}
+    where HolderNo = #{holderno,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.HolderData" >
+    update holderdata
+    set HolderName = #{holdername,jdbcType=VARCHAR},
+      UnitNo = #{unitno,jdbcType=VARCHAR},
+      TitleNo = #{titleno,jdbcType=VARCHAR},
+      Rank = #{rank,jdbcType=VARCHAR},
+      SexName = #{sexname,jdbcType=VARCHAR},
+      IDCode = #{idcode,jdbcType=VARCHAR},
+      NationName = #{nationname,jdbcType=VARCHAR},
+      Address = #{address,jdbcType=VARCHAR},
+      Education = #{education,jdbcType=VARCHAR},
+      StartDate = #{startdate,jdbcType=TIMESTAMP},
+      EndDate = #{enddate,jdbcType=TIMESTAMP},
+      State = #{state,jdbcType=VARCHAR},
+      EmpType = #{emptype,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      UpdatePerson = #{updateperson,jdbcType=VARCHAR}
+    where HolderNo = #{holderno,jdbcType=VARCHAR}
+  </update>
+</mapper>

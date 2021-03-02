@@ -1,0 +1,97 @@
+package com.xr.https;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.net.URL;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+
+import com.xr.configure.SysOptLog;
+
+/**
+ * 通过webService发送https请求，有两种版本，一种是携带证书验证（比较麻烦）,
+ * 另一种是直接忽略证书，本书提供的就是第二种（本人已测试过）
+ * @author Administrator
+ *
+ */
+@SuppressWarnings("all")
+public class TestAPI_https {
+	 
+
+	public static void main(String[] args) throws Exception {
+		new TestAPI_https().TestRiQingAPI_SaleOrder();
+
+	}
+	
+	
+	public static void TestRiQingAPI_SaleOrder() throws Exception{
+		String postData=getJson();
+		String url="https://***";
+		HttpsURLConnection con=null;
+		OutputStream out=null;
+		String rsp=null;
+		byte[] byteArray=postData.getBytes("utf-8");
+		try{
+			URL uri=new URL(url);
+			con=(HttpsURLConnection) uri.openConnection();
+			//忽略证书验证-begin
+			con.setHostnameVerifier(new TrustAnyHostnameVerifier());
+			//忽略证书验证-end
+			con.setRequestMethod("POST");
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setRequestProperty("Host", uri.getHost());
+			con.setRequestProperty("Content-Type", "application/json");
+			out=con.getOutputStream();
+			out.write(byteArray);
+			out.close();
+			if(con.getResponseCode()==200){
+				rsp=getStreamAsString(con.getInputStream(),"utf-8");
+			}else{
+				rsp=getStreamAsString(con.getErrorStream(),"utf-8");
+			}
+			System.out.println(rsp);
+		}catch(Exception e){
+			if(out!=null){
+				out.close();
+			}
+			e.printStackTrace();
+		}
+	}
+
+
+	private static String getStreamAsString(InputStream stream, String charset) throws IOException {
+		try{
+			Reader reader=new InputStreamReader(stream,charset);
+			StringBuilder response=new StringBuilder();
+			final char[] buff=new char[1024];
+			int read=0;
+			while((read=reader.read(buff))>0){
+				response.append(buff,0,read);
+			}
+			return response.toString();
+		}finally{
+			if(stream!=null){
+				stream.close();
+			}
+		}
+	}
+
+
+	private static String getJson() {
+		return "{"+"\"name\""+":"+"\"rob_blogs_zh123\""+"}";
+	}
+	
+
+}
+//定制Verifier
+class TrustAnyHostnameVerifier implements HostnameVerifier{
+	public boolean verify(String hostname,SSLSession session){
+		return true;
+	}
+}

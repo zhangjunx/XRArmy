@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.AccessRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.AccessRecord" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+    <result column="HolderName" property="holdername" jdbcType="VARCHAR" />
+    <result column="PhotoStr" property="photostr" jdbcType="VARCHAR" />
+    <result column="DeviceNo" property="deviceno" jdbcType="VARCHAR" />
+    <result column="DeviceName" property="devicename" jdbcType="VARCHAR" />
+    <result column="DeviceSN" property="devicesn" jdbcType="VARCHAR" />
+    <result column="DoorName" property="doorname" jdbcType="VARCHAR" />
+    <result column="BoxID" property="boxid" jdbcType="VARCHAR" />
+    <result column="BoxURL" property="boxurl" jdbcType="VARCHAR" />
+    <result column="BoxIP" property="boxip" jdbcType="VARCHAR" />
+    <result column="State" property="state" jdbcType="VARCHAR" />
+    <result column="Type" property="type" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+    <result column="Message" property="message" jdbcType="VARCHAR" />
+    <result column="DeviceType" property="devicetype" jdbcType="VARCHAR" />
+    <result column="DeviceVender" property="devicevender" jdbcType="VARCHAR" />
+    <result column="IP" property="ip" jdbcType="VARCHAR" />
+    <result column="Port" property="port" jdbcType="VARCHAR" />
+    <result column="UserPass" property="userpass" jdbcType="VARCHAR" />
+    <result column="ChannelNo" property="channelno" jdbcType="VARCHAR" />
+    <result column="ChannelName" property="channelname" jdbcType="VARCHAR" />
+    <result column="GroupID" property="groupid" jdbcType="VARCHAR" />
+    <result column="GroupName" property="groupname" jdbcType="VARCHAR" />
+  </resultMap>
+	<sql id="Base_Column_List">
+		ID, HolderNo, HolderName, PhotoStr, DeviceNo, DeviceName, DeviceSN,
+		DoorName, BoxID,
+		BoxURL, BoxIP, State, Type, CreateDate, UpdateDate, Message, DeviceType,
+		DeviceVender,
+		IP, Port, UserPass, ChannelNo, ChannelName, GroupID, GroupName
+	</sql>
+
+	<sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from (
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;= CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+
+	<select id="getNextid" resultType="Integer">
+		select IFNULL(max(id),0)+1 from accessrecord
+	</select>
+
+
+	<!-- 下发人脸权限时 根据权限组id查里面的人员信息 -->
+	<select id="getHolder" resultType="Map">
+		select agc.groupid,agc.name
+		groupname,agc.channelno,tt.holderno,tt.holdername,tt.photostr,t.channelname,t.deviceno,t.devicename,t.devicetype,t.devicevender,
+		t.port,t.ip,t.userpass,t.boxid,t.devicesn,t.doorname from (select
+		dc.channelno,dc.channelname,d.deviceno,d.devicename,d.devicetype,d.devicevender,d.port,d.ip,
+		d.userpass,d.boxid,d.devicesn,d.doorname from deviceunit d
+		inner join (select c.channelno,c.channelname,dc.deviceno from channeldata c
+		inner join
+		devicechannel dc on c.channelno=dc.channelno) dc on dc.deviceno=d.deviceno)t
+		inner join ( select gc.groupid,g.name,gc.channelno from accessgroup g
+		inner join accessgroupchannel gc on g.id=gc.groupid) agc on
+		t.channelno=agc.channelno
+		inner join (select h.holderno,h.holdername,h.photostr,agh.groupid from
+		holderdata h
+		inner join accessgroupholder agh on agh.holderno=h.holderno)tt on
+		tt.groupid=agc.groupid
+		<where>
+			<if test="groupid!=null and groupid!='' ">
+				tt.groupid=#{groupid}
+			</if>
+			<if test="holderno!=null and holderno!='' ">
+				tt.holderno=#{holderno}
+			</if>
+		</where>
+	</select>
+
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select id,holderno,holdername,deviceno,devicename,devicesn,doorname,
+		boxid,boxurl,boxip,state,type,message,ip,port,userpass,devicetype,devicevender,
+		channelno,channelname,groupid,groupname,photostr,
+		date_format(createdate,'%Y-%m-%d %H:%m:%s') createdate,
+		date_format(updatedate,'%Y-%m-%d %H:%m:%s') updatedate from
+		AccessRecord
+		<where>
+			<if test="id != null and id!='' ">
+				and ID=#{id}
+			</if>
+			<if test="maxid != null and maxid!='' ">
+				and ID>=#{maxid}
+			</if>
+			<if test="holderno != null and holderno!='' ">
+				and HolderNo=#{holderno}
+			</if>
+			<if test="holdername != null and holdername!='' ">
+				and HolderName like concat('%',#{holdername},'%')
+			</if>
+			<if test="state != null and state!='' ">
+				and State=#{state}
+			</if>
+			<if test="type != null and type!='' ">
+				and Type=#{type}
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+  
+  
+  <select id="getListCount" resultType="Integer">
+		select count(1)  from AccessRecord 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="holderno != null and holderno!='' " >
+	        and HolderNo=#{holderno}
+	      </if>
+	      <if test="holdername != null and holdername!='' " >
+	        and HolderName like concat('%',#{holdername},'%')
+	      </if>
+	      <if test="state != null and state!='' " >
+	        and State=#{state}
+	      </if>
+     </where>
+ </select>
+  
+  <insert id="add" parameterType="java.util.List">
+       <foreach collection="list" item="item" separator=";" index="index">
+           insert into accessrecord (HolderNo, HolderName, 
+      PhotoStr, DeviceNo, DeviceName, DeviceSN, DoorName,
+      BoxID,BoxURL,BoxIP,Type,Message,DeviceType,DeviceVender,IP,Port, 
+      UserPass, ChannelNo, ChannelName,GroupID, GroupName)
+      values (#{item.holderno}, #{item.holdername}, 
+      #{item.photostr}, #{item.deviceno}, #{item.devicename}, 
+      #{item.devicesn}, #{item.doorname}, #{item.boxid}, 
+      #{item.boxurl}, #{item.boxid}, #{item.type}, #{item.message}, 
+      #{item.devicetype}, #{item.devicevender}, #{item.ip}, #{item.port}, 
+      #{item.userpass}, #{item.channelno}, #{item.channelname}, 
+      #{item.groupid}, #{item.groupname})
+       </foreach>
+  </insert>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from accessrecord
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from accessrecord
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.AccessRecord" >
+    insert into accessrecord (ID, HolderNo, HolderName, 
+      PhotoStr, DeviceNo, DeviceName, 
+      DeviceSN, DoorName, BoxID, 
+      BoxURL, BoxIP, State, 
+      Type, CreateDate, UpdateDate, 
+      Message, DeviceType, DeviceVender, 
+      IP, Port, UserPass, 
+      ChannelNo, ChannelName, GroupID, 
+      GroupName)
+    values (#{id,jdbcType=INTEGER}, #{holderno,jdbcType=VARCHAR}, #{holdername,jdbcType=VARCHAR}, 
+      #{photostr,jdbcType=VARCHAR}, #{deviceno,jdbcType=VARCHAR}, #{devicename,jdbcType=VARCHAR}, 
+      #{devicesn,jdbcType=VARCHAR}, #{doorname,jdbcType=VARCHAR}, #{boxid,jdbcType=VARCHAR}, 
+      #{boxurl,jdbcType=VARCHAR}, #{boxip,jdbcType=VARCHAR}, #{state,jdbcType=VARCHAR}, 
+      #{type,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, #{updatedate,jdbcType=TIMESTAMP}, 
+      #{message,jdbcType=VARCHAR}, #{devicetype,jdbcType=VARCHAR}, #{devicevender,jdbcType=VARCHAR}, 
+      #{ip,jdbcType=VARCHAR}, #{port,jdbcType=VARCHAR}, #{userpass,jdbcType=VARCHAR}, 
+      #{channelno,jdbcType=VARCHAR}, #{channelname,jdbcType=VARCHAR}, #{groupid,jdbcType=VARCHAR}, 
+      #{groupname,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.AccessRecord" useGeneratedKeys="true" keyProperty="id">
+    insert into accessrecord
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+      <if test="holdername != null" >
+        HolderName,
+      </if>
+      <if test="photostr != null" >
+        PhotoStr,
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo,
+      </if>
+      <if test="devicename != null" >
+        DeviceName,
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN,
+      </if>
+      <if test="doorname != null" >
+        DoorName,
+      </if>
+      <if test="boxid != null" >
+        BoxID,
+      </if>
+      <if test="boxurl != null" >
+        BoxURL,
+      </if>
+      <if test="boxip != null" >
+        BoxIP,
+      </if>
+      <if test="state != null" >
+        State,
+      </if>
+      <if test="type != null" >
+        Type,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+      <if test="message != null" >
+        Message,
+      </if>
+      <if test="devicetype != null" >
+        DeviceType,
+      </if>
+      <if test="devicevender != null" >
+        DeviceVender,
+      </if>
+      <if test="ip != null" >
+        IP,
+      </if>
+      <if test="port != null" >
+        Port,
+      </if>
+      <if test="userpass != null" >
+        UserPass,
+      </if>
+      <if test="channelno != null" >
+        ChannelNo,
+      </if>
+      <if test="channelname != null" >
+        ChannelName,
+      </if>
+      <if test="groupid != null" >
+        GroupID,
+      </if>
+      <if test="groupname != null" >
+        GroupName,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceno != null" >
+        #{deviceno,jdbcType=VARCHAR},
+      </if>
+      <if test="devicename != null" >
+        #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="doorname != null" >
+        #{doorname,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        #{boxid,jdbcType=VARCHAR},
+      </if>
+      <if test="boxurl != null" >
+        #{boxurl,jdbcType=VARCHAR},
+      </if>
+      <if test="boxip != null" >
+        #{boxip,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="message != null" >
+        #{message,jdbcType=VARCHAR},
+      </if>
+      <if test="devicetype != null" >
+        #{devicetype,jdbcType=VARCHAR},
+      </if>
+      <if test="devicevender != null" >
+        #{devicevender,jdbcType=VARCHAR},
+      </if>
+      <if test="ip != null" >
+        #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="port != null" >
+        #{port,jdbcType=VARCHAR},
+      </if>
+      <if test="userpass != null" >
+        #{userpass,jdbcType=VARCHAR},
+      </if>
+      <if test="channelno != null" >
+        #{channelno,jdbcType=VARCHAR},
+      </if>
+      <if test="channelname != null" >
+        #{channelname,jdbcType=VARCHAR},
+      </if>
+      <if test="groupid != null" >
+        #{groupid,jdbcType=VARCHAR},
+      </if>
+      <if test="groupname != null" >
+        #{groupname,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.AccessRecord" >
+    update accessrecord
+    <set >
+      <if test="holderno != null" >
+        HolderNo = #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        HolderName = #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        PhotoStr = #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo = #{deviceno,jdbcType=VARCHAR},
+      </if>
+      <if test="devicename != null" >
+        DeviceName = #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="doorname != null" >
+        DoorName = #{doorname,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        BoxID = #{boxid,jdbcType=VARCHAR},
+      </if>
+      <if test="boxurl != null" >
+        BoxURL = #{boxurl,jdbcType=VARCHAR},
+      </if>
+      <if test="boxip != null" >
+        BoxIP = #{boxip,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        State = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        Type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="message != null" >
+        Message = #{message,jdbcType=VARCHAR},
+      </if>
+      <if test="devicetype != null" >
+        DeviceType = #{devicetype,jdbcType=VARCHAR},
+      </if>
+      <if test="devicevender != null" >
+        DeviceVender = #{devicevender,jdbcType=VARCHAR},
+      </if>
+      <if test="ip != null" >
+        IP = #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="port != null" >
+        Port = #{port,jdbcType=VARCHAR},
+      </if>
+      <if test="userpass != null" >
+        UserPass = #{userpass,jdbcType=VARCHAR},
+      </if>
+      <if test="channelno != null" >
+        ChannelNo = #{channelno,jdbcType=VARCHAR},
+      </if>
+      <if test="channelname != null" >
+        ChannelName = #{channelname,jdbcType=VARCHAR},
+      </if>
+      <if test="groupid != null" >
+        GroupID = #{groupid,jdbcType=VARCHAR},
+      </if>
+      <if test="groupname != null" >
+        GroupName = #{groupname,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.AccessRecord" >
+    update accessrecord
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      DeviceNo = #{deviceno,jdbcType=VARCHAR},
+      DeviceName = #{devicename,jdbcType=VARCHAR},
+      DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      DoorName = #{doorname,jdbcType=VARCHAR},
+      BoxID = #{boxid,jdbcType=VARCHAR},
+      BoxURL = #{boxurl,jdbcType=VARCHAR},
+      BoxIP = #{boxip,jdbcType=VARCHAR},
+      State = #{state,jdbcType=VARCHAR},
+      Type = #{type,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      Message = #{message,jdbcType=VARCHAR},
+      DeviceType = #{devicetype,jdbcType=VARCHAR},
+      DeviceVender = #{devicevender,jdbcType=VARCHAR},
+      IP = #{ip,jdbcType=VARCHAR},
+      Port = #{port,jdbcType=VARCHAR},
+      UserPass = #{userpass,jdbcType=VARCHAR},
+      ChannelNo = #{channelno,jdbcType=VARCHAR},
+      ChannelName = #{channelname,jdbcType=VARCHAR},
+      GroupID = #{groupid,jdbcType=VARCHAR},
+      GroupName = #{groupname,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

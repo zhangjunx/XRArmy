@@ -1,0 +1,103 @@
+package com.xr.service.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xr.mapper.IssueRecordMapper;
+import com.xr.entry.IssueRecord;
+import com.xr.service.IIssueRecordService;
+
+@Service
+public  class IssueRecordServiceImpl implements IIssueRecordService{
+	@Autowired
+	private IssueRecordMapper rm;
+
+	@Override
+	public int insertSelectiveService(IssueRecord record) {
+		// 新增
+		return rm.insertSelective(record);
+	}
+
+	@Override
+	public int updateByPrimaryKeySelectiveService(IssueRecord record) {
+		// 修改
+		return rm.updateByPrimaryKeySelective(record);
+	}
+
+	@Override
+	public IssueRecord selectByPrimaryKeyService(Integer id) {
+		//查询
+		return rm.selectByPrimaryKey(id);
+	}
+
+	@Override
+	public int deleteByPrimaryKeyService(Integer id) {
+		// 删除
+		return rm.deleteByPrimaryKey(id);
+	}
+
+	@Override
+	public List<Map<String, Object>> getListService(Map m) {
+		// 查询
+		return rm.getList(m);
+	}
+	@Override
+	public int getListCountService(Map m) {
+		return rm.getListCount(m);
+	}
+
+	@Override
+	public List<Map<String, Object>> getSynHolderService(Map m) {
+		return rm.getSynHolder(m);
+	}
+	@Override
+	public int getSynHolderCountService(Map m) {
+		return rm.getSynHolderCount(m);
+	}
+
+	@Override
+	public List<Map<String, Object>> getSynLeaveService(Map m) {
+		return rm.getSynLeave(m);
+	}
+	@Override
+	public int getSynLeaveCountService(Map m) {
+		return rm.getSynLeaveCount(m);
+	}
+
+	@Override
+	public List<Map<String, Object>> getSynVisitService(Map m) {
+		return rm.getSynVisit(m);
+	}
+
+	@Override
+	public int getSynVisitCountService(Map m) {
+		return rm.getSynVisitCount(m);
+	}
+
+	@Override
+	public List<Map<String, Object>> getHolderService(Map m) {
+		return rm.getHolder(m);
+	}
+
+	@Override
+	public List<Map<String, Object>> getLeaveService(Map m) {
+		return rm.getLeave(m);
+	}
+
+	@Override
+	public List<Map<String, Object>> getVisitService(Map m) {
+		return rm.getVisit(m);
+	}
+
+	@Override
+	public List<Map<String, Object>> getGroupDevService(Map m) {
+		// TODO Auto-generated method stub
+		return rm.getGroupDev(m);
+	}
+
+	
+
+}

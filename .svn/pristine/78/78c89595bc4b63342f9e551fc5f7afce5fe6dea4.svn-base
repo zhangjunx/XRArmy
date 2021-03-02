@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>查询统计</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../css/public.css">
+</head>
+<body>
+  <div class="layui-fluid">
+	  <div class="main-tab">
+		  <div class="label fl curr">
+			  <a href="javascript:;">请假申请</a>
+		  </div>
+		   <div class="label fl">
+			  <a href="javascript:;">出差申请</a>
+		  </div>
+		   <div class="label fl">
+			  <a href="javascript:;">休假申请</a>
+		  </div>
+		   <div class="label fl">
+			  <a href="javascript:;">加班申请</a>
+		  </div>
+		   <div class="label fl">
+			  <a href="javascript:;">其它申请</a>
+		  </div>
+		  <div class="btn-box fr">
+		  	  <div class="subbtn fl">
+					<a href="javascript:;" class="layui-bg-blue" id="add">新增</a>
+			  </div>
+			  <div class="subbtn fl">
+					<a href="javascript:;" class="layui-bg-blue" id="print">打印</a>
+			  </div>
+			   <div class="subbtn fl">
+					<a href="javascript:;" class="layui-bg-blue" id="export">导出</a>
+			  </div>
+		  </div>
+	  </div>
+	  <!--  请假申请 -->
+    <div class="layui-con">
+      <div class="layui-form  layuiadmin-card-header-auto">
+        <div class="layui-form-item">
+		  <div class="layui-inline">
+		    <label class="layui-form-label">申请时间</label>
+		    <div class="layui-input-block">
+		      <input type="text" name="date" placeholder="请输入" autocomplete="off" class="layui-input date">
+		    </div>
+		  </div>
+		  <div class="layui-inline">
+		    <label class="layui-form-label">姓名</label>
+		    <div class="layui-input-block">
+		      <input type="text" name="holdername" placeholder="请输入" autocomplete="off" class="layui-input">
+		    </div>
+		  </div>
+          <div class="layui-inline">
+            <button class="layui-btn layuiadmin-btn-useradmin layui-bg-blue" lay-submit lay-filter="carStatistics">
+              <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+            </button>
+          </div>
+          
+        </div>
+      </div>
+      <!-- 请假申请 -->
+      <div class="layui-card-body">
+        <table id="LAY-leave-manage" lay-filter="LAY-leave-manage"></table>
+      </div>
+      <!-- 出差申请 -->
+      <div class="layui-card-body" style="display:none">
+        <table id="LAY-business-manage" lay-filter="LAY-business-manage"></table>
+      </div>
+      <!-- 休假申请 -->
+       <div class="layui-card-body" style="display:none">
+        <table id="LAY-holiday-manage" lay-filter="LAY-holiday-manage"></table>
+      </div>
+      <!-- 加班申请 -->
+       <div class="layui-card-body" style="display:none">
+        <table id="LAY-overtime-manage" lay-filter="LAY-overtime-manage"></table>
+      </div>
+      <!-- 其它申请 -->
+       <div class="layui-card-body" style="display:none">
+        <table id="LAY-other-manage" lay-filter="LAY-other-manage"></table>
+      </div>
+    </div>
+  </div>
+   <script src="../js/path.js"></script>
+   <script src="../js/jquery.min.js"></script>  
+   <script src="../js/jquery-cookie.js"></script>
+   <script src="../layui/layui.js"></script>
+   <script src="../js/print.js"></script>
+   <script src="js/myRecord.js"></script>
+</body>
+</html>

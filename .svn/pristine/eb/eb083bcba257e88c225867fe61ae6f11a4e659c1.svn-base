@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.PlatBoxMapper" >
+
+
+<!-- 下发人脸权限时 根据权限组id查里面的人员信息 -->
+<select id="getHolder" resultType="Map">
+     select agc.groupid,agc.name groupname,agc.channelno,tt.holderno,tt.holdername,tt.photostr,t.channelname,t.deviceno,t.devicename,t.devicetype,t.devicevender,
+t.port,t.ip,t.userpass,t.boxid,t.devicesn,t.doorname from (select dc.channelno,dc.channelname,d.deviceno,d.devicename,d.devicetype,d.devicevender,d.port,d.ip,
+d.userpass,d.boxid,d.devicesn,d.doorname from deviceunit d 
+inner join (select c.channelno,c.channelname,dc.deviceno from channeldata c inner join 
+devicechannel dc on c.channelno=dc.channelno) dc on dc.deviceno=d.deviceno)t 
+inner join ( select gc.groupid,g.name,gc.channelno from accessgroup g 
+inner join accessgroupchannel gc on g.id=gc.groupid) agc on t.channelno=agc.channelno
+inner join (select h.holderno,h.holdername,h.photostr,agh.groupid from holderdata h 
+inner join accessgroupholder agh on agh.holderno=h.holderno)tt on tt.groupid=agc.groupid
+<where>
+     <if test="groupid!=null and groupid!='' ">
+          tt.groupid=#{groupid}
+     </if>
+</where>
+</select>
+
+
+<insert id="add" parameterType="Map">
+     insert into iodata (HolderNo, HolderName, 
+      IODate, IOStatus, UnitNo, 
+      UnitName, DeviceNo, DeviceName, 
+      DeviceSN, DoorName, ChannelNo, 
+      ChannelName, LocatName, OpenType, 
+      OpenTypeName, PhotoStr, Photo)
+    values (#{holderno}, #{holdername}, 
+      NOW(), #{iostatus}, #{unitno}, 
+      #{unitname}, #{deviceno}, #{devicename}, 
+      #{devicesn}, #{doorname}, #{channelno}, 
+      #{channelname}, #{locatname}, #{opentype}, 
+      #{opentypename}, #{photostr}, #{photo});
+   <if test="status!=null and status!=''">
+     insert into alarmpeople (HolderNo, HolderName, 
+      ChannelNo, ChannelName, IOStatus, 
+      Source, SourceName, IODate, 
+      DeviceNo, DeviceName, DeviceSN, 
+      DoorName, LocatName, State, PhotoStr, Photo)
+      values (#{holderno}, #{holdername}, 
+      #{channelno}, #{channelname}, #{iostatus}, 
+      #{source}, #{sourcename}, NOW(), 
+      #{deviceno}, #{devicename}, #{devicesn}, 
+      #{doorname}, #{locatname}, #{state}, 
+      #{photostr}, #{photo});
+</if>
+</insert>
+
+
+  <select id="getDev" resultType="Map">
+      select d.deviceno,d.devicename,d.iostatus,d.doorname,d.devicesn,d.ip,d.port,
+      t.channelname,t.channelno from deviceunit d 
+	left join (select dc.channelno,c.channelname,dc.deviceno from channeldata c 
+	inner join devicechannel dc 
+	on dc.channelno=c.channelno) t on d.deviceno=t.deviceno
+      <where>
+           <if test="devicesn!=null and devicesn!='' ">
+               and d.devicesn=#{devicesn}
+           </if>
+           <if test="deviceno!=null and deviceno!='' ">
+               and d.deviceno=#{deviceno}
+           </if>
+      </where>
+   </select>
+
+   
+</mapper>

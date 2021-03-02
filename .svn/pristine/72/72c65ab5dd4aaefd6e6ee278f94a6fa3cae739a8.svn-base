@@ -1,0 +1,220 @@
+initPass();
+if(getUrlParam("id")!=undefined&&getUrlParam("id")!=null&&getUrlParam("id")!=""){//编辑
+	getOneInfo();
+}
+layui.use(["form","table","laydate"],function(){
+	 var $ = layui.$,
+	  form = layui.form,
+	  table = layui.table,
+	  laydate = layui.laydate;
+	  
+	 lay('.time').each(function() {
+			laydate.render({
+				elem : this,//元素
+				type:"time",
+				trigger : 'click',//怎么触发
+			});
+	 });
+	//监听提交按钮    
+	 form.on('submit(component-form-demo1)', function(data){
+		 for(var i=0;i<$(".time").length;i++){
+			if( i%2 != 0){//结束时间
+				var time2=$(".time").eq(i).val();//结束时间
+				var time1=$(".time").eq(i-1).val();//开始时间
+				var shiduan=$(".time").eq(i).parent().prev().html();//时段
+				var week=$(".time").eq(i).parent().parent().siblings().eq(0).find(".weekday").html();//星期
+				if( time2 < time1){
+					layer.msg(week+shiduan+"结束时间不能小于开始时间!",{time:2000});
+					return;
+				}
+			}
+		 }
+		 var name=$("#name").val();
+		 if(name == ""){
+			 layer.msg("请输入权限组名称!",{time:2000});
+			 return;
+		 }
+		 if($("#passList li.curr").length == 0){
+			 layer.msg("请选择通道!",{time:2000});
+			 //return;
+		 }
+		 var remark=$("#remark").val();
+		 var arr=[];
+		 for(var i=0;i<$(".weekday").length;i++){
+			 var index=i+1;
+			 var weekday=$(".weekday").eq(i).html();
+			 var list=[];
+			 var timestr="";
+			 for(var k=0;k<$(".time"+index+"").length;k++){
+				 var time=$(".time"+index+"").eq(k).val();
+				 if(k%2 == 0){
+					 timestr+=time+"-";
+				 }else{
+					 if(k == $(".time"+index+"").length - 1){
+						 timestr+=time;
+					 }else{
+						 timestr+=time+",";
+					 }
+				 }
+			 }
+			 timestr=timestr.split(",");
+			 list.push(timestr);
+			 arr.push({
+				 "weekday":weekday,
+				 "timearr":list
+			 })
+		 }
+		 var arrList=[];
+		 for(var i=0;i<$("#passList li.curr").length;i++){
+			 var id=$("#passList li.curr").eq(i).attr("data-id");
+			 arrList.push({
+				 "pass_id":id,
+				 "timeArr":arr
+			 })
+		 }
+		 var toggle="/AccessGroup/insert";
+		 var obj={"name":name,"remark":remark,"str":JSON.stringify(arrList)};
+		 if(getUrlParam("id")!=undefined&&getUrlParam("id")!=null&&getUrlParam("id")!=""){//编辑
+			obj.id=getUrlParam("id");
+			obj={"id":getUrlParam("id"),"name":name,"remark":remark,"str":JSON.stringify(arrList)};
+			toggle="/AccessGroup/update";
+		 }
+		 console.log(obj)
+	     $.ajax({
+		    url:url+toggle,
+		    type:"POST",
+	    	dataType:"json",
+	    	data:obj,
+	    	 success:function(res){
+	    		 console.log(res);
+	    		 if(res.flag){
+	    			 layer.msg(res.reason,{time:1000},function(){
+	    				 parent.layer.closeAll();
+	    				 window.parent.location.reload();
+	    			 })
+	    		 }else{
+	    			 layer.msg(res.reason,{time:2000});
+	    		 }
+	    	 }
+	     })
+    });
+	 //点击取消
+	 $("#resetData").click(function(){
+		parent.layer.closeAll();
+	 })
+})
+
+//点击复制时间段
+$("#copyTime").click(function(){
+	
+})
+
+//点击通道全选
+$(".pass-box h2 span").click(function(){
+	if($(this).hasClass("curr")){
+		$(this).removeClass("curr");
+		$(".pass-list li").removeClass("curr");
+	}else{
+		$(this).addClass("curr");
+		$(".pass-list li").addClass("curr");
+	}
+})
+//点击通道列表
+$(document).on("click",".pass-list li",function(){
+	if($(this).hasClass("curr")){
+		$(this).removeClass("curr");
+	}else{
+		$(this).addClass("curr");
+	}
+	if($(".pass-list li").length == $(".pass-list li.curr").length){
+		$(".pass-box h2 span").addClass("curr");
+	}else{
+		$(".pass-box h2 span").removeClass("curr");
+	}
+})
+//点击时间段外是否允许外出复选框
+$(".timeGroup h2 span").click(function(){
+	if($(this).hasClass("curr")){
+		$(this).removeClass("curr");
+	}else{
+		$(this).addClass("curr");
+	}
+})
+
+//编辑时获取一条信息
+function getOneInfo(){
+	$.ajax({
+		url:url+"/AccessGroup/getList",
+		type:"POST",
+		data:{"id":getUrlParam("id")},
+		success:function(data){
+			console.log(data);
+			if(!data.flag){
+				return;
+			}
+			var res=data.result[0];
+			$("#name").val(res.name);
+			$("#remark").val(res.remark);
+			var arr=res.data==undefined?"":res.data;
+			if(arr.length>0){
+				var list2=JSON.parse(arr);
+				if(res.data.opendoor_modtime != null){////做过编辑
+					list2=JSON.parse(list2);
+				}
+				console.log(list2);
+				for(var j=0;j<list2.length;j++){
+					$("#passList li[data-id="+list2[j].pass_id+"]").addClass("curr");
+					if(j==0){
+						var timeArr=list2[j].timeArr;
+						for(var i=0;i<timeArr.length;i++){
+							var index=i+1;
+							var list=[];
+							var arr=timeArr[i].timearr[0];
+							for(var k=0;k<arr.length;k++){
+								var arrstr=arr[k].split("-");
+								list.push(arrstr[0]);
+								list.push(arrstr[1]);
+							}
+							for(var m=0;m<list.length;m++){
+								$(".time"+index+"").eq(m).val(list[m]);
+							}
+						}
+					}
+				}
+			}
+			layui.use('form', function(){
+				 var form = layui.form; 
+				 form.render();
+			})
+		}
+	})
+}
+
+//获取所有通道
+function initPass(){
+	$.ajax({
+		url:url+"/ChannelData/getTree",
+		type:"POST",
+		success:function(data){
+			console.log(data)
+			$("#passList").empty();
+			if(data.flag){
+				for(var item of data.result){
+					var $li=$("<li data-id="+item.id+"><span class='checkbox'></span>"+item.title+"</li>");
+					$("#passList").append($li);
+				}
+				layui.use('form', function(){
+					 var form = layui.form; 
+					 form.render();
+				})
+			}
+		}
+	})
+}
+
+//url地址中解析参数
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return decodeURIComponent(r[2]); return null;
+}

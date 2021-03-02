@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.NoticeUserMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.NoticeUser" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="NoticeID" property="noticeid" jdbcType="INTEGER" />
+    <result column="UserID" property="userid" jdbcType="VARCHAR" />
+    <result column="State" property="state" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, NoticeID, UserID, State, CreateDate, UpdateDate
+  </sql>
+  
+   <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+  
+  <select id="getList" resultType="Map">
+  <include refid="c_start"></include>
+      select u.id,u.noticeid,u.userid, u.state,
+      i.title,i.content,i.informer, 
+      date_format(u.createdate,'%Y-%m-%d') createdate,  
+       date_format(u.updatedate,'%Y-%m-%d') updatedate    
+      from NoticeUser u 
+      left join noticeinform i on i.id=u.noticeid
+      <where>
+      <if test="id != null and id!='' " >
+        and u.id=#{id}
+      </if>
+      <if test="state != null and state!='' " >
+        and u.state=#{state}
+      </if>
+      <if test="userid != null and userid!='' " >
+         and u.userid=#{userid}
+      </if>
+      <if test="noticeid != null and noticeid!='' " >
+         and u.noticeid=#{noticeid}
+      </if>
+      <if test="title != null and title!='' " >
+         and i.title like concat('%',#{title},'%')
+      </if>
+      <if test="date1 != null and date1!='' " >
+         and date_format(u.createdate,'%Y-%m-%d')=#{date1}
+      </if>
+      
+      </where>
+      <include refid="c_end"></include>
+  </select>
+  
+  <select id="getListCount" resultType="Integer">
+      select count(1)  from NoticeUser u 
+      left join noticeinform i on i.id=u.noticeid
+        <where>
+      <if test="id != null and id!='' " >
+        and u.id=#{id}
+      </if>
+      <if test="state != null and state!='' " >
+        and u.state=#{state}
+      </if>
+      <if test="userid != null and userid!='' " >
+         and u.userid=#{userid}
+      </if>
+      <if test="noticeid != null and noticeid!='' " >
+         and u.noticeid=#{noticeid}
+      </if>
+      <if test="title != null and title!='' " >
+         and i.title like concat('%',#{title},'%')
+      </if>
+      <if test="date1 != null and date1!='' " >
+         and date_format(u.createdate,'%Y-%m-%d')=#{date1}
+      </if>
+      </where>
+  </select>
+  
+  
+  
+  
+  
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from noticeuser
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from noticeuser
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.NoticeUser" >
+    insert into noticeuser (ID, NoticeID, UserID, 
+      State, CreateDate, UpdateDate
+      )
+    values (#{id,jdbcType=INTEGER}, #{noticeid,jdbcType=INTEGER}, #{userid,jdbcType=VARCHAR}, 
+      #{state,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, #{updatedate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.NoticeUser" >
+    insert into noticeuser
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="noticeid != null" >
+        NoticeID,
+      </if>
+      <if test="userid != null" >
+        UserID,
+      </if>
+      <if test="state != null" >
+        State,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="noticeid != null" >
+        #{noticeid,jdbcType=INTEGER},
+      </if>
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.NoticeUser" >
+    update noticeuser
+    <set >
+      <if test="noticeid != null" >
+        NoticeID = #{noticeid,jdbcType=INTEGER},
+      </if>
+      <if test="userid != null" >
+        UserID = #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        State = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.NoticeUser" >
+    update noticeuser
+    set NoticeID = #{noticeid,jdbcType=INTEGER},
+      UserID = #{userid,jdbcType=VARCHAR},
+      State = #{state,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

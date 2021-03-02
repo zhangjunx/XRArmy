@@ -1,0 +1,127 @@
+getChannelList({"deviceno":getUrlParam("id")});
+function initTable(arr){
+	layui.use(["form","table"],function(){
+		 var $ = layui.$,
+		  form = layui.form,
+		  table = layui.table;
+		
+		  //监听搜索
+		  form.on('submit(LAY-user-front-search)', function(data){
+		    var field = data.field;
+		    field.deviceno=getUrlParam("id");
+		    getChannelList(field);
+		  });
+		  table.render({
+			    elem: '#LAY-user-manage',
+			    cellMinWidth: 80,
+			    cols:  [[
+			    	  {type:'radio'},
+			    	  {field:'ID', title:'序号', width:150,sort:true,templet:function(d){
+						  return d.LAY_TABLE_INDEX+1
+					  }},
+				      {field:'channelname', title:'通道名称', width:500,sort:true},
+				      {field:'locatname', title:'通道位置', width:500,sort:true},
+				      {field:'type', title:'通道类别',sort:true,templet:function(d){
+				    	  if(d.type=="P"){
+				    		  return "人员";
+				    	  }else if(d.type=="C"){
+				    		  return "车辆";
+				    	  }else{
+				    		  return d.type;
+				    	  }
+				      }},
+				    ]],
+				    data:arr,
+				    page: true
+			  });
+	})
+}
+
+//点击移除
+$("#resetData").click(function(){
+	//parent.layer.closeAll();
+	var checkArr= layui.table.checkStatus('LAY-user-manage');
+	var arr=checkArr.data;
+	if(arr.length == 0){
+		layer.msg("请选择通道!",{time:2000});
+		return;
+	}
+	var channelno=arr[0].channelno;
+	var obj={"deviceno":getUrlParam("id"),"type":"dd","channelno":channelno,"loginid":window.top.loginid};
+	$.ajax({
+		url:url+"/DeviceChannel/add",
+		type:"POST",
+		data:obj,
+		success:function(data){
+			console.log(data)
+			if(data.flag){
+				layer.msg(data.reason,{time:1000},function(){
+					parent.location.reload();
+					parent.layer.closeAll();
+				})
+			}else{
+				layer.msg(data.reason,{time:2000});
+			}
+		}
+	})
+})
+//点击保存
+$("#sure").click(function(){
+	saveInfo();
+})
+function saveInfo(){
+	var checkArr= layui.table.checkStatus('LAY-user-manage');
+	var arr=checkArr.data;
+	if(arr.length == 0){
+		layer.msg("请选择通道!",{time:2000});
+		return;
+	}
+	var channelno=arr[0].channelno;
+	var obj={"deviceno":getUrlParam("id"),"type":"aa","channelno":channelno,"loginid":window.top.loginid};
+	$.ajax({
+		url:url+"/DeviceChannel/add",
+		type:"POST",
+		data:obj,
+		success:function(data){
+			console.log(data)
+			if(data.flag){
+				layer.msg(data.reason,{time:1000},function(){
+					parent.location.reload();
+					parent.layer.closeAll();
+					
+				})
+			}else{
+				layer.msg(data.reason,{time:2000});
+			}
+		}
+	})
+}
+
+//获取通道列表
+function getChannelList(obj){
+	$.ajax({
+		url:url+"/DeviceChannel/getChannelList",
+		type:"POST",
+		data:obj,
+		success:function(data){
+			console.log("通道===");
+			console.log(data);
+			var arr=[];
+			if(data.flag){
+				for(var item of data.result){
+					if( item.id !=undefined && item.id !=null  && item.id != "" && item.id==item.channelno){
+						item.LAY_CHECKED=true;
+					}
+					arr.push(item);
+				}
+			}
+			initTable(arr);
+		}
+	})
+}
+//url地址中解析参数
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return decodeURIComponent(r[2]); return null;
+}

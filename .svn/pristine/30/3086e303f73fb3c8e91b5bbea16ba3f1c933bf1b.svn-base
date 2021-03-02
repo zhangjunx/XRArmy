@@ -1,0 +1,19 @@
+package com.xr.mapper;
+
+import org.springframework.stereotype.Repository;
+
+import com.xr.entry.AccessRecord;
+@Repository
+public interface AccessRecordMapper {
+    int deleteByPrimaryKey(Integer id);
+
+    int insert(AccessRecord record);
+
+    int insertSelective(AccessRecord record);
+
+    AccessRecord selectByPrimaryKey(Integer id);
+
+    int updateByPrimaryKeySelective(AccessRecord record);
+
+    int updateByPrimaryKey(AccessRecord record);
+}

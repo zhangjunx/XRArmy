@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.MonitorDotDeviceMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.MonitorDotDevice" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="DotID" property="dotid" jdbcType="INTEGER" />
+    <result column="DeviceNo" property="deviceno" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, DotID, DeviceNo
+  </sql>
+  
+    <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+
+	<insert id="add" parameterType="java.util.List">
+	     <foreach collection="list" item="item" index="index" separator=";">
+	         <if test="item.type!=null and item.type!='' and item.type=='aa'">
+	            insert into monitordotdevice (DotID, DeviceNo)
+                values (#{item.dotid}, #{item.deviceno})
+	         </if>
+	         <if test="item.type!=null and item.type!='' and item.type=='uu'">
+	            update monitordotdevice
+			    set DotID = #{item.dotid},
+			    DeviceNo = #{item.deviceno}
+			    where ID = #{item.id}
+	         </if>
+	         <if test="item.type!=null and item.type!='' and item.type=='dd'">
+	            delete from monitordotdevice
+                where ID = #{item.id}
+	         </if>
+	         <if test="item.type!=null and item.type!='' and item.type=='ddd'">
+	            delete from monitordotdevice
+                where dotid = #{item.dotid}
+	         </if>
+	     </foreach>
+	
+	</insert>
+    
+    
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select id,dotid,deviceno from MonitorDotDevice
+		<where>
+			 <if test="id != null and id!='' ">
+				and id=#{id}
+			</if>
+			<if test="dotid != null and dotid!='' ">
+				and dotid=#{dotid}
+			</if>
+			<if test="deviceno != null and deviceno!='' ">
+				and deviceno=#{deviceno}
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="Integer">
+		select count(1) from MonitorDotDevice
+		<where>
+			 <if test="id != null and id!='' ">
+				and id=#{id}
+			</if>
+			<if test="dotid != null and dotid!='' ">
+				and dotid=#{dotid}
+			</if>
+			<if test="deviceno != null and deviceno!='' ">
+				and deviceno=#{deviceno}
+			</if>
+		</where>
+	</select>
+	
+	
+	<select id="getDevList" resultType="Map">
+	<include refid="c_start"></include>
+	   select d.deviceno,d.devicename,d.devicetype,d.devicevender,
+		d.devicemodel,d.devicesn,d.ip,d.port,
+		d.doorname,IFNULL(t.deviceno,0) id from DeviceUnit d 
+		left join (select id,dotid,deviceno 
+		from  monitordotdevice where dotid=#{dotid}) t  on d.deviceno=t.deviceno
+	   <where>
+			<if test="devicename != null and devicename!='' ">
+				and d.devicename like concat('%',#{devicename},'%') 
+			</if>
+			<if test="devicetype != null and devicetype!='' ">
+				and d.devicetype=#{devicetype}
+			</if>
+			<if test="devicevender != null and devicevender!='' ">
+				and d.devicevender=#{devicevender}
+			</if>
+			
+		</where>  
+		<include refid="c_end"></include>
+	</select>
+	
+	<select id="getDevListCount" resultType="Integer">
+	   select count(1) from DeviceUnit d 
+		left join (select id,dotid,deviceno 
+		from  monitordotdevice where dotid=#{dotid}) t  on d.deviceno=t.deviceno
+	   <where>
+			<if test="devicename != null and devicename!='' ">
+				and d.devicename like concat('%',#{devicename},'%') 
+			</if>
+			<if test="devicetype != null and devicetype!='' ">
+				and d.devicetype=#{devicetype}
+			</if>
+			<if test="devicevender != null and devicevender!='' ">
+				and d.devicevender=#{devicevender}
+			</if>
+		</where>  
+	</select>
+	 
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from monitordotdevice
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from monitordotdevice
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.MonitorDotDevice" >
+    insert into monitordotdevice (ID, DotID, DeviceNo
+      )
+    values (#{id,jdbcType=INTEGER}, #{dotid,jdbcType=INTEGER}, #{deviceno,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.MonitorDotDevice" >
+    insert into monitordotdevice
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="dotid != null" >
+        DotID,
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="dotid != null" >
+        #{dotid,jdbcType=INTEGER},
+      </if>
+      <if test="deviceno != null" >
+        #{deviceno,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.MonitorDotDevice" >
+    update monitordotdevice
+    <set >
+      <if test="dotid != null" >
+        DotID = #{dotid,jdbcType=INTEGER},
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo = #{deviceno,jdbcType=INTEGER},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.MonitorDotDevice" >
+    update monitordotdevice
+    set DotID = #{dotid,jdbcType=INTEGER},
+      DeviceNo = #{deviceno,jdbcType=INTEGER}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

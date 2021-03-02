@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>会议室添加</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../css/public.css">
+   <link rel="stylesheet" href="css/meeting.css">
+</head>
+<body>
+	<input type="hidden" id="fid">
+	<div class="layui-fluid">
+		<div id="shadow" style="width:100%;height:100%;position:absolute;left:0;top:0;z-index:9999;display:none"></div>
+		<div class="layui-con">
+			<div class="layui-form layuiadmin-card-header-auto">
+				<div class="layui-row">
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">会议主题</label>
+							<div class="layui-input-block">
+								<input type="text" name="mettingTitle" id="mettingTitle" 
+									autocomplete="off" class="layui-input" placeholder="">
+							</div>
+						</div>
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">会议类型</label>
+							<div class="layui-input-block">
+								<input type="text" name="mettingType" id="mettingType" 
+									autocomplete="off" class="layui-input" placeholder="">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">会议室</label>
+							<div class="layui-input-block">
+								<select name="roomID" id="roomID" lay-search>
+									<option value="">请选择</option>								
+								</select>
+							</div>
+						</div>
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">主持人</label>
+							<div class="layui-input-block">
+								<input type="text" name="hostor" id="hostor" 
+									autocomplete="off" class="layui-input" placeholder="">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">发起人</label>
+							<div class="layui-input-block">
+								<input type="text" name="promoter" id="promoter" 
+									autocomplete="off" class="layui-input" placeholder="">
+							</div>
+						</div>
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">联系方式</label>
+							<div class="layui-input-block">
+								<input type="text" name="promoterPhone" id="promoterPhone" 
+									autocomplete="off" class="layui-input" placeholder="">
+							</div>
+						</div>
+					</div>
+					
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">会议时间</label>
+							<div class="layui-input-block">
+								<input type="text" name="startDate" id="startDate" placeholder="请输入" autocomplete="off" style="width:47%;display:inline-block" class="layui-input date">
+								--
+								<input type="text" name="endDate" id="endDate" placeholder="请输入" autocomplete="off" style="width:48%;display:inline-block" class="layui-input date">
+							</div>
+						</div>
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">签到时间</label>
+							<div class="layui-input-block">
+								<input type="text" name="signinStartTime" id="signinStartTime" placeholder="请输入"  autocomplete="off" style="width:47%;display:inline-block" class="layui-input date">
+								--
+								<input type="text" name="signinEndTime" id="signinEndTime" placeholder="请输入" autocomplete="off" style="width:48%;display:inline-block" class="layui-input date">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">签退时间</label>
+							<div class="layui-input-block">
+								<input type="text" name="signBackStartTime" id="signBackStartTime" placeholder="请输入" autocomplete="off" style="width:47%;display:inline-block" class="layui-input date">
+								--
+								<input type="text" name="signBackEndTime" id="signBackEndTime" placeholder="请输入" autocomplete="off" style="width:48%;display:inline-block" class="layui-input date">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">参议人</label>
+							<div class="layui-input-block">
+								<button type="button" class="layui-btn layui-btn-normal layui-btn-sm" style="margin-left: 10px;" id="selectAppend">选择</button>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">审批人</label>
+							<div class="layui-input-block">
+								<button type="button" class="layui-btn layui-btn-normal layui-btn-sm" style="margin-left: 10px;" id="selectApprover">选择</button>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">备注</label>
+							<div class="layui-input-block">
+								<textarea name="remark" id="remark" style="height: 83px;" class="layui-input" placeholder=""></textarea>
+							</div>
+						</div>
+					</div>
+					
+					<div class="layui-form-item layui-layout-admin" id="btnItem">
+						<div class="layui-input-block">
+							<button class="layui-btn layui-bg-blue" lay-submit="" 
+								lay-filter="formBtn">确定</button>
+							<button class="layui-btn layui-btn-primary" lay-submit="" 
+								lay-filter="formCancelBtn">取消</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script src="../js/path.js"></script>  
+	<script src="../js/jquery.min.js"></script>  
+	 <script src="../js/jquery-cookie.js"></script> 
+    <script src="../layui/layui.js"></script>
+    <script src="js/meeting_add.js"></script>
+</body>
+</html>

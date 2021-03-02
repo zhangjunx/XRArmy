@@ -1,0 +1,59 @@
+package com.xr.tools;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+public class DateTools {
+	/*public static void main(String[] args) {
+		String str = getFormatDate(new Date(),"yyyy-MM-dd HH:mm:ss");
+		System.out.println(str);
+	}*/
+	
+	/**
+	 * 日期加小时
+	 * day格式：2020-08-28 16:35:30
+	 * @param day
+	 * @param hour
+	 * @return
+	 */
+	public static String addDateHour(String day, int hour){   
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = null;   
+        try {   
+            date = format.parse(day);   
+        } catch (Exception ex) {   
+            ex.printStackTrace();   
+        }   
+        if (date == null)   
+            return "";   
+        Calendar cal = Calendar.getInstance();   
+        cal.setTime(date);   
+        cal.add(Calendar.HOUR, hour);// 24小时制   
+        date = cal.getTime();   
+        cal = null;   
+        return format.format(date);   
+    }
+	
+	/**
+	 * 日期转字符串
+	 * @param currentTime
+	 * @return
+	 */
+	public static String getStringDateShort(Date currentTime) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String dateString = formatter.format(currentTime);
+		return dateString;
+	}
+	
+	/**
+	 * 格局日期获取指定格式的字符串
+	 * @param date
+	 * @return
+	 */
+	public static String getFormatDate(Date date,String str){
+		SimpleDateFormat sdf = new SimpleDateFormat(str); 
+	    String year = sdf.format(date); 
+	    return year;
+	}
+}

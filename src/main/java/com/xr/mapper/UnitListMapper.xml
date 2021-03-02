@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.UnitListMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.UnitList" >
+    <id column="UnitNo" property="unitno" jdbcType="VARCHAR" />
+    <result column="UnitName" property="unitname" jdbcType="VARCHAR" />
+    <result column="ParentNo" property="parentno" jdbcType="VARCHAR" />
+    <result column="Sort" property="sort" jdbcType="VARCHAR" />
+    <result column="Level" property="level" jdbcType="VARCHAR" />
+    <result column="Remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    UnitNo, UnitName, ParentNo, Sort, Level, Remark
+  </sql>
+  
+  <select id="getList" resultType="Map">
+     select unitno,unitname,parentno,sort,level,remark from UnitList 
+     <where>
+	     <if test="unitno != null and unitno!='' " >
+	         and UnitNo=#{unitno}
+	      </if>
+	      <if test="unitname != null and unitname!='' " >
+	        and UnitName=#{unitname}
+	      </if>
+	      <if test="name != null and name!='' " >
+	        and UnitName like concat('%',#{name},'%')
+	      </if>
+	      <if test="parentno != null and parentno!='' " >
+	        and ParentNo=#{parentno}
+	      </if>
+	     <if test="loginid != null and loginid!='' " >
+	        UnitNo  like concat((select unitno from UserData where userid=#{loginid}),'%')
+	     </if>
+    </where>
+  </select>
+  
+  <select id="getExist" resultType="Map">
+     select userid,username,unitno from UserData 
+     <where>
+	     <if test="unitno != null and unitno!='' " >
+	         and UnitNo=#{unitno}
+	      </if>
+    </where>
+    UNION ALL
+    select holderno,holdername,unitno from HolderData
+    <where>
+	     <if test="unitno != null and unitno!='' " >
+	         and UnitNo=#{unitno}
+	      </if>
+    </where>
+  </select>
+  
+  <!--获取下一个单位id  -->
+  <select id="getNextUnitno" resultType="String">
+      select max(unitno) from UnitList 
+    <where>
+     <if test="parentno != null and parentno!='' " >
+        parentno =#{parentno} 
+      </if>
+    </where>
+  </select>
+  
+  <select id="getTree" resultType="Map">
+     select unitno "id",unitname "title",
+CASE WHEN  parentno IS null then '' 
+else parentno end "parent" from unitlist 
+<where>
+	<if test="unitno != null and unitno!='' ">
+		and UnitNo=#{unitno}
+	</if>
+	<if test="unitname != null and unitname!='' ">
+		and UnitName=#{unitname}
+	</if>
+	<if test="name != null and name!='' ">
+		and UnitName like concat('%',#{name},'%')
+	</if>
+	<if test="parentno != null and parentno!='' ">
+		and ParentNo=#{parentno}
+	</if>
+	<if test="loginid != null and loginid!='' ">
+		UnitNo like concat((select unitno from UserData where
+		userid=#{loginid}),'%')
+	</if>
+</where>
+order by level asc,sort asc
+  </select>
+  
+  
+  
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from unitlist
+    where UnitNo = #{unitno,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from unitlist
+    where UnitNo = #{unitno,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.UnitList" >
+    insert into unitlist (UnitNo, UnitName, ParentNo, 
+      Sort, Level, Remark
+      )
+    values (#{unitno,jdbcType=VARCHAR}, #{unitname,jdbcType=VARCHAR}, #{parentno,jdbcType=VARCHAR}, 
+      #{sort,jdbcType=VARCHAR}, #{level,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.UnitList" >
+    insert into unitlist
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="unitno != null" >
+        UnitNo,
+      </if>
+      <if test="unitname != null" >
+        UnitName,
+      </if>
+      <if test="parentno != null" >
+        ParentNo,
+      </if>
+      <if test="sort != null" >
+        Sort,
+      </if>
+      <if test="level != null" >
+        Level,
+      </if>
+      <if test="remark != null" >
+        Remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="unitno != null" >
+        #{unitno,jdbcType=VARCHAR},
+      </if>
+      <if test="unitname != null" >
+        #{unitname,jdbcType=VARCHAR},
+      </if>
+      <if test="parentno != null" >
+        #{parentno,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        #{level,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.UnitList" >
+    update unitlist
+    <set >
+      <if test="unitname != null" >
+        UnitName = #{unitname,jdbcType=VARCHAR},
+      </if>
+      <if test="parentno != null" >
+        ParentNo = #{parentno,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        Sort = #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        Level = #{level,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        Remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where UnitNo = #{unitno,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.UnitList" >
+    update unitlist
+    set UnitName = #{unitname,jdbcType=VARCHAR},
+      ParentNo = #{parentno,jdbcType=VARCHAR},
+      Sort = #{sort,jdbcType=VARCHAR},
+      Level = #{level,jdbcType=VARCHAR},
+      Remark = #{remark,jdbcType=VARCHAR}
+    where UnitNo = #{unitno,jdbcType=VARCHAR}
+  </update>
+</mapper>

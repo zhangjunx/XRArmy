@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>新增设备</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../css/public.css">
+</head>
+<body>
+	<input type="hidden" id="fid">
+	<div class="layui-fluid">
+		<div class="layui-con">
+			<div class="layui-form layuiadmin-card-header-auto">
+					<!-- <div class="layui-form-item">
+					     <div class="layui-col-lg4">
+								<label class="layui-form-label">设备编号</label>
+								<div class="layui-input-block">
+									<input type="text" name="deviceno" id="deviceno"
+										autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入设备编号">
+								</div>
+						</div>
+					</div> -->
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">设备名称</label>
+							<div class="layui-input-block">
+								<input type="text" name="devicename" id="devicename"
+									autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入设备名称">
+							</div>
+						</div>
+					</div>
+					
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">设备类型</label>
+							<div class="layui-input-block">
+									<select name="devicetype" id="devicetype">
+										<option value="">请选择</option>
+									</select>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">设备厂家</label>
+							<div class="layui-input-block">
+									<select name="devicevender" id="devicevender">
+										<option value="">请选择</option>
+									</select>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">设备型号</label>
+							<div class="layui-input-block">
+									<select name="devicemodel" id="devicemodel">
+										<option value="">请选择</option>
+									</select>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">设备SN</label>
+							<div class="layui-input-block">
+								<input type="text" name="devicesn" id="devicesn"
+									autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入设备SN">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">设备IP</label>
+							<div class="layui-input-block">
+								<input type="text" name="ip" id="ip"
+									autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入设备IP">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">端口号</label>
+							<div class="layui-input-block">
+								<input type="text" name="port" id="port"
+									autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入端口号">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">设备账号</label>
+							<div class="layui-input-block">
+								<input type="text" name="username" id="username"
+									autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入设备账号">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">设备密码</label>
+							<div class="layui-input-block">
+								<input type="text" name="userpass" id="userpass"
+									autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入设备密码">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">安装位置</label>
+							<div class="layui-input-block">
+								<input type="text" name="doorname" id="doorname"
+									autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入安装位置">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">进出状态</label>
+							   <div class="layui-input-block" >
+							      <select name="iostatus" id="iostatus">
+									<option value="11">进入</option>
+									<option value="12">外出</option>
+								  </select>
+								<!-- <input type="radio" class="layui-input" value="11" name="iostatus" title="进入" checked>
+								<input type="radio" class="layui-input" value="12" name="iostatus" title="外出">
+							 -->
+							</div> 
+						</div>
+					</div>
+					
+					 
+					<!-- <div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">网络状态</label>
+							<div class="layui-input-block" id="enable">
+								<input type="radio" class="layui-input" value="0" name="netstate" title="正常" checked>
+								<input type="radio" class="layui-input" value="1" name="netstate" title="异常">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">在线状态</label>
+							<div class="layui-input-block" id="online">
+								<input type="radio" class="layui-input" value="0" name="online" title="在线" checked>
+								<input type="radio" class="layui-input" value="1" name="online" title="离线">
+							</div>
+						</div>
+					</div> -->
+					
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">是否启用</label>
+							<div class="layui-input-block" id="enabled">
+								<input type="radio"  value="0" name="enabled" title="是" checked>
+								<input type="radio"  value="1" name="enabled" title="否">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item layui-layout-admin">
+						<div class="layui-input-block">
+							<button class="layui-btn layui-bg-blue" lay-submit=""
+								lay-filter="component-form-demo1">确定</button>
+							<button type="reset" class="layui-btn layui-btn-primary" id="resetData">取消</button>
+						</div>
+					</div>
+			</div>
+		</div>
+	</div>
+	</div>
+	<script src="../js/path.js"></script>  
+	<script src="../js/jquery.min.js"></script>  
+	<script src="../js/jquery-cookie.js"></script> 
+    <script src="../layui/layui.js"></script>
+    <script src="js/deviceManage_add.js"></script>
+</body>
+</html>

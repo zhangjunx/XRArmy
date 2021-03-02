@@ -1,0 +1,248 @@
+$(function(){
+	if(getUrlParam("id")!=undefined&&getUrlParam("id")!=null && getUrlParam("id")!=''){
+		getTreeByRole(getUrlParam("id"));//获取菜单列表
+		getRole(getUrlParam("id"));//获取角色列表
+	}
+	
+})
+var list = [];
+layui.config({
+    base: '../'
+}).extend({
+    treeTable: 'treeTable/treeTable'
+}).use(['treeTable'], function () {
+    var treeTable = layui.treeTable;
+});
+layui.use('layer',function(){
+	var layer=layui.layer;
+})
+//初始化权限列表
+function initTreeTable(res){
+	layui.use(['layer','util','treeTable','table'], function () {
+		var $=layui.jquery;
+		var util=layui.util;
+	    var treeTable = layui.treeTable;
+	    var form=layui.form;
+		var table=layui.table;
+	    // 渲染表格
+        var insTb = treeTable.render({
+            elem: '#permissionTab',
+            data: res,  // 数据
+            tree: {
+                iconIndex: 1,  // 折叠图标显示在第几列
+                arrowType: 'arrow2', 
+                idName: 'id',
+                pidName: 'menu_parent',
+                isPidData: true,
+                openName: 'spread',
+                getIcon: function(d) {  // 自定义图标
+                    // d是当前行的数据
+                   if (d.children) {  // 判断是否有子集
+                	   return '<i class="ew-tree-icon ew-tree-icon-folder"></i>';
+                    } else {
+                    	 return '<i class="ew-tree-icon ew-tree-icon-file"></i>';
+                    }
+                }
+            },
+            cols: [
+            	{type:"checkbox",width:"50"},
+            	{field: 'title', title: '名称',width:100,templet:function(d){
+            		return d.title+"("+d.id+")";
+            	}},
+				{field: 'iconsrc', title: '图标',width:"80"},
+                {field: 'menuurl', title: '路径',width:"100"},
+                {field: 'level', title: '类型',width:"40",templet:function(d){
+                 	if(d.level==1){
+                 		return "菜单";
+                 	}else if(d.level==2){
+                 		return "页面";
+                 	}else if(d.level==3){
+                 		return "按钮";
+                 	}
+                 }},
+            ],
+            
+        });
+        //监听复选框
+        treeTable.on('checkbox(permissionTab)', function(obj){
+        	var roleID=$("#module-list li.curr").attr("data-id");
+        	if(roleID==undefined){
+        		layer.msg("请先选择角色！",{time:2000})
+       		    return;
+        	}
+        	var index=layer.load(2);
+        	list = [];
+    		var res4 = getList12(obj.data.children,obj.data.id);
+    		var arr=[];
+    		if(obj.checked==true){//分配权限
+    			 var type="aa";
+    			 if(res4.length > 0){
+ 	    			for(var item of res4){
+ 	        			arr.push(item.id)
+ 	        		}
+ 	    		}
+    		}else{//取消权限
+    			 var type="dd";
+    			 if(res4.length > 0){
+ 	    			for(var item of res4){
+ 	    				if(item.menuid != ""){
+ 	    					arr.push(item.id)
+ 	    				}
+ 	        		}
+ 	    		}
+    		}
+    		arr.push(obj.data.id);
+    		var obj={"roleid":roleID,"str":JSON.stringify(arr),"loginid":window.top.loginid,"type":type};
+    		
+    		/*if(res4.length > 0){
+    			for(var item of res4){
+        			arr.push({
+        				"type":type,
+        				"roleid":roleID,
+        				"menuid":item.id
+        			})
+        		}
+    		}
+    		arr.push({
+    			"type":type,
+				"roleid":roleID,
+				"menuid":obj.data.id
+    		})*/
+    		console.log(arr);
+        	$.ajax({
+        		//url:url+"/ACL_Role_Menu/addBatch",
+        		url:url+"/ACL_Role_Menu/add",
+        		type:"POST",
+        		data:obj,
+        		success:function(data){
+        			console.log(data)
+        			layer.msg(data.reason,{time:2000},function(){
+        				getTreeByRole(getUrlParam("id"));
+        			});
+        			layer.close(index);
+        		},
+        		error:function(){
+        			layer.close(index);
+        		}
+        	})
+			
+        })
+	});
+}
+//递归
+function getList12(childList,pid){
+	if(childList != undefined && childList.length>0){
+		for(var i =0;i<childList.length;i++){
+			list.push(childList[i]);
+			if(childList[i].children == undefined){
+				continue;
+			}
+			var thisPid = childList[i].id;
+			var thisChildList = childList[i].children;
+			var thisParent = childList[i].parent;
+			getList12(thisChildList,thisPid);
+		}
+	}
+	return list;
+}
+
+//点击左侧角色
+/*$(document).on("click","#module-list li",function(){
+	$(this).addClass("curr").siblings().removeClass("curr");
+	var roleid=$(this).attr("data-id");
+	getTreeByRole(roleid)
+})*/
+function getTreeByRole(roleid){
+	//var loadIndex = layer.load(2);
+	var obj={"roleid":roleid};
+	$.ajax({
+		url:url+"/ACL_Role_Menu/getTree",
+		type:"POST",
+		data:obj,
+		dataType:"json",
+		success:function(val){
+			console.log(val);
+			if(!val.flag){
+				layer.close(loadIndex);
+				layer.msg(val.reason,{time:2000});
+				return;
+			}
+			var res=val.result;
+			for(var item of res){
+				if(item.menuid != "" && item.menuid != undefined &&item.menuid != null){//复选框被选中
+					item.LAY_CHECKED = true;
+				}else{
+					item.LAY_CHECKED = false;
+				}
+				updateChecked(item.children);
+			}
+			initTreeTable(res);
+			//layer.close(loadIndex);
+		}
+	})
+}//end
+//递归修改表格数据status
+function updateChecked(children){
+	if(children != undefined && children.length>0){
+		for(var i =0;i<children.length;i++){
+			if(children[i].menuid != "" && children[i].menuid != undefined && children[i].menuid != null){//复选框被选中
+				children[i].LAY_CHECKED = true;
+			}else{
+				children[i].LAY_CHECKED = false;
+			}
+			if(children[i].children.length == 0){
+				continue;
+			}
+			updateChecked(children[i].children);
+		}
+	}
+	//return;
+}
+//获取功能权限
+function getMenu(){
+	$.ajax({
+		//url:url+'/ACL_Role_Menu/getTree',
+		url:url+'/ACL_Menu/getTree',
+		type:"POST",
+		success:function(res){
+			console.log(res);
+			if(res.flag){
+				var arr=res.result;
+				initTreeTable(arr);
+			}else{
+				layer.msg(res.reason,{time:2000});
+			}
+		}
+	})
+}
+//获取角色列表
+function getRole(roleid){
+	$.ajax({
+		url:url+"/ACL_Role/getList",
+		type:"post",
+		success:function(res){
+			console.log(res);
+			$("#module-list").empty();
+			if(res.flag){
+				var data=res.result;
+				for(var item of data){
+					var id=item.id==undefined?"":item.id;
+					var name=item.name==undefined?"":item.name;
+					if(id==roleid){
+						var $li=$("<li data-id="+id+" class='curr'>"+name+"</li>");
+					}else{
+						var $li=$("<li data-id="+id+">"+name+"</li>");
+					}
+					
+					$("#module-list").append($li);
+				}
+			}
+		}
+	})
+}
+//url地址中解析参数
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return decodeURIComponent(r[2]); return null;
+}

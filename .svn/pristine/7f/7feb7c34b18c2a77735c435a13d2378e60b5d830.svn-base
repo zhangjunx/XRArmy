@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>数据报表</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../css/public.css">
+  <link rel="stylesheet" href="css/carDispatch.css">
+</head>
+<body>
+  <div class="layui-fluid">
+	  <div class="main-tab">
+		  <div class="label fl curr">
+			  <a href="javascript:;">车辆派遣登记簿</a>
+		  </div>
+		   <div class="label fl">
+			  <a href="javascript:;">各部门用车统计</a>
+		  </div>
+		   <div class="label fl">
+			  <a href="javascript:;">首长用车周统计</a>
+		  </div>
+		  <div class="btn-box fr">
+			   <div class="subbtn fl">
+					<a href="javascript:;" class="layui-bg-blue" id="export">导出</a>
+			  </div>
+			  <div class="subbtn fl">
+					<a href="javascript:;" class="layui-bg-blue" id="print">打印</a>
+			  </div>
+		  </div>
+	  </div>
+	  <!--  车辆派遣登记簿 -->
+    <div class="layui-con">
+      <div class="layui-form  layuiadmin-card-header-auto">
+        <div class="layui-form-item">
+		  <div class="layui-col-lg3">
+		    <label class="layui-form-label">统计单位</label>
+		    <div class="layui-input-block">
+		      <div class="layui-unselect layui-form-select downpanel">
+					<div class="layui-select-title ">
+						<span class="layui-input layui-unselect" style="line-height:38px" id="unitname"></span>
+						<input type="hidden" id="unitno" >
+						<i class="layui-edge"></i>
+					</div>
+					<dl class="layui-anim layui-anim-upbit">
+						<dd style="overflow:visible">
+							<ul id="classtree" class="input"></ul>
+						</dd>
+					</dl>
+				</div>
+		    </div>
+		  </div>
+		  <div class="layui-inline">
+		    <label class="layui-form-label">时间</label>
+		    <div class="layui-input-block">
+		    	 <input type="text" name="startDate" placeholder="请输入" autocomplete="off" class="layui-input date" style="display: inline-block;width: 47%;">
+				--
+				 <input type="text" name="endDate" placeholder="请输入" autocomplete="off" class="layui-input date" style="display: inline-block;width: 47%;">
+		    </div>
+		  </div>
+          <div class="layui-inline">
+            <button class="layui-btn layuiadmin-btn-useradmin layui-bg-blue" lay-submit lay-filter="carStatistics">
+              <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="layui-card-body">
+        <table id="LAY-statistics-manage" lay-filter="LAY-statistics-manage"></table>
+      </div>
+    </div>
+    
+     <!--  各部门用车统计 -->
+    <div class="layui-con" style="display:none">
+       <div class="layui-form  layuiadmin-card-header-auto">
+        <div class="layui-form-item">
+          <div class="layui-col-lg3">
+		    <label class="layui-form-label">统计单位</label>
+		    <div class="layui-input-block">
+		      <div class="layui-unselect layui-form-select downpanel2">
+					<div class="layui-select-title ">
+						<span class="layui-input layui-unselect" style="line-height:38px" id="unitname2"></span>
+						<input type="hidden" id="unitno2" >
+						<i class="layui-edge"></i>
+					</div>
+					<dl class="layui-anim layui-anim-upbit">
+						<dd style="overflow:visible">
+							<ul id="classtree2" class="input"></ul>
+						</dd>
+					</dl>
+				</div>
+		    </div>
+		  </div>
+	      <div class="layui-inline">
+		    <label class="layui-form-label">时间</label>
+		    <div class="layui-input-block">
+		    	 <input type="text" name="startDate2" placeholder="请输入" autocomplete="off" class="layui-input date" style="display: inline-block;width: 47%;">
+				--
+				 <input type="text" name="endDate2" placeholder="请输入" autocomplete="off" class="layui-input date" style="display: inline-block;width: 47%;">
+		    </div>
+		  </div>
+		  <div class="layui-inline">
+            <button class="layui-btn layuiadmin-btn-useradmin layui-bg-blue" lay-submit lay-filter="query">
+              <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+            </button>
+          </div>
+          <div class="layui-inline">
+            <button class="layui-btn layuiadmin-btn-useradmin layui-bg-blue" lay-submit lay-filter="queryDay">
+              	查询当天
+            </button>
+          </div>
+          <div class="layui-inline">
+            <button class="layui-btn layuiadmin-btn-useradmin layui-bg-blue" lay-submit lay-filter="queryWeek">
+              	查询当周
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="layui-card-body">
+        <table id="LAY-carReal-manage" lay-filter="LAY-carReal-manage"></table>
+      </div>
+    </div>
+      <!--  首长用车周统计  -->
+    <div class="layui-con" style="display:none">
+       <div class="layui-form  layuiadmin-card-header-auto">
+          <div class="layui-form-item">
+	      <div class="layui-inline">
+		    <label class="layui-form-label">时间</label>
+		    <div class="layui-input-block">
+		    	 <input type="text" name="startDate3" id="startDate3" placeholder="请输入" autocomplete="off" class="layui-input date" style="display: inline-block;width: 47%;">
+				--
+				 <input type="text" name="endDate3" id="endDate3" placeholder="请输入" autocomplete="off" class="layui-input date" style="display: inline-block;width: 47%;">
+		    </div>
+		  </div>
+		  <div class="layui-inline">
+            <button class="layui-btn layuiadmin-btn-useradmin layui-bg-blue" lay-submit lay-filter="query-lead">
+              <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+            </button>
+          </div>
+          <div class="layui-inline">
+            <button class="layui-btn layuiadmin-btn-useradmin layui-bg-blue" lay-submit lay-filter="queryDay-lead">
+              	查询当天
+            </button>
+          </div>
+          <div class="layui-inline">
+            <button class="layui-btn layuiadmin-btn-useradmin layui-bg-blue" lay-submit lay-filter="queryWeek-lead">
+              	查询当周
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="layui-card-body">
+        <table id="LAY-car-manage" lay-filter="LAY-car-manage"></table>
+      </div>
+    </div>
+  </div>
+   <script src="../js/path.js"></script>
+   <script src="../js/jquery.min.js"></script>  
+   <script src="../js/jquery-cookie.js"></script>
+   <script src="../layui/layui.js"></script>
+   <script src="../js/print.js"></script>
+   <script src="js/dataReport.js"></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>新增通道</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../css/public.css">
+</head>
+<body>
+	<input type="hidden" id="fid">
+	<div class="layui-fluid">
+		<div class="layui-con">
+			<div class="layui-form layuiadmin-card-header-auto">
+				   <div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label"><span class="must">*</span>所属区域</label>
+							<div class="layui-input-block">
+								<div class="layui-unselect layui-form-select downpanel">
+									<div class="layui-select-title ">
+										<span class="layui-input layui-unselect" style="line-height:38px" id="areaname"></span>
+										<input type="hidden" id="areaid" >
+										<i class="layui-edge"></i>
+									</div>
+									<dl class="layui-anim layui-anim-upbit">
+										<dd style="overflow:visible">
+											<ul id="classtree" class="input"></ul>
+										</dd>
+									</dl>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label"><span class="must">*</span>通道名称</label>
+							<div class="layui-input-block">
+								<input type="text" name="channelname" id="channelname"
+									autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入通道名称">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label"><span class="must">*</span>通道位置</label>
+							<div class="layui-input-block">
+								<input type="text" name="locatname" id="locatname"
+									autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入通道地址">
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-col-lg4">
+							<label class="layui-form-label">备注</label>
+							<div class="layui-input-block">
+								<textarea name="remark" id="remark" placeholder="请输入" class="layui-textarea"></textarea>
+							</div>
+						</div>
+					</div>
+					<div class="layui-form-item layui-layout-admin">
+						<div class="layui-input-block">
+							<button class="layui-btn layui-bg-blue" lay-submit=""
+								lay-filter="component-form-demo1">确定</button>
+							<button type="reset" class="layui-btn layui-btn-primary" id="resetData">取消</button>
+						</div>
+					</div>
+			</div>
+		</div>
+	</div>
+	</div>
+	<script src="../js/path.js"></script>  
+	<script src="../js/jquery.min.js"></script>  
+	<script src="../js/jquery-cookie.js"></script> 
+    <script src="../layui/layui.js"></script>
+    <script src="js/passagewayManage_add.js"></script>
+</body>
+</html>

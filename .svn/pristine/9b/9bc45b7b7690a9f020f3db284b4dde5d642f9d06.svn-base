@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.BoxDataMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.BoxData" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="BoxIP" property="boxip" jdbcType="VARCHAR" />
+    <result column="BoxPort" property="boxport" jdbcType="VARCHAR" />
+    <result column="BoxURL" property="boxurl" jdbcType="VARCHAR" />
+    <result column="UserPass" property="userpass" jdbcType="VARCHAR" />
+    <result column="UserID" property="userid" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, BoxIP, BoxPort, BoxURL, UserPass, UserID
+  </sql>
+  
+   <sql id="c_start">
+	  	select res.*
+  		  from (select @num := @num+1 tindex, tmp.* from (
+	  </sql>
+	  
+	  <sql id="c_end">
+	  	) tmp , (SELECT @num := 0) var order by id asc) res where 1=1
+	  	<if test="curpage != null and curpage != ''">
+	  		and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) * CONVERT(#{pagesize},SIGNED)+1 
+	  		and res.tindex &lt;= CONVERT(#{curpage},SIGNED) * CONVERT(#{pagesize},SIGNED)
+	  	</if>
+	  </sql>
+  
+ <select id="getList" resultType="Map">
+ <include refid="c_start"></include>
+     select id,boxip,boxport,boxurl,userid,userpass from boxdata 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="boxip != null and boxip!='' " >
+	        and BoxIP=#{boxip}
+	      </if>
+     </where>
+      <include refid="c_end"></include>
+  </select>
+  
+  
+  <select id="getListCount" resultType="integer">
+		select count(1) from boxdata 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="boxip != null and boxip!='' " >
+	        and BoxIP=#{boxip}
+	      </if>
+     </where>
+ </select>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from boxdata
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from boxdata
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.BoxData" >
+    insert into boxdata (ID, BoxIP, BoxPort, 
+      BoxURL, UserPass, UserID
+      )
+    values (#{id,jdbcType=INTEGER}, #{boxip,jdbcType=VARCHAR}, #{boxport,jdbcType=VARCHAR}, 
+      #{boxurl,jdbcType=VARCHAR}, #{userpass,jdbcType=VARCHAR}, #{userid,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.BoxData" >
+    insert into boxdata
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="boxip != null" >
+        BoxIP,
+      </if>
+      <if test="boxport != null" >
+        BoxPort,
+      </if>
+      <if test="boxurl != null" >
+        BoxURL,
+      </if>
+      <if test="userpass != null" >
+        UserPass,
+      </if>
+      <if test="userid != null" >
+        UserID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="boxip != null" >
+        #{boxip,jdbcType=VARCHAR},
+      </if>
+      <if test="boxport != null" >
+        #{boxport,jdbcType=VARCHAR},
+      </if>
+      <if test="boxurl != null" >
+        #{boxurl,jdbcType=VARCHAR},
+      </if>
+      <if test="userpass != null" >
+        #{userpass,jdbcType=VARCHAR},
+      </if>
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.BoxData" >
+    update boxdata
+    <set >
+      <if test="boxip != null" >
+        BoxIP = #{boxip,jdbcType=VARCHAR},
+      </if>
+      <if test="boxport != null" >
+        BoxPort = #{boxport,jdbcType=VARCHAR},
+      </if>
+      <if test="boxurl != null" >
+        BoxURL = #{boxurl,jdbcType=VARCHAR},
+      </if>
+      <if test="userpass != null" >
+        UserPass = #{userpass,jdbcType=VARCHAR},
+      </if>
+      <if test="userid != null" >
+        UserID = #{userid,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.BoxData" >
+    update boxdata
+    set BoxIP = #{boxip,jdbcType=VARCHAR},
+      BoxPort = #{boxport,jdbcType=VARCHAR},
+      BoxURL = #{boxurl,jdbcType=VARCHAR},
+      UserPass = #{userpass,jdbcType=VARCHAR},
+      UserID = #{userid,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

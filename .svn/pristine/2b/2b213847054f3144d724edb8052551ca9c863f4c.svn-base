@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.DeviceUnitMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.DeviceUnit" >
+    <id column="DeviceNo" property="deviceno" jdbcType="INTEGER" />
+    <result column="DeviceName" property="devicename" jdbcType="VARCHAR" />
+    <result column="DeviceType" property="devicetype" jdbcType="VARCHAR" />
+    <result column="DeviceVender" property="devicevender" jdbcType="VARCHAR" />
+    <result column="DeviceModel" property="devicemodel" jdbcType="VARCHAR" />
+    <result column="IP" property="ip" jdbcType="VARCHAR" />
+    <result column="Port" property="port" jdbcType="VARCHAR" />
+    <result column="DeviceSN" property="devicesn" jdbcType="VARCHAR" />
+    <result column="MacCode" property="maccode" jdbcType="VARCHAR" />
+    <result column="UserName" property="username" jdbcType="VARCHAR" />
+    <result column="UserPass" property="userpass" jdbcType="VARCHAR" />
+    <result column="Online" property="online" jdbcType="VARCHAR" />
+    <result column="NetState" property="netstate" jdbcType="VARCHAR" />
+    <result column="Enabled" property="enabled" jdbcType="VARCHAR" />
+    <result column="IOStatus" property="iostatus" jdbcType="VARCHAR" />
+    <result column="DoorName" property="doorname" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="DeviceUse" property="deviceuse" jdbcType="VARCHAR" />
+    <result column="ChannelNo" property="channelno" jdbcType="INTEGER" />
+    <result column="AreaID" property="areaid" jdbcType="VARCHAR" />
+    <result column="BoxID" property="boxid" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    DeviceNo, DeviceName, DeviceType, DeviceVender, DeviceModel, IP, Port, DeviceSN, MacCode, 
+    UserName, UserPass, Online, NetState, Enabled, IOStatus, DoorName, CreateDate, DeviceUse, 
+    ChannelNo, AreaID,BoxID
+  </sql>
+  
+   <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by deviceno asc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+
+    <select id="getNextid" resultType="Integer">
+       select IFNULL(max(deviceno),0)+1 from DeviceUnit
+    </select>
+
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select deviceno,devicename,devicetype,devicevender,devicemodel,ip,port,devicesn,
+		maccode,username,userpass,online,netstate,enabled,iostatus,doorname,
+		date_format(createdate,'%Y-%m-%d %H:%i:%s') createdate,
+		deviceuse,channelno,areaid,boxid from DeviceUnit
+		<where>
+			<if test="deviceno != null and deviceno!='' ">
+				and deviceno=#{deviceno}
+			</if>
+			<if test="devicename != null and devicename!='' ">
+				and devicename=#{devicename}
+			</if>
+			<if test="name != null and name!='' ">
+				and devicename like concat('%',#{name},'%')
+			</if>
+			<if test="devicesn != null and devicesn!='' ">
+				and devicesn=#{devicesn}
+			</if>
+			<if test="iostatus != null and iostatus!='' ">
+				and iostatus=#{iostatus}
+			</if>
+			<if test="online != null and online!='' ">
+				and online=#{online}
+			</if>
+			<if test="enabled != null and enabled!='' ">
+				and enabled=#{enabled}
+			</if>
+			<if test="devicetype != null and devicetype!='' ">
+				and devicetype=#{devicetype}
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="Integer">
+		select count(1) from DeviceUnit
+		<where>
+			<if test="deviceno != null and deviceno!='' ">
+				and deviceno=#{deviceno}
+			</if>
+			<if test="devicename != null and devicename!='' ">
+				and devicename=#{devicename}
+			</if>
+			<if test="name != null and name!='' ">
+				and devicename like concat('%',#{name},'%')
+			</if>
+			<if test="devicesn != null and devicesn!='' ">
+				and devicesn=#{devicesn}
+			</if>
+			<if test="iostatus != null and iostatus!='' ">
+				and iostatus=#{iostatus}
+			</if>
+			<if test="online != null and online!='' ">
+				and online=#{online}
+			</if>
+			<if test="enabled != null and enabled!='' ">
+				and enabled=#{enabled}
+			</if>
+			<if test="devicetype != null and devicetype!='' ">
+				and devicetype=#{devicetype}
+			</if>
+		</where>
+	</select>
+  
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from deviceunit
+    where DeviceNo = #{deviceno,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from deviceunit
+    where DeviceNo = #{deviceno,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.DeviceUnit" >
+    insert into deviceunit (DeviceNo, DeviceName, DeviceType, 
+      DeviceVender, DeviceModel, IP, 
+      Port, DeviceSN, MacCode, 
+      UserName, UserPass, Online, 
+      NetState, Enabled, IOStatus, 
+      DoorName, CreateDate, DeviceUse, 
+      ChannelNo, AreaID,BoxID)
+    values (#{deviceno,jdbcType=INTEGER}, #{devicename,jdbcType=VARCHAR}, #{devicetype,jdbcType=VARCHAR}, 
+      #{devicevender,jdbcType=VARCHAR}, #{devicemodel,jdbcType=VARCHAR}, #{ip,jdbcType=VARCHAR}, 
+      #{port,jdbcType=VARCHAR}, #{devicesn,jdbcType=VARCHAR}, #{maccode,jdbcType=VARCHAR}, 
+      #{username,jdbcType=VARCHAR}, #{userpass,jdbcType=VARCHAR}, #{online,jdbcType=VARCHAR}, 
+      #{netstate,jdbcType=VARCHAR}, #{enabled,jdbcType=VARCHAR}, #{iostatus,jdbcType=VARCHAR}, 
+      #{doorname,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, #{deviceuse,jdbcType=VARCHAR}, 
+      #{channelno,jdbcType=INTEGER}, #{areaid,jdbcType=VARCHAR}, #{boxid,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.DeviceUnit" >
+    insert into deviceunit
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="deviceno != null" >
+        DeviceNo,
+      </if>
+      <if test="devicename != null" >
+        DeviceName,
+      </if>
+      <if test="devicetype != null" >
+        DeviceType,
+      </if>
+      <if test="devicevender != null" >
+        DeviceVender,
+      </if>
+      <if test="devicemodel != null" >
+        DeviceModel,
+      </if>
+      <if test="ip != null" >
+        IP,
+      </if>
+      <if test="port != null" >
+        Port,
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN,
+      </if>
+      <if test="maccode != null" >
+        MacCode,
+      </if>
+      <if test="username != null" >
+        UserName,
+      </if>
+      <if test="userpass != null" >
+        UserPass,
+      </if>
+      <if test="online != null" >
+        Online,
+      </if>
+      <if test="netstate != null" >
+        NetState,
+      </if>
+      <if test="enabled != null" >
+        Enabled,
+      </if>
+      <if test="iostatus != null" >
+        IOStatus,
+      </if>
+      <if test="doorname != null" >
+        DoorName,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="deviceuse != null" >
+        DeviceUse,
+      </if>
+      <if test="channelno != null" >
+        ChannelNo,
+      </if>
+      <if test="areaid != null" >
+        AreaID,
+      </if>
+      <if test="boxid != null" >
+        BoxID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="deviceno != null" >
+        #{deviceno,jdbcType=INTEGER},
+      </if>
+      <if test="devicename != null" >
+        #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicetype != null" >
+        #{devicetype,jdbcType=VARCHAR},
+      </if>
+      <if test="devicevender != null" >
+        #{devicevender,jdbcType=VARCHAR},
+      </if>
+      <if test="devicemodel != null" >
+        #{devicemodel,jdbcType=VARCHAR},
+      </if>
+      <if test="ip != null" >
+        #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="port != null" >
+        #{port,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="maccode != null" >
+        #{maccode,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="userpass != null" >
+        #{userpass,jdbcType=VARCHAR},
+      </if>
+      <if test="online != null" >
+        #{online,jdbcType=VARCHAR},
+      </if>
+      <if test="netstate != null" >
+        #{netstate,jdbcType=VARCHAR},
+      </if>
+      <if test="enabled != null" >
+        #{enabled,jdbcType=VARCHAR},
+      </if>
+      <if test="iostatus != null" >
+        #{iostatus,jdbcType=VARCHAR},
+      </if>
+      <if test="doorname != null" >
+        #{doorname,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deviceuse != null" >
+        #{deviceuse,jdbcType=VARCHAR},
+      </if>
+      <if test="channelno != null" >
+        #{channelno,jdbcType=INTEGER},
+      </if>
+      <if test="areaid != null" >
+        #{areaid,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        #{boxid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.DeviceUnit" >
+    update deviceunit
+    <set >
+      <if test="devicename != null" >
+        DeviceName = #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicetype != null" >
+        DeviceType = #{devicetype,jdbcType=VARCHAR},
+      </if>
+      <if test="devicevender != null" >
+        DeviceVender = #{devicevender,jdbcType=VARCHAR},
+      </if>
+      <if test="devicemodel != null" >
+        DeviceModel = #{devicemodel,jdbcType=VARCHAR},
+      </if>
+      <if test="ip != null" >
+        IP = #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="port != null" >
+        Port = #{port,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="maccode != null" >
+        MacCode = #{maccode,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        UserName = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="userpass != null" >
+        UserPass = #{userpass,jdbcType=VARCHAR},
+      </if>
+      <if test="online != null" >
+        Online = #{online,jdbcType=VARCHAR},
+      </if>
+      <if test="netstate != null" >
+        NetState = #{netstate,jdbcType=VARCHAR},
+      </if>
+      <if test="enabled != null" >
+        Enabled = #{enabled,jdbcType=VARCHAR},
+      </if>
+      <if test="iostatus != null" >
+        IOStatus = #{iostatus,jdbcType=VARCHAR},
+      </if>
+      <if test="doorname != null" >
+        DoorName = #{doorname,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deviceuse != null" >
+        DeviceUse = #{deviceuse,jdbcType=VARCHAR},
+      </if>
+      <if test="channelno != null" >
+        ChannelNo = #{channelno,jdbcType=INTEGER},
+      </if>
+      <if test="areaid != null" >
+        AreaID = #{areaid,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        BoxID = #{boxid,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where DeviceNo = #{deviceno,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.DeviceUnit" >
+    update deviceunit
+    set DeviceName = #{devicename,jdbcType=VARCHAR},
+      DeviceType = #{devicetype,jdbcType=VARCHAR},
+      DeviceVender = #{devicevender,jdbcType=VARCHAR},
+      DeviceModel = #{devicemodel,jdbcType=VARCHAR},
+      IP = #{ip,jdbcType=VARCHAR},
+      Port = #{port,jdbcType=VARCHAR},
+      DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      MacCode = #{maccode,jdbcType=VARCHAR},
+      UserName = #{username,jdbcType=VARCHAR},
+      UserPass = #{userpass,jdbcType=VARCHAR},
+      Online = #{online,jdbcType=VARCHAR},
+      NetState = #{netstate,jdbcType=VARCHAR},
+      Enabled = #{enabled,jdbcType=VARCHAR},
+      IOStatus = #{iostatus,jdbcType=VARCHAR},
+      DoorName = #{doorname,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      DeviceUse = #{deviceuse,jdbcType=VARCHAR},
+      ChannelNo = #{channelno,jdbcType=INTEGER},
+      AreaID = #{areaid,jdbcType=VARCHAR},
+      BoxID = #{boxid,jdbcType=VARCHAR}
+    where DeviceNo = #{deviceno,jdbcType=INTEGER}
+  </update>
+</mapper>

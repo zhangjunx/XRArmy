@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.AccessGroupChannelMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.AccessGroupChannel" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="GroupID" property="groupid" jdbcType="INTEGER" />
+    <result column="ChannelNo" property="channelno" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, GroupID, ChannelNo
+  </sql>
+  
+   <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id asc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+
+
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select gc.id,gc.groupid,g.name groupname,
+		gc.channelno,c.channelname from AccessGroupChannel gc 
+		left join  AccessGroup g on g.id=gc.groupid
+		left join ChannelData c on c.channelno=gc.channelno
+		<where>
+			<if test="id != null and id!='' ">
+				and gc.id=#{id}
+			</if>
+			<if test="groupid != null and groupid!='' ">
+				and gc.groupid=#{groupid}
+			</if>
+			<if test="channelno != null and channelno!='' ">
+				and gc.channelno =#{channelno} 
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="Integer">
+		select count(1) from AccessGroupChannel gc 
+		left join  AccessGroup g on g.id=gc.groupid
+		left join ChannelData c on c.channelno=gc.channelno
+		<where>
+			<if test="id != null and id!='' ">
+				and gc.id=#{id}
+			</if>
+			<if test="groupid != null and groupid!='' ">
+				and gc.groupid=#{groupid}
+			</if>
+			<if test="channelno != null and channelno!='' ">
+				and gc.channelno =#{channelno} 
+			</if>
+		</where>
+	</select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from AccessGroupChannel
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from AccessGroupChannel
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.AccessGroupChannel" >
+    insert into AccessGroupChannel (ID, GroupID, ChannelNo
+      )
+    values (#{id,jdbcType=INTEGER}, #{groupid,jdbcType=INTEGER}, #{channelno,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.AccessGroupChannel" >
+    insert into AccessGroupChannel
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="groupid != null" >
+        GroupID,
+      </if>
+      <if test="channelno != null" >
+        ChannelNo,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="groupid != null" >
+        #{groupid,jdbcType=INTEGER},
+      </if>
+      <if test="channelno != null" >
+        #{channelno,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.AccessGroupChannel" >
+    update AccessGroupChannel
+    <set >
+      <if test="groupid != null" >
+        GroupID = #{groupid,jdbcType=INTEGER},
+      </if>
+      <if test="channelno != null" >
+        ChannelNo = #{channelno,jdbcType=INTEGER},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.AccessGroupChannel" >
+    update AccessGroupChannel
+    set GroupID = #{groupid,jdbcType=INTEGER},
+      ChannelNo = #{channelno,jdbcType=INTEGER}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

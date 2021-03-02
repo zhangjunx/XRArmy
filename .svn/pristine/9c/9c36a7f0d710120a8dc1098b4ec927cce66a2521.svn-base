@@ -1,0 +1,83 @@
+package com.xr.https;
+
+ 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.xr.tools.ImagePathConfig;
+
+public class HttpTest {
+	 /**
+     * 日志对象
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpTest.class);
+ 
+    private HttpTest(){
+ 
+    }
+ 
+    public static String doPost(String url, Map<String, String> param) {
+        // 创建Httpclient对象
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        CloseableHttpResponse response = null;
+        String resultString = "";
+        try {
+            // 创建Http Post请求
+            HttpPost httpPost = new HttpPost(url);
+            // 创建参数列表
+            if (param != null) {
+                List<NameValuePair> paramList = new ArrayList<>();
+                for (String key : param.keySet()) {
+                    paramList.add(new BasicNameValuePair(key, param.get(key)));
+                }
+                // 模拟表单
+                UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList,"utf-8");
+                httpPost.setEntity(entity);
+            }
+            // 执行http请求
+            response = httpClient.execute(httpPost);
+            resultString = EntityUtils.toString(response.getEntity(), "utf-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                response.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        System.out.println(resultString);
+        return resultString;
+    }
+
+ 
+public static void main(String[] args) {
+    List<Map> list =new ArrayList<>();
+    Map<String,String> m=new HashMap<String,String>();
+    
+    String photostr="blackp_11.jpeg";
+    String imgUrl=ImagePathConfig.blackpeoplepic+"/"+photostr;
+	String base64=ImagePathConfig.readPicPath(imgUrl);
+	m.put("personnel_id_number", "B_22");
+	m.put("personnel_name", "B小可keke爱");
+	m.put("personnel_phone", "");
+	m.put("personnel_pic1", base64);
+    String url="http://192.168.1.236/yunapi/?action=personnel";
+    String result=doPost(url, m);
+ }
+}

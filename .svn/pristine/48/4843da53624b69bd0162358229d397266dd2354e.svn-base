@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>陆军智慧军营管理平台</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="icon" href="img/logo3.png" sizes="32x32">
+  <link rel="stylesheet" href="layuiadmin/layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="layuiadmin/style/admin.css" media="all">
+  <link rel="stylesheet" href="css/public.css">
+</head>
+<body class="layui-layout-body">
+  <div id="LAY_app">
+    <div class="layui-layout layui-layout-admin">
+      <div class="layui-header">
+        <!-- 头部区域 -->
+        <ul class="layui-nav layui-layout-left">
+          <li class="layui-nav-item layadmin-flexible" lay-unselect>
+            <a href="javascript:;" layadmin-event="flexible" title="侧边伸缩">
+              <i class="layui-icon layui-icon-shrink-right" id="LAY_app_flexible"></i>
+            </a>
+          </li>
+          <!-- <li class="layui-nav-item layui-hide-xs" lay-unselect>
+            <a href="http://www.layui.com/admin/" target="_blank" title="前台">
+              <i class="layui-icon layui-icon-website"></i>
+            </a>
+          </li> -->
+          <li class="layui-nav-item" lay-unselect>
+            <a href="javascript:;" layadmin-event="refresh" title="刷新">
+              <i class="layui-icon layui-icon-refresh-3"></i>
+            </a>
+          </li> 
+          <!-- <li class="layui-nav-item layui-hide-xs" lay-unselect>
+            <input type="text" placeholder="搜索..." autocomplete="off" class="layui-input layui-input-search" layadmin-event="serach" lay-action="template/search.html?keywords="> 
+          </li> -->
+        </ul>
+        <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right">
+          <!-- <li class="layui-nav-item layui-hide-xs" lay-unselect>
+            <a href="javascript:;" layadmin-event="note">
+              <i class="layui-icon layui-icon-note"></i>
+            </a>
+          </li> -->
+          <li class="layui-nav-item layui-hide-xs" lay-unselect>
+            <a href="javascript:;" layadmin-event="fullscreen">
+              <i class="layui-icon layui-icon-screen-full"></i>
+            </a>
+          </li>
+          <li class="layui-nav-item" lay-unselect>
+            <a href="javascript:;">
+              <img src="img/person.png" id="loginUserImg" class="layui-nav-img">
+              <cite id="loginUser">管理员</cite>
+            </a>
+            <dl class="layui-nav-child">
+              <!-- <dd><a lay-href="set/user/info.html">基本资料</a></dd> -->
+              <dd><a href="user/password.html" target="mainFrame">修改密码</a></dd>
+              <hr>
+              <dd id="exit" style="text-align: center;"><a>退出</a></dd>
+            </dl>
+          </li>
+          
+          <!-- <li class="layui-nav-item layui-hide-xs" lay-unselect>
+            <a href="javascript:;" layadmin-event="about"><i class="layui-icon layui-icon-more-vertical"></i></a>
+          </li> -->
+          <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-unselect>
+            <a href="javascript:;" layadmin-event="more"><i class="layui-icon layui-icon-more-vertical"></i></a>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- 侧边菜单 -->
+      <div class="layui-side layui-side-menu" style="background: #fff !important;">
+        <div class="layui-side-scroll">
+          <div class="layui-logo" style="background-color: #00425C !important;" >
+            <span id="logotitle">
+				<img src="img/logo3.png" alt="" style="width: 19px;vertical-align: text-top;margin-right: 6px;">
+				智慧军营
+			</span>
+          </div>
+          <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+          <!-- <li class="layui-nav-item layui-nav-itemed">
+              <a href="javascript:;">
+                <i class="layui-icon">
+					<img src="img/icon-person.png" alt="" class="icon-width">
+				</i>
+                <cite>个人中心</cite>
+              </a>
+              <dl class="layui-nav-child">
+              	<dd class="layui-this">
+                  <a href="user/password.html"  target="mainFrame">修改密码</a>
+                </dd>
+                 <dd>
+                  <a href="user/myApplication.html"  target="mainFrame">我的申请</a>
+                </dd>
+                <dd>
+                  <a href="user/myApprove.html"  target="mainFrame">我的审批</a>
+                </dd>
+                <dd>
+                  <a href="user/approveRecord.html"  target="mainFrame">审批记录</a>
+                </dd>
+              </dl>
+            </li> -->
+            
+            <li class="layui-nav-item">
+              <a href="javascript:;" target="mainFrame">
+                <i class="layui-icon">
+					<img src="img/icon-person.png" alt="" class="icon-width">
+				</i>
+                <cite>通知公告</cite>
+              </a>
+               <dl class="layui-nav-child">
+                <dd>
+                   <a href="noticeManage/newsSend.html"  target="mainFrame">信息发布</a>
+                </dd>
+                <dd>
+                  <a href="noticeManage/noticeManage.html"  target="mainFrame">通知管理</a>
+                </dd>
+              </dl>
+            </li>
+            
+            <li class="layui-nav-item">
+              <a href="javascript:;" target="mainFrame">
+                <i class="layui-icon">
+					<img src="img/icon-people.png" alt="" class="icon-width">
+				</i>
+                <cite>人事管理</cite>
+              </a>
+               <dl class="layui-nav-child">
+              	<dd>
+                  <a href="peopleManage/peopleManage.html"  target="mainFrame">人事资料</a>
+                </dd>
+                 <dd>
+                  <a href="peopleManage/tuningIn.html"  target="mainFrame">调动记录</a>
+                </dd>
+                <dd>
+                  <a href="peopleManage/retire.html"  target="mainFrame">退伍提醒</a>
+                </dd>
+                <dd>
+                  <a href="peopleManage/retireRecord.html"  target="mainFrame">退伍记录</a>
+                </dd>
+              </dl>
+            </li>
+            <li class="layui-nav-item">
+            	<a href="javascript:;" target="mainFrame">
+            		<i class="layui-icon">
+            			<img src="img/icon-holiday.png" class="icon-width">
+            		</i>
+            		<cite>请假管理</cite>
+            	</a>
+            	<dl class="layui-nav-child">
+					<dd>
+						<a href="leaveManage/applyManage.html" target="mainFrame">待我审批</a>
+					</dd>
+					<!-- <dd>
+						<a href="leaveManage/myApprove.html" target="mainFrame">我的记录</a>
+					</dd> -->
+					<dd>
+						<a href="leaveManage/myRecord.html" target="mainFrame">审批记录</a>
+					</dd>
+				</dl>
+			 </li>
+             <li class="layui-nav-item">
+            	<a href="javascript:;" target="mainFrame">
+            		<i class="layui-icon">
+            			<img src="img/icon-car.png" class="icon-width">
+            		</i>
+            		<cite>车辆管理</cite>
+            	</a>
+            	<dl class="layui-nav-child">
+	              	<dd>
+	                  <a href="carManage/parkingManage.html"  target="mainFrame">停车场管理</a>
+	                </dd>
+	                <dd>
+	                  <a href="carManage/carManage.html"  target="mainFrame">车辆管理</a>
+	                </dd>
+	                <dd>
+	                  <a href="carManage/carManageFamily.html"  target="mainFrame">家属车辆管理</a>
+	                </dd>
+	                <dd>
+	                  <a href="carManage/dumpingManage.html"  target="mainFrame">报废车列表</a>
+	                </dd>
+	                <dd>
+	                  <a href="carManage/carInOutRecord.html"  target="mainFrame">车辆进出记录</a>
+	                </dd>
+              </dl>
+            </li>
+            <li class="layui-nav-item">
+            	<a href="javascript:;" target="mainFrame">
+            		<i class="layui-icon">
+            			<img src="img/icon-dispatch.png" class="icon-width">
+            		</i>
+            		<cite>车辆派遣</cite>
+            	</a>
+            	<dl class="layui-nav-child">
+	              	<dd>
+	                  <a href="carDispatch/dispatchManage.html"  target="mainFrame">派车管理</a>
+	                </dd>
+	                <dd>
+	                  <a href="carDispatch/dispatchApprove.html"  target="mainFrame">派车审批</a>
+	                </dd>
+	                 <dd>
+	                  <a href="carDispatch/queryStatistics.html"  target="mainFrame">查询统计</a>
+	                </dd>
+	                <dd>
+	                  <a href="carDispatch/dataReport.html"  target="mainFrame">数据报表</a>
+	                </dd>
+              </dl>
+            </li>
+             <li class="layui-nav-item">
+            	<a href="javascript:;" target="mainFrame">
+            		<i class="layui-icon">
+            			<img src="img/icon-speed.png" class="icon-width">
+            		</i>
+            		<cite>视频测速</cite>
+            	</a>
+            	<dl class="layui-nav-child">
+	              	<dd>
+	                  <a href="velocityMeasurement/speedPoint.html"  target="mainFrame">测速点</a>
+	                </dd>
+	                <dd>
+	                  <a href="velocityMeasurement/carVelocityRecord.html"  target="mainFrame">车辆测速记录</a>
+	                </dd>
+	                 <dd>
+	                  <a href="velocityMeasurement/overSpeedRecord.html"  target="mainFrame">超速车辆记录</a>
+	                </dd>
+              </dl>
+            </li>
+            <li class="layui-nav-item">
+            	<a href="javascript:;" target="mainFrame">
+            		<i class="layui-icon">
+            			<img src="img/icon-door.png" class="icon-width">
+            		</i>
+            		<cite>门禁管理</cite>
+            	</a>
+            	<dl class="layui-nav-child">
+	              	<dd>
+	                  <a href="doorManage/permissionSet-Group.html"  target="mainFrame">人员门禁权限</a>
+	                </dd>
+	                <dd>
+	                  <a href="doorManage/permRecord.html"  target="mainFrame">权限下发记录</a>
+	                </dd>
+	                 <dd>
+	                  <a href="doorManage/peopleEntryRecord.html"  target="mainFrame">人员进出记录</a>
+	                </dd>
+              </dl>
+            </li>
+            
+             <li class="layui-nav-item">
+	              <a href="javascript:;">
+	                <i class="layui-icon">
+						<img src="img/icon-device.png" alt="" class="icon-width">
+					</i>
+	                <cite>设备管理</cite>
+	              </a>
+				  <dl class="layui-nav-child">
+				    <dd>
+				      <a href="deviceManage/areaManage.html"  target="mainFrame">区域管理</a>
+				    </dd>
+				    <dd>
+				      <a href="deviceManage/channelManage.html"  target="mainFrame">通道管理</a>
+				    </dd>
+				    <dd>
+				      <a href="deviceManage/boxManage.html"  target="mainFrame">盒子管理</a>
+				    </dd>
+				     <dd>
+				      <a href="deviceManage/deviceManage.html"  target="mainFrame">设备管理</a>
+				    </dd>
+				    <dd>
+				      <a href="deviceManage/permissionGroup.html"  target="mainFrame">门禁权限组</a>
+				    </dd>
+				  </dl>
+            </li>
+            
+            <li class="layui-nav-item">
+            	<a href="javascript:;" target="mainFrame">
+            		<i class="layui-icon">
+            			<img src="img/icon-map.png" class="icon-width">
+            		</i>
+            		<cite>电子地图</cite>
+            	</a>
+            </li>
+            <li class="layui-nav-item">
+            	<a href="javascript:;" target="mainFrame">
+            		<i class="layui-icon">
+            			<img src="img/icon-camera.png" class="icon-width">
+            		</i>
+            		<cite>监控管理</cite>
+            	</a>
+            	<dl class="layui-nav-child">
+	              	<dd>
+	                  <a href="monitorManage/monitorPoint.html"  target="mainFrame">监控点</a>
+	                </dd>
+	                <dd>
+	                  <a href="monitorManage/realTimePreview.html"  target="mainFrame">实时预览</a>
+	                </dd>
+	                <dd>
+	                  <a href="monitorManage/videoPlayBack.html"  target="mainFrame">录像回放</a>
+	                </dd>
+	             <!--   <dd>
+	                   <a href="javascript:;">
+						 视频检测
+						<span class="layui-nav-more"></span>
+					   </a>
+					   <dl class="layui-nav-child">
+						   <dd>
+							   <a href="monitorManage/onlineMonitor.html"  target="mainFrame">在线监测</a>
+						   </dd>
+						   <dd>
+							   <a href="monitorManage/videoDiagnose.html"  target="mainFrame">视频诊断</a>
+						   </dd>
+						   <dd>
+							   <a href="monitorManage/pictureRecording.html"  target="mainFrame">录像检查</a>
+						   </dd>
+					   </dl>
+                   </dd> -->
+              </dl>
+            </li>
+            
+             
+			<li class="layui-nav-item">
+			  <a href="javascript:;"  target="mainFrame">
+			    <i class="layui-icon">
+					<img src="img/icon-operation.png" alt="" class="icon-width">
+				</i>
+			    <cite>设备运维</cite>
+			  </a>
+			 <dl class="layui-nav-child">
+			  	<dd>
+			      <a href="javascript:;"  target="mainFrame">设备告警配置</a>
+			    </dd>
+			    <dd>
+			      <a href="javascript:;"  target="mainFrame">运维状况</a>
+			    </dd>
+			     <dd>
+			      <a href="javascript:;"  target="mainFrame">告警查询</a>
+			    </dd>
+			  </dl>
+			</li>
+			<li class="layui-nav-item">
+			  <a href="javascript:;"  target="mainFrame">
+			    <i class="layui-icon">
+					<img src="img/icon-blacklist.png" alt="" class="icon-width">
+				</i>
+			    <cite>黑名单管理</cite>
+			  </a>
+			  <dl class="layui-nav-child">
+			  	<dd>
+			      <a href="blackList/blackList_people.html"  target="mainFrame">黑名单人员</a>
+			    </dd>
+			    <dd>
+			      <a href="blackList/blackList_car.html"  target="mainFrame">黑名单车辆</a>
+			    </dd>
+			     <dd>
+			      <a href="blackList/peopleAlarm.html"  target="mainFrame">人员报警</a>
+			    </dd>
+			    <dd>
+			      <a href="blackList/carAlarm.html"  target="mainFrame">车辆报警</a>
+			    </dd>
+			  </dl>
+			</li>
+			<li class="layui-nav-item">
+              <a href="javascript:;">
+                <i class="layui-icon">
+					<img src="img/icon-visitor.png" alt="" class="icon-width">
+				</i>
+                <cite>访客管理</cite>
+              </a>
+			  <dl class="layui-nav-child">
+			  	<dd>
+			      <a href="visitorManage/visitorRegister.html"  target="mainFrame">访客预约</a>
+			    </dd>
+			     <dd>
+			      <a href="visitorManage/visitorRecord.html" target="mainFrame">访客登记记录</a>
+			    </dd>
+			     <dd>
+			      <a href="visitorManage/visitorReason.html" target="mainFrame">来访事由</a>
+			    </dd>
+			  </dl>
+            </li>
+            <li class="layui-nav-item">
+              <a href="javascript:;">
+                <i class="layui-icon">
+					<img src="img/icon-patrol.png" alt="" class="icon-width">
+				</i>
+                <cite>巡更管理</cite>
+              </a>
+			  <dl class="layui-nav-child">
+			  	<dd>
+			      <a href="javascript:;"  target="mainFrame">巡更路线</a>
+			    </dd>
+			     <dd>
+			      <a href="javascript:;" target="mainFrame">巡更人员</a>
+			    </dd>
+			     <dd>
+			      <a href="javascript:;" target="mainFrame">巡更排班</a>
+			    </dd>
+			     <dd>
+			      <a href="javascript:;" target="mainFrame">用户线路管理</a>
+			    </dd>
+			     <dd>
+			      <a href="javascript:;" target="mainFrame">离线巡更</a>
+			    </dd>
+			     <dd>
+			      <a href="javascript:;" target="mainFrame">巡更记录</a>
+			    </dd>
+			  </dl>
+            </li>
+             <li class="layui-nav-item">
+              <a href="javascript:;">
+                <i class="layui-icon">
+					<img src="img/icon-meeting.png" alt="" class="icon-width">
+				</i>
+                <cite>会议管理</cite>
+              </a>
+			  <dl class="layui-nav-child">
+			  	<dd>
+			      <a href="meeting/meetRoom.html"  target="mainFrame">会议室管理</a>
+			    </dd>
+			     <dd>
+			      <a href="javascript:;" target="mainFrame">会议建立</a>
+			    </dd>
+			     <dd>
+			      <a href="meeting/meetingManager.html" target="mainFrame">会议管理</a>
+			    </dd>
+			     <dd>
+			      <a href="javascript:;" target="mainFrame">会议记录查询</a>
+			    </dd>
+			  </dl>
+            </li>
+           <li class="layui-nav-item">
+              <a href="javascript:;">
+                <i class="layui-icon">
+					<img src="img/icon-document.png" alt="" class="icon-width">
+				</i>
+                <cite>集中文印管理</cite>
+              </a>
+            </li>
+            <li class="layui-nav-item">
+              <a href="javascript:;">
+                <i class="layui-icon">
+					<img src="img/icon-borrow.png" alt="" class="icon-width">
+				</i>
+                <cite>档案借阅管理</cite>
+              </a>
+            </li>
+            <li  class="layui-nav-item">
+              <a href="javascript:;">
+                <i class="layui-icon">
+					<img src="img/icon-system.png" alt="" class="icon-width">
+				</i>
+                <cite>系统管理</cite>
+              </a>
+               <dl class="layui-nav-child">
+                <dd>
+                   <a href="systemManage/unit_list.html"  target="mainFrame">单位管理</a>
+                </dd>
+                <dd >
+                   <a href="systemManage/title_list.html"  target="mainFrame">岗位管理</a>
+                </dd>
+                <dd >
+                   <a href="systemManage/menuManage.html"  target="mainFrame">菜单管理</a>
+                </dd> 
+                 <dd >
+                   <a href="systemManage/roleManage.html"  target="mainFrame">角色管理</a>
+                </dd>
+                 <dd >
+                   <a href="systemManage/userManage.html"  target="mainFrame">用户管理</a>
+                </dd>
+                 <dd >
+                   <a href="systemManage/platformManage.html"  target="mainFrame">基础设置</a>
+                </dd>
+                <dd>
+				   <a href="systemManage/dictManage.html" target="mainFrame">字典管理</a>
+				</dd>
+                <dd>
+                   <a href="systemManage/systemLog.html"  target="mainFrame">系统日志</a>
+                </dd>
+              </dl>
+            </li> 
+          </ul>
+        </div>
+      </div>
+
+      <!-- 页面标签 -->
+      <!-- <div class="layadmin-pagetabs" id="LAY_app_tabs">
+       <div class="layui-icon layadmin-tabs-control layui-icon-prev" layadmin-event="leftPage"></div>
+        <div class="layui-icon layadmin-tabs-control layui-icon-next" layadmin-event="rightPage"></div>
+       <div class="layui-icon layadmin-tabs-control layui-icon-down">
+          <ul class="layui-nav layadmin-tabs-select" lay-filter="layadmin-pagetabs-nav">
+            <li class="layui-nav-item" lay-unselect>
+              <a href="javascript:;"></a>
+              <dl class="layui-nav-child layui-anim-fadein">
+                <dd layadmin-event="closeThisTabs"><a href="javascript:;">关闭当前标签页</a></dd>
+                <dd layadmin-event="closeOtherTabs"><a href="javascript:;">关闭其它标签页</a></dd>
+                <dd layadmin-event="closeAllTabs"><a href="javascript:;">关闭全部标签页</a></dd>
+              </dl>
+            </li>
+          </ul>
+        </div>
+        <div class="layui-tab" lay-unauto lay-allowClose="true" lay-filter="layadmin-layout-tabs">
+          <ul class="layui-tab-title" id="LAY_app_tabsheader">
+            <li lay-id="systemManagement/publicWelfareEducation.html" lay-attr="systemManagement/publicWelfareEducation.html" class="layui-this">
+				<span>楼栋管理</span>
+			</li>
+          </ul>
+        </div>
+      </div> -->
+      
+      
+      <!-- 主体内容 -->
+      <div class="layui-body" id="LAY_app_body" style="background-color: #f5f5f5;">
+        <div class="layadmin-tabsbody-item layui-show" style="background-color: #fff;">
+          <iframe src="user/password.html" frameborder="0" name="mainFrame" id="mainFrame" width="100%" height="100%"></iframe>
+        </div>
+      </div>
+      
+      <!-- 辅助元素，一般用于移动设备下遮罩 -->
+      <div class="layadmin-body-shade" layadmin-event="shade"></div>
+    </div>
+  </div>
+  <script src="js/path.js"></script>
+  <script src="js/jquery.min.js"></script>  
+  <script src="js/jquery-cookie.js"></script>  
+  <script src="layuiadmin/layui/layui.js"></script>
+  <script src="js/home.js"></script>
+  <script>
+  layui.config({
+    base: 'layuiadmin/' //静态资源所在路径
+  }).extend({
+    index: 'lib/index' //主入口模块
+  }).use('index');
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,41 @@
+.carFile{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 102px;
+    height: 102px;
+    opacity: 0;
+}
+
+.peopleBox{
+	display: flex;
+	flex-wrap: wrap;
+}
+.peopleBox .people-item{
+	border: 1px solid #ddd;
+	color: #666;
+	padding: 10px 15px;
+	box-sizing: border-box;
+	margin: 10px;
+	cursor: pointer;
+	border-radius: 5px;
+	display: inline-block;
+}
+.peopleBox .people-item.curr{
+	background: url(../../img/right-role.png) no-repeat right 66px;
+	border-color: #039BDD;
+}
+.peopleBox .people-item p label{
+	width: 50px;
+	display: inline-block;
+	text-align: right;
+}
+.peopleBox .people-item p span{
+	width: 130px;
+	display: inline-block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	vertical-align: middle;
+	margin-left: 10px;
+}

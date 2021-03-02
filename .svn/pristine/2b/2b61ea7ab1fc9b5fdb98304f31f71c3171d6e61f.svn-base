@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.ChannelDataMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.ChannelData" >
+    <id column="ChannelNo" property="channelno" jdbcType="INTEGER" />
+    <result column="ChannelName" property="channelname" jdbcType="VARCHAR" />
+    <result column="Type" property="type" jdbcType="VARCHAR" />
+    <result column="LocatName" property="locatname" jdbcType="VARCHAR" />
+    <result column="Remark" property="remark" jdbcType="VARCHAR" />
+    <result column="AreaID" property="areaid" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ChannelNo, ChannelName, Type,LocatName, Remark, AreaID, CreateDate, UpdateDate
+  </sql>
+  
+  <sql id="c_start">
+	  select res.*
+	from (select @num := @num+1 tindex, tmp.* from
+		(
+  </sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by channelno asc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+	
+	<select id="getTree" resultType="Map">
+	select concat('al',al.areaid) "id",al.areaname "title",
+case when al.parentid is null then '' 
+when al.parentid='' then '' 
+else concat('al',al.parentid) end "parent"
+ from arealist al inner join channeldata c on c.AreaID=al.areaid
+UNION ALL
+select concat('cc',c.channelno) "id",c.channelname "title",concat('al',c.areaid) "parent"
+ from arealist al inner join channeldata c on al.AreaID=c.areaid
+
+	   <!--  select concat('al',al.areaid) "id",al.areaname "title",
+case when al.parentid is null then '' 
+when al.parentid='' then '' else concat('al',al.parentid) end "parent",
+al.level,al.sort,al.Remark,'' as "type",'' as "locatname"
+ from arealist al where areaid in (select areaid from channeldata)
+UNION ALL
+select concat('cc',cast(c.channelno as char)) "id",c.channelname "title",
+case when c.areaid is null then '' 
+when c.areaid='' then ''
+else concat('al',c.areaid) end "parent",
+'' as "type",'' as "locatname",c.remark,c.type ,c.locatname from channeldata c 
+where c.areaid is not null and c.areaid!='' -->
+	</select>
+	
+	<select id="getNextid" resultType="Integer">
+	   select IFNULL(max(channelno),0)+1 from ChannelData
+	</select>
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select c.channelno,  c.channelname,  c.type, c.locatname, c.remark, 
+		 c.areaid,al.areaname from ChannelData c 
+		 left join AreaList al on al.areaid=c.areaid
+		<where>
+			<if test="channelno != null and channelno!='' ">
+				and  c.channelno =#{channelno}
+			</if>
+			<if test="channelname != null and channelname!='' ">
+				and  c.channelname=#{channelname} 
+			</if>
+			<if test="name != null and name!='' ">
+				and  c.channelname like concat('%',#{name},'%') 
+			</if>
+			<if test="type != null and type!='' ">
+				and  c.type =#{type} 
+			</if>
+			<if test="areaid != null and areaid!='' ">
+				and  c.areaid=#{areaid}
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="Integer">
+		select count(1) from ChannelData c 
+		 left join AreaList al on al.areaid=c.areaid
+		<where>
+			<if test="channelno != null and channelno!='' ">
+				and  c.channelno =#{channelno}
+			</if>
+			<if test="channelname != null and channelname!='' ">
+				and  c.channelname=#{channelname} 
+			</if>
+			<if test="name != null and name!='' ">
+				and  c.channelname like concat('%',#{name},'%') 
+			</if>
+			<if test="type != null and type!='' ">
+				and  c.type =#{type} 
+			</if>
+			<if test="areaid != null and areaid!='' ">
+				and  c.areaid=#{areaid}
+			</if>
+		</where>
+	</select>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from channeldata
+    where ChannelNo = #{channelno,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from channeldata
+    where ChannelNo = #{channelno,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.ChannelData" >
+    insert into channeldata (ChannelNo, ChannelName, Type,LocatName, 
+      Remark, AreaID, CreateDate, 
+      UpdateDate)
+    values (#{channelno,jdbcType=INTEGER}, #{channelname,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, 
+      #{locatname,jdbcType=VARCHAR},#{remark,jdbcType=VARCHAR}, #{areaid,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, 
+      #{updatedate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.ChannelData" >
+    insert into channeldata
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="channelno != null" >
+        ChannelNo,
+      </if>
+      <if test="channelname != null" >
+        ChannelName,
+      </if>
+      <if test="type != null" >
+        Type,
+      </if>
+      <if test="locatname != null" >
+        LocatName,
+      </if>
+      <if test="remark != null" >
+        Remark,
+      </if>
+      <if test="areaid != null" >
+        AreaID,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="channelno != null" >
+        #{channelno,jdbcType=INTEGER},
+      </if>
+      <if test="channelname != null" >
+        #{channelname,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=VARCHAR},
+      </if>
+       <if test="locatname != null" >
+        #{locatname,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="areaid != null" >
+        #{areaid,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.ChannelData" >
+    update channeldata
+    <set >
+      <if test="channelname != null" >
+        ChannelName = #{channelname,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        Type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="locatname != null" >
+        LocatName = #{locatname,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        Remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="areaid != null" >
+        AreaID = #{areaid,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ChannelNo = #{channelno,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.ChannelData" >
+    update channeldata
+    set ChannelName = #{channelname,jdbcType=VARCHAR},
+      Type = #{type,jdbcType=VARCHAR},
+      LocatName = #{locatname,jdbcType=VARCHAR},
+      Remark = #{remark,jdbcType=VARCHAR},
+      AreaID = #{areaid,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP}
+    where ChannelNo = #{channelno,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,263 @@
+package com.xr.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.xr.configure.MethodLog;
+import com.xr.entry.ChannelData;
+import com.xr.service.IChannelDataService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+
+@Controller
+@RequestMapping("ChannelData")
+@Api(tags="ChannelDataController",description="接口标题：通道层接口")
+public class ChannelDataController {
+	@Autowired
+	private IChannelDataService ics;
+	
+	/**
+	 * 新增
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：新增接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="channelno",value="参数：通道编号",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="channelname",value="参数：通道名称",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="locatname",value="参数：通道所在的具体位置",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="areaid",value="参数：通道所在区域id",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="remark",value="参数：备注",dataType="String",paramType="path")
+	})
+	@MethodLog(methodName="新增",remark="新增字典")
+	@RequestMapping(value="/insert",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> insert(ChannelData record,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("channelname", record.getChannelname());
+			List<Map<String,Object>> exist=ics.getListService(m);
+			if(exist!=null && exist.size()>0){
+				map.put("flag", false);
+				map.put("reason", "对不起，该通道名称已存在了！");
+				return map;
+			}
+			Integer nextid=ics.getNextidService();
+			record.setChannelno(nextid);
+			int i=ics.insertSelectiveService(record);
+			if(i>0){
+				map.put("flag", true);
+				map.put("reason", "添加成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "添加失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 修改
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：修改接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="channelno",value="参数：通道编号",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="channelname",value="参数：通道名称",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="locatname",value="参数：通道所在的具体位置",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="areaid",value="参数：通道所在区域id",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="remark",value="参数：备注",dataType="String",paramType="path")
+	})
+	@MethodLog(methodName="修改",remark="修改字典")
+	@RequestMapping(value="/update",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> update(ChannelData record,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("channelname", record.getChannelname());
+			List<Map<String,Object>> exist=ics.getListService(m);
+			if(exist!=null && exist.size()>0){
+				Integer id=Integer.valueOf(String.valueOf(exist.get(0).get("channelno")));
+				if(!id.equals(record.getChannelno())){
+					map.put("flag", false);
+					map.put("reason", "对不起，该通道名称已存在了！");
+					return map;
+				}
+			}
+			int i=ics.updateByPrimaryKeySelectiveService(record);
+			if(i>0){
+				map.put("flag", true);
+				map.put("reason", "更新成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "更新失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 查询
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="channelno",value="参数：通道编号",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/query",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> query(Integer channelno,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		try{
+			ChannelData data=ics.selectByPrimaryKeyService(channelno); 
+			if(data!=null && !"".equals(data)){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", data);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 删除
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：删除接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="channelno",value="参数：通道编号",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@MethodLog(methodName="删除",remark="删除字典")
+	@RequestMapping(value="/delete",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> delete(Integer channelno,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		try{
+			int i=ics.deleteByPrimaryKeyService(channelno); 
+			if(i>0){
+				map.put("flag", true);
+				map.put("reason", "删除成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "删除失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="curpage",value="参数：当前页数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="pagesize",value="参数：每页显示数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="channelno",value="参数：通道id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="channelname",value="参数：通道名称",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="areaid",value="参数：通道所在区域id",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="name",value="参数：通道名称，模糊查询时传参",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getList",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getList(ChannelData record,String name,Integer curpage,Integer pagesize){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("channelno", record.getChannelno());
+			m.put("channelname", record.getChannelname());
+			m.put("type", record.getType());
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			m.put("name", name);
+			List<Map<String,Object>> list=ics.getListService(m);
+			int count=ics.getListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	/**
+	 * 区域通道下拉树
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：区域通道下拉树接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getTree",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getTree(String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			 
+			List<Map<String,Object>> list=ics.getTreeService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	
+}

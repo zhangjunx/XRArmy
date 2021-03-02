@@ -1,0 +1,5 @@
+var url="/XRArmy";
+var ws="ws://localhost:8080";
+var carUrl="http://localhost:8080/CarManager/";
+var meetUrl="http://localhost:8080/MeetingManager/";
+

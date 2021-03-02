@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.ACL_RoleMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.ACL_Role" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="Name" property="name" jdbcType="VARCHAR" />
+    <result column="Sort" property="sort" jdbcType="VARCHAR" />
+    <result column="Remark" property="remark" jdbcType="VARCHAR" />
+    <result column="Deleted" property="deleted" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, Name, Sort, Remark, Deleted
+  </sql>
+  
+   <sql id="c_start">
+	  	select res.*
+  		  from (select @num := @num+1 tindex, tmp.* from (
+	  </sql>
+	  
+	  <sql id="c_end">
+	  	) tmp , (SELECT @num := 0) var order by id asc) res where 1=1
+	  	<if test="curpage != null and curpage != ''">
+	  		and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) * CONVERT(#{pagesize},SIGNED)+1 
+	  		and res.tindex &lt;= CONVERT(#{curpage},SIGNED) * CONVERT(#{pagesize},SIGNED)
+	  	</if>
+	  </sql>
+  
+ <select id="getList" resultType="Map">
+ <include refid="c_start"></include>
+     select id,name,sort,remark,deleted from ACL_Role 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="name != null and name!='' " >
+	        and Name=#{name}
+	      </if>
+	      <if test="rolename != null and rolename!='' " >
+	        and Name like concat('%',#{rolename},'%')
+	      </if>
+     </where>
+      <include refid="c_end"></include>
+  </select>
+  
+  
+  <select id="getListCount" resultType="integer">
+		select count(1)
+		 from ACL_Role 
+     <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="name != null and name!='' " >
+	        and Name=#{name}
+	      </if>
+	      <if test="rolename != null and rolename!='' " >
+	        and Name like concat('%',#{rolename},'%')
+	      </if>
+     </where>
+ </select>
+ 
+ <!--添加角色  -->
+	<update id="add">
+		insert into acl_role (Name, Sort, Remark, Deleted)
+         select #{name}, #{sort},#{remark}, #{deleted}
+      where not exists(select 1 from acl_role where name=#{name})
+	</update>
+	
+	<update id="edit">
+		update acl_role
+       set Name = #{name},
+      Sort = #{sort},
+      Remark = #{remark},
+      Deleted = #{deleted}
+    where ID = #{id}
+	</update>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from acl_role
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from acl_role
+    where ID = #{id,jdbcType=INTEGER};
+    delete from acl_role_menu
+    where roleid = #{id,jdbcType=INTEGER};
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.ACL_Role" >
+    insert into acl_role (ID, Name, Sort, 
+      Remark, Deleted)
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{sort,jdbcType=VARCHAR}, 
+      #{remark,jdbcType=VARCHAR}, #{deleted,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.ACL_Role" >
+    insert into acl_role
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="name != null" >
+        Name,
+      </if>
+      <if test="sort != null" >
+        Sort,
+      </if>
+      <if test="remark != null" >
+        Remark,
+      </if>
+      <if test="deleted != null" >
+        Deleted,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="deleted != null" >
+        #{deleted,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.ACL_Role" >
+    update acl_role
+    <set >
+      <if test="name != null" >
+        Name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        Sort = #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        Remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="deleted != null" >
+        Deleted = #{deleted,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.ACL_Role" >
+    update acl_role
+    set Name = #{name,jdbcType=VARCHAR},
+      Sort = #{sort,jdbcType=VARCHAR},
+      Remark = #{remark,jdbcType=VARCHAR},
+      Deleted = #{deleted,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

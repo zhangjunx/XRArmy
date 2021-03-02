@@ -1,0 +1,152 @@
+package com.xr.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSONArray;
+import com.xr.configure.MethodLog;
+import com.xr.entry.AccessGroupChannel;
+import com.xr.service.IAccessGroupChannelService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+
+@Controller
+@RequestMapping("AccessGroupChannel")
+@Api(tags="AccessGroupChannelController",description="接口标题：权限组通道分配层接口")
+public class AccessGroupChannelController {
+	@Autowired
+	private IAccessGroupChannelService ics;
+	
+	/**
+	 * 新增
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：设置通行区域接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="groupid",value="参数：权限组id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="str",value="参数：json数组：[1,2],里面存的通道的id值",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@MethodLog(methodName="保存",remark="设置通行区域")
+	@RequestMapping(value="/add",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> add(Integer groupid,String str,String loginid){
+		Map<String,Object> map=new HashMap<String,Object>();
+		try{
+			JSONArray arr=JSONArray.parseArray(str);
+			List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
+			for(int i=0;i<arr.size();i++){
+				Map<String,Object> m=new HashMap<String,Object>();
+				Integer channelno=arr.getInteger(i);
+				m.put("channelno", channelno);
+				List<Map<String,Object>> exist=ics.getListService(m);
+				if(exist!=null && exist.size()==1){
+					Map<String,Object> m1=exist.get(0);
+					Integer groupid2=Integer.valueOf(String.valueOf(m1.get("groupid")));
+					if(!groupid.equals(groupid2) && groupid!=groupid2){
+						m1.put("type", "uu");
+						result.add(m1);
+					}
+				}else if(exist==null || exist.size()==0){
+					m.put("groupid", groupid);
+					m.put("type", "aa");
+					result.add(m);
+				}else{
+					for(int k=0;k<exist.size();k++){
+						Map<String,Object> m1=exist.get(k);
+						m1.put("type", "dd");
+						result.add(m1);
+					}
+				}
+			}
+			//批次操作
+			List<Map<String,Object>> pici=new ArrayList<Map<String,Object>>();
+			for(int i=0;i<result.size();i++){
+				pici.add(result.get(i));
+				if(pici.size()==100 || i==result.size()-1){
+					ics.addService(pici);
+					pici.clear();
+				}
+			}
+			
+			if(result!=null && result.size()>0){
+				map.put("flag", true);
+				map.put("reason", "保存成功！");
+			}else{
+				map.put("flag", false);
+				map.put("reason", "保存失败！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+ 
+	
+	 
+	
+	/**
+	 * 查询列表
+	 * @param record
+	 * @return
+	 */
+	@ApiOperation(httpMethod="POST",value="接口说明：查询列表接口",notes="接口的notes说明")
+	@ApiImplicitParams({
+		@ApiImplicitParam(name="curpage",value="参数：当前页数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="pagesize",value="参数：每页显示数",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="id",value="参数：主键id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="groupid",value="参数：权限组id",dataType="Integer",paramType="path"),
+		@ApiImplicitParam(name="channelno",value="参数：通道编号",dataType="String",paramType="path"),
+		@ApiImplicitParam(name="loginid",value="参数：登录人id",dataType="String",paramType="path")
+	})
+	@RequestMapping(value="/getList",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getList(AccessGroupChannel record,Integer curpage,Integer pagesize){
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		try{
+			m.put("id", record.getId());
+			m.put("groupid", record.getGroupid());
+			m.put("channelno", record.getChannelno());
+			m.put("curpage", curpage);
+			m.put("pagesize", pagesize);
+			List<Map<String,Object>> list=ics.getListService(m);
+			int count=ics.getListCountService(m);
+			if(list!=null && list.size()>0){
+				map.put("flag", true);
+				map.put("reason", "查询成功！");
+				map.put("result", list);
+				map.put("count", count);
+			}else{
+				map.put("flag", false);
+				map.put("reason", "暂无数据可查！");
+			}
+		}catch(Exception ex){
+			map.put("flag", false);
+			System.out.println(ex);
+			map.put("reason", "程序异常，请联系管理员！");
+		}
+		return map;
+	}//end
+	
+	
+	 
+	 
+
+}

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>新增车辆</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="../css/public.css">
+  <link rel="stylesheet" href="css/carManage.css">
+</head>
+<body>
+	<input type="hidden" id="fid">
+	<div class="layui-fluid">
+		<div class="layui-con">
+			<div class="layui-form layuiadmin-card-header-auto">
+				<div class="layui-row">
+					<div class="layui-col-md4">
+						<div class="layui-form-item">
+							<div class="layui-col-lg9">
+								<label class="layui-form-label"><span class="must">*</span>车牌号码</label>
+								<div class="layui-input-block">
+									<input type="text" name="carNum" id="carNum"
+										autocomplete="off" lay-verify="carnumber" class="layui-input" placeholder="请输入">
+								</div>
+							</div>
+						</div>
+						<!-- <div class="layui-form-item">
+							<div class="layui-col-lg9">
+								<label class="layui-form-label">车辆类别</label>
+								<div class="layui-input-block">
+									<select name="carClass" id="carClass">
+										<option value="">请选择</option>								
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-lg9">
+								<label class="layui-form-label">车主</label>
+								<div class="layui-input-block">
+									<input type="text" name="car_number" id="car_number"
+										autocomplete="off" lay-verify="required" class="layui-input" placeholder="请输入车牌号">
+								</div>
+							</div>
+						</div> -->
+						<div class="layui-form-item">
+							<div class="layui-col-lg9">
+								<label class="layui-form-label"><span class="must">*</span>停车场</label>
+								<div class="layui-input-block">
+									<select name="parkID" id="parkID" lay-verify="required">
+										<option value="">请选择</option>								
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-lg9">
+								<label class="layui-form-label">车辆用途</label>
+								<div class="layui-input-block">
+									<input type="text" name="purpose" id="purpose"
+										autocomplete="off"  class="layui-input" placeholder="请输入">
+								</div>
+							</div>
+						</div>
+							<div class="layui-form-item" id="useDept">
+								<div class="layui-col-lg9">
+									<label class="layui-form-label"><span class="must">*</span>使用单位</label>
+									<div class="layui-input-block">
+										<div class="layui-unselect layui-form-select downpanel">
+									<div class="layui-select-title" id="selectTitle">
+										<span class="layui-input layui-unselect" style="line-height:38px" id="unitname"></span>
+										<input type="hidden" id="unitno" >
+										<i class="layui-edge"></i>
+									</div>
+									<dl class="layui-anim layui-anim-upbit">
+										<dd style="overflow:visible">
+											<ul id="classtree" class="input"></ul>
+										</dd>
+									</dl>
+								</div>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-lg9">
+									<label class="layui-form-label">公里数</label>
+									<div class="layui-input-block">
+										<input type="text" name="kilometers" id="kilometers"
+											autocomplete="off" class="layui-input" placeholder="请输入">
+									</div>
+								</div>
+							</div>
+						<div class="layui-form-item">
+							<div class="layui-col-lg9">
+								<label class="layui-form-label">维修保养记录</label>
+								<div class="layui-input-block">
+									<textarea name="repairRecord" id="repairRecord" placeholder="请输入" class="layui-textarea"></textarea>
+								</div>
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-col-lg9">
+								<label class="layui-form-label">上传资料照片</label>
+								<div class="layui-input-block">
+									<img src="../img/add_img.png" class="carImg" id="scenePhoto" style="width: 102px;height: 102px;object-fit: cover;">
+									<input type="file" class="carFile" id="sceneFile" title="点击更换图片" accept=".jpg,.png,.gif">
+								</div>
+							</div>
+						</div>
+					</div>
+						<div class="layui-col-md4">
+						
+							<div class="layui-form-item">
+								<div class="layui-col-lg9">
+									<label class="layui-form-label">车型</label>
+									<div class="layui-input-block">
+										<select name="carType" id="carType">
+											<option value="">请选择</option>	
+											<option value="轿车">轿车</option>	
+											<option value="越野车">越野车</option>	
+											<option value="考斯特">考斯特</option>	
+											<option value="大巴">大巴</option>	
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-lg9">
+									<label class="layui-form-label"></label>
+									<div class="layui-input-block">
+										<input type="checkbox" name="ifPrivateUse" id="ifPrivateUse" lay-filter="ifPrivateUse" value="0" title="免派车辆" lay-skin="primary">
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item" id="driveCar" style="display:none">
+								<div class="layui-col-lg9">
+									<label class="layui-form-label">驾驶员</label>
+									<div class="layui-input-block">
+										<input type="text" name="driver" id="driver"
+											autocomplete="off"  class="layui-input" placeholder="请输入">
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item" id="leader" style="display:none">
+								<div class="layui-col-lg9">
+									<label class="layui-form-label">使用领导</label>
+									<div class="layui-input-block">
+										<input type="text" name="useLeader" id="useLeader"
+											autocomplete="off"  class="layui-input" placeholder="请输入">
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-lg9">
+									<label class="layui-form-label" style="margin-left:-28px;width:112px"><span class="must">*</span>有效期开始时间</label>
+									<div class="layui-input-block">
+										<input type="text" name="startDate" id="startDate"
+											autocomplete="off" lay-verify="required" class="layui-input date" placeholder="">
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-lg9">
+									<label class="layui-form-label" style="margin-left:-28px;width:112px"><span class="must">*</span>有效期结束时间</label>
+									<div class="layui-input-block">
+										<input type="text" name="endDate" id="endDate"
+											autocomplete="off" lay-verify="required" class="layui-input date" placeholder="">
+									</div>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-col-lg9">
+									<label class="layui-form-label">备注</label>
+									<div class="layui-input-block">
+										<textarea name="remark" id="remark" placeholder="请输入内容" class="layui-textarea"></textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+				</div>
+					<div class="layui-form-item layui-layout-admin">
+						<div class="layui-input-block">
+							<button class="layui-btn layui-bg-blue" lay-submit=""
+								lay-filter="component-form-demo1">确定</button>
+							<button type="reset" class="layui-btn layui-btn-primary" id="resetData">取消</button>
+						</div>
+					</div>
+			</div>
+		</div>
+	</div>
+	<script src="../js/path.js"></script>  
+	<script src="../js/jquery.min.js"></script>  
+	 <script src="../js/jquery-cookie.js"></script> 
+    <script src="../layui/layui.js"></script>
+    <script src="js/carManage_add.js"></script>
+</body>
+</html>

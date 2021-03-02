@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.DictDataMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.DictData" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="Code" property="code" jdbcType="VARCHAR" />
+    <result column="Name" property="name" jdbcType="VARCHAR" />
+    <result column="ItemCode" property="itemcode" jdbcType="VARCHAR" />
+    <result column="ItemName" property="itemname" jdbcType="VARCHAR" />
+    <result column="Sort" property="sort" jdbcType="VARCHAR" />
+    <result column="Deleted" property="deleted" jdbcType="VARCHAR" />
+    <result column="Remark" property="remark" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, Code, Name, ItemCode, ItemName, Sort, Deleted, Remark, CreateDate, UpdateDate
+  </sql>
+  
+  <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id asc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+
+    
+    <select id="getItemList" resultType="Map">
+		 select itemname from DictData group by itemname
+	</select>
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select id,code,name,itemcode,itemname,
+		sort,deleted,remark from DictData
+		<where>
+			<if test="id != null and id!='' ">
+				and id=#{id}
+			</if>
+			<if test="name != null and name!='' ">
+				and name=#{name}
+			</if>
+			<if test="code != null and code!='' ">
+				and code=#{code}
+			</if>
+			<if test="itemcode != null and itemcode!='' ">
+				and itemcode=#{itemcode}
+			</if>
+			<if test="itemname != null and itemname!='' ">
+				and itemname=#{itemname}
+			</if>
+			<if test="dictname != null and dictname!='' ">
+				and itemname like concat('%',#{dictname},'%')
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="Integer">
+		select count(1) from DictData
+		<where>
+			<if test="id != null and id!='' ">
+				and id=#{id}
+			</if>
+			<if test="name != null and name!='' ">
+				and name=#{name}
+			</if>
+			<if test="itemname != null and itemname!='' ">
+				and itemname=#{itemname}
+			</if>
+			<if test="dictname != null and dictname!='' ">
+				and itemname like concat('%',#{dictname},'%')
+			</if>
+		</where>
+	</select>
+  
+  <insert id="addExcel" parameterType="java.util.List">
+    <foreach collection="list" item="item" separator=";" index="index">
+      insert into dictdata (Code, Name, 
+      ItemCode, ItemName, Sort,Remark)
+    values ( #{item.code}, #{item.name}, 
+      #{item.itemcode}, #{item.itemname}, 
+      #{item.sort},#{item.remark})
+    </foreach>
+  </insert>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from dictdata
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from dictdata
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.DictData" >
+    insert into dictdata (ID, Code, Name, 
+      ItemCode, ItemName, Sort, 
+      Deleted, Remark, CreateDate, 
+      UpdateDate)
+    values (#{id,jdbcType=INTEGER}, #{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{itemcode,jdbcType=VARCHAR}, #{itemname,jdbcType=VARCHAR}, #{sort,jdbcType=VARCHAR}, 
+      #{deleted,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, 
+      #{updatedate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.DictData" >
+    insert into dictdata
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="code != null" >
+        Code,
+      </if>
+      <if test="name != null" >
+        Name,
+      </if>
+      <if test="itemcode != null" >
+        ItemCode,
+      </if>
+      <if test="itemname != null" >
+        ItemName,
+      </if>
+      <if test="sort != null" >
+        Sort,
+      </if>
+      <if test="deleted != null" >
+        Deleted,
+      </if>
+      <if test="remark != null" >
+        Remark,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="code != null" >
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="itemcode != null" >
+        #{itemcode,jdbcType=VARCHAR},
+      </if>
+      <if test="itemname != null" >
+        #{itemname,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="deleted != null" >
+        #{deleted,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.DictData" >
+    update dictdata
+    <set >
+      <if test="code != null" >
+        Code = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        Name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="itemcode != null" >
+        ItemCode = #{itemcode,jdbcType=VARCHAR},
+      </if>
+      <if test="itemname != null" >
+        ItemName = #{itemname,jdbcType=VARCHAR},
+      </if>
+      <if test="sort != null" >
+        Sort = #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="deleted != null" >
+        Deleted = #{deleted,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        Remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.DictData" >
+    update dictdata
+    set Code = #{code,jdbcType=VARCHAR},
+      Name = #{name,jdbcType=VARCHAR},
+      ItemCode = #{itemcode,jdbcType=VARCHAR},
+      ItemName = #{itemname,jdbcType=VARCHAR},
+      Sort = #{sort,jdbcType=VARCHAR},
+      Deleted = #{deleted,jdbcType=VARCHAR},
+      Remark = #{remark,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

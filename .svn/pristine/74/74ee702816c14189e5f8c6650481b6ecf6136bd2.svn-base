@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.VisitorsInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.VisitorsInfo" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="VisitorsName" property="visitorsname" jdbcType="VARCHAR" />
+    <result column="VisitorsDate" property="visitorsdate" jdbcType="TIMESTAMP" />
+    <result column="VisitorsReason" property="visitorsreason" jdbcType="VARCHAR" />
+    <result column="VisitorsReasonText" property="visitorsreasontext" jdbcType="VARCHAR" />
+    <result column="Phone" property="phone" jdbcType="VARCHAR" />
+    <result column="SexName" property="sexname" jdbcType="VARCHAR" />
+    <result column="IDType" property="idtype" jdbcType="VARCHAR" />
+    <result column="IDCode" property="idcode" jdbcType="VARCHAR" />
+    <result column="NationName" property="nationname" jdbcType="VARCHAR" />
+    <result column="Address" property="address" jdbcType="VARCHAR" />
+    <result column="ReceiverPeopleID" property="receiverpeopleid" jdbcType="VARCHAR" />
+    <result column="ReceiversName" property="receiversname" jdbcType="VARCHAR" />
+    <result column="ReceiversPhone" property="receiversphone" jdbcType="VARCHAR" />
+    <result column="UnitNo" property="unitno" jdbcType="VARCHAR" />
+    <result column="UnitName" property="unitname" jdbcType="VARCHAR" />
+    <result column="CarPlateNo" property="carplateno" jdbcType="VARCHAR" />
+    <result column="CarBodyColor" property="carbodycolor" jdbcType="VARCHAR" />
+    <result column="CarPlateType" property="carplatetype" jdbcType="VARCHAR" />
+    <result column="PhotoStr" property="photostr" jdbcType="VARCHAR" />
+    <result column="BackStr" property="backstr" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.xr.entry.VisitorsInfo" extends="BaseResultMap" >
+    <result column="Photo" property="photo" jdbcType="LONGVARBINARY" />
+    <result column="BackPhoto" property="backphoto" jdbcType="LONGVARBINARY" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, VisitorsName, VisitorsDate, VisitorsReason, VisitorsReasonText, Phone, SexName, 
+    IDType, IDCode, NationName, Address, ReceiverPeopleID, ReceiversName, ReceiversPhone, 
+    UnitNo, UnitName, CarPlateNo, CarBodyColor, CarPlateType, PhotoStr, BackStr, CreateDate
+  </sql>
+  <sql id="Blob_Column_List" >
+    Photo, BackPhoto
+  </sql>
+  
+    <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id desc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+	
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select  id,visitorsname,phone,carplateno,visitorsreasontext,
+		idcode,idtype,unitname, 
+		date_format(visitorsdate,'%Y-%m-%d %H:%i:%s') visitorsdate,
+		receiversname,receiversphone,photostr,backstr from visitorsinfo
+		<where>
+			<if test="id != null and id!='' ">
+				and ID=#{id}
+			</if>
+			<if test="visitorsname != null and visitorsname!='' ">
+				and visitorsname like concat('%',#{visitorsname},'%')
+			</if>
+			<if test="receiversname != null and receiversname!='' ">
+				and receiversname like concat('%',#{receiversname},'%')
+			</if>
+			<if test="date != null and date!='' ">
+				and date_format(visitorsdate,'%Y-%m-%d')=#{date}
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="integer">
+		select count(1)	from visitorsinfo
+		<where>
+			<if test="id != null and id!='' ">
+				and ID=#{id}
+			</if>
+			<if test="visitorsname != null and visitorsname!='' ">
+				and visitorsname like concat('%',#{visitorsname},'%')
+			</if>
+			<if test="receiversname != null and receiversname!='' ">
+				and receiversname like concat('%',#{receiversname},'%')
+			</if>
+			<if test="date != null and date!='' ">
+				and date_format(visitorsdate,'%Y-%m-%d')=#{date}
+			</if>
+		</where>
+	</select>
+	
+  
+  
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from visitorsinfo
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from visitorsinfo
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.VisitorsInfo" >
+    insert into visitorsinfo (ID, VisitorsName, VisitorsDate, 
+      VisitorsReason, VisitorsReasonText, Phone, 
+      SexName, IDType, IDCode, 
+      NationName, Address, ReceiverPeopleID, 
+      ReceiversName, ReceiversPhone, UnitNo, 
+      UnitName, CarPlateNo, CarBodyColor, 
+      CarPlateType, PhotoStr, BackStr, 
+      CreateDate, Photo, BackPhoto
+      )
+    values (#{id,jdbcType=INTEGER}, #{visitorsname,jdbcType=VARCHAR}, #{visitorsdate,jdbcType=TIMESTAMP}, 
+      #{visitorsreason,jdbcType=VARCHAR}, #{visitorsreasontext,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, 
+      #{sexname,jdbcType=VARCHAR}, #{idtype,jdbcType=VARCHAR}, #{idcode,jdbcType=VARCHAR}, 
+      #{nationname,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, #{receiverpeopleid,jdbcType=VARCHAR}, 
+      #{receiversname,jdbcType=VARCHAR}, #{receiversphone,jdbcType=VARCHAR}, #{unitno,jdbcType=VARCHAR}, 
+      #{unitname,jdbcType=VARCHAR}, #{carplateno,jdbcType=VARCHAR}, #{carbodycolor,jdbcType=VARCHAR}, 
+      #{carplatetype,jdbcType=VARCHAR}, #{photostr,jdbcType=VARCHAR}, #{backstr,jdbcType=VARCHAR}, 
+      #{createdate,jdbcType=TIMESTAMP}, #{photo,jdbcType=LONGVARBINARY}, #{backphoto,jdbcType=LONGVARBINARY}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.VisitorsInfo" >
+    insert into visitorsinfo
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="visitorsname != null" >
+        VisitorsName,
+      </if>
+      <if test="visitorsdate != null" >
+        VisitorsDate,
+      </if>
+      <if test="visitorsreason != null" >
+        VisitorsReason,
+      </if>
+      <if test="visitorsreasontext != null" >
+        VisitorsReasonText,
+      </if>
+      <if test="phone != null" >
+        Phone,
+      </if>
+      <if test="sexname != null" >
+        SexName,
+      </if>
+      <if test="idtype != null" >
+        IDType,
+      </if>
+      <if test="idcode != null" >
+        IDCode,
+      </if>
+      <if test="nationname != null" >
+        NationName,
+      </if>
+      <if test="address != null" >
+        Address,
+      </if>
+      <if test="receiverpeopleid != null" >
+        ReceiverPeopleID,
+      </if>
+      <if test="receiversname != null" >
+        ReceiversName,
+      </if>
+      <if test="receiversphone != null" >
+        ReceiversPhone,
+      </if>
+      <if test="unitno != null" >
+        UnitNo,
+      </if>
+      <if test="unitname != null" >
+        UnitName,
+      </if>
+      <if test="carplateno != null" >
+        CarPlateNo,
+      </if>
+      <if test="carbodycolor != null" >
+        CarBodyColor,
+      </if>
+      <if test="carplatetype != null" >
+        CarPlateType,
+      </if>
+      <if test="photostr != null" >
+        PhotoStr,
+      </if>
+      <if test="backstr != null" >
+        BackStr,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="photo != null" >
+        Photo,
+      </if>
+      <if test="backphoto != null" >
+        BackPhoto,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="visitorsname != null" >
+        #{visitorsname,jdbcType=VARCHAR},
+      </if>
+      <if test="visitorsdate != null" >
+        #{visitorsdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="visitorsreason != null" >
+        #{visitorsreason,jdbcType=VARCHAR},
+      </if>
+      <if test="visitorsreasontext != null" >
+        #{visitorsreasontext,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="sexname != null" >
+        #{sexname,jdbcType=VARCHAR},
+      </if>
+      <if test="idtype != null" >
+        #{idtype,jdbcType=VARCHAR},
+      </if>
+      <if test="idcode != null" >
+        #{idcode,jdbcType=VARCHAR},
+      </if>
+      <if test="nationname != null" >
+        #{nationname,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverpeopleid != null" >
+        #{receiverpeopleid,jdbcType=VARCHAR},
+      </if>
+      <if test="receiversname != null" >
+        #{receiversname,jdbcType=VARCHAR},
+      </if>
+      <if test="receiversphone != null" >
+        #{receiversphone,jdbcType=VARCHAR},
+      </if>
+      <if test="unitno != null" >
+        #{unitno,jdbcType=VARCHAR},
+      </if>
+      <if test="unitname != null" >
+        #{unitname,jdbcType=VARCHAR},
+      </if>
+      <if test="carplateno != null" >
+        #{carplateno,jdbcType=VARCHAR},
+      </if>
+      <if test="carbodycolor != null" >
+        #{carbodycolor,jdbcType=VARCHAR},
+      </if>
+      <if test="carplatetype != null" >
+        #{carplatetype,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="backstr != null" >
+        #{backstr,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="photo != null" >
+        #{photo,jdbcType=LONGVARBINARY},
+      </if>
+      <if test="backphoto != null" >
+        #{backphoto,jdbcType=LONGVARBINARY},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.VisitorsInfo" >
+    update visitorsinfo
+    <set >
+      <if test="visitorsname != null" >
+        VisitorsName = #{visitorsname,jdbcType=VARCHAR},
+      </if>
+      <if test="visitorsdate != null" >
+        VisitorsDate = #{visitorsdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="visitorsreason != null" >
+        VisitorsReason = #{visitorsreason,jdbcType=VARCHAR},
+      </if>
+      <if test="visitorsreasontext != null" >
+        VisitorsReasonText = #{visitorsreasontext,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        Phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="sexname != null" >
+        SexName = #{sexname,jdbcType=VARCHAR},
+      </if>
+      <if test="idtype != null" >
+        IDType = #{idtype,jdbcType=VARCHAR},
+      </if>
+      <if test="idcode != null" >
+        IDCode = #{idcode,jdbcType=VARCHAR},
+      </if>
+      <if test="nationname != null" >
+        NationName = #{nationname,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        Address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverpeopleid != null" >
+        ReceiverPeopleID = #{receiverpeopleid,jdbcType=VARCHAR},
+      </if>
+      <if test="receiversname != null" >
+        ReceiversName = #{receiversname,jdbcType=VARCHAR},
+      </if>
+      <if test="receiversphone != null" >
+        ReceiversPhone = #{receiversphone,jdbcType=VARCHAR},
+      </if>
+      <if test="unitno != null" >
+        UnitNo = #{unitno,jdbcType=VARCHAR},
+      </if>
+      <if test="unitname != null" >
+        UnitName = #{unitname,jdbcType=VARCHAR},
+      </if>
+      <if test="carplateno != null" >
+        CarPlateNo = #{carplateno,jdbcType=VARCHAR},
+      </if>
+      <if test="carbodycolor != null" >
+        CarBodyColor = #{carbodycolor,jdbcType=VARCHAR},
+      </if>
+      <if test="carplatetype != null" >
+        CarPlateType = #{carplatetype,jdbcType=VARCHAR},
+      </if>
+      <if test="photostr != null" >
+        PhotoStr = #{photostr,jdbcType=VARCHAR},
+      </if>
+      <if test="backstr != null" >
+        BackStr = #{backstr,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="photo != null" >
+        Photo = #{photo,jdbcType=LONGVARBINARY},
+      </if>
+      <if test="backphoto != null" >
+        BackPhoto = #{backphoto,jdbcType=LONGVARBINARY},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.xr.entry.VisitorsInfo" >
+    update visitorsinfo
+    set VisitorsName = #{visitorsname,jdbcType=VARCHAR},
+      VisitorsDate = #{visitorsdate,jdbcType=TIMESTAMP},
+      VisitorsReason = #{visitorsreason,jdbcType=VARCHAR},
+      VisitorsReasonText = #{visitorsreasontext,jdbcType=VARCHAR},
+      Phone = #{phone,jdbcType=VARCHAR},
+      SexName = #{sexname,jdbcType=VARCHAR},
+      IDType = #{idtype,jdbcType=VARCHAR},
+      IDCode = #{idcode,jdbcType=VARCHAR},
+      NationName = #{nationname,jdbcType=VARCHAR},
+      Address = #{address,jdbcType=VARCHAR},
+      ReceiverPeopleID = #{receiverpeopleid,jdbcType=VARCHAR},
+      ReceiversName = #{receiversname,jdbcType=VARCHAR},
+      ReceiversPhone = #{receiversphone,jdbcType=VARCHAR},
+      UnitNo = #{unitno,jdbcType=VARCHAR},
+      UnitName = #{unitname,jdbcType=VARCHAR},
+      CarPlateNo = #{carplateno,jdbcType=VARCHAR},
+      CarBodyColor = #{carbodycolor,jdbcType=VARCHAR},
+      CarPlateType = #{carplatetype,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      BackStr = #{backstr,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      Photo = #{photo,jdbcType=LONGVARBINARY},
+      BackPhoto = #{backphoto,jdbcType=LONGVARBINARY}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.VisitorsInfo" >
+    update visitorsinfo
+    set VisitorsName = #{visitorsname,jdbcType=VARCHAR},
+      VisitorsDate = #{visitorsdate,jdbcType=TIMESTAMP},
+      VisitorsReason = #{visitorsreason,jdbcType=VARCHAR},
+      VisitorsReasonText = #{visitorsreasontext,jdbcType=VARCHAR},
+      Phone = #{phone,jdbcType=VARCHAR},
+      SexName = #{sexname,jdbcType=VARCHAR},
+      IDType = #{idtype,jdbcType=VARCHAR},
+      IDCode = #{idcode,jdbcType=VARCHAR},
+      NationName = #{nationname,jdbcType=VARCHAR},
+      Address = #{address,jdbcType=VARCHAR},
+      ReceiverPeopleID = #{receiverpeopleid,jdbcType=VARCHAR},
+      ReceiversName = #{receiversname,jdbcType=VARCHAR},
+      ReceiversPhone = #{receiversphone,jdbcType=VARCHAR},
+      UnitNo = #{unitno,jdbcType=VARCHAR},
+      UnitName = #{unitname,jdbcType=VARCHAR},
+      CarPlateNo = #{carplateno,jdbcType=VARCHAR},
+      CarBodyColor = #{carbodycolor,jdbcType=VARCHAR},
+      CarPlateType = #{carplatetype,jdbcType=VARCHAR},
+      PhotoStr = #{photostr,jdbcType=VARCHAR},
+      BackStr = #{backstr,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

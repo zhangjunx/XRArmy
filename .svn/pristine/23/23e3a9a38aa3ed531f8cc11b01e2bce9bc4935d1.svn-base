@@ -1,0 +1,12 @@
+show variables like '%max_connections%';
+set GLOBAL max_connections=1000;
+show full processlist;
+
+2021-01-16 lwb
+监控管理添加证书：
+1.cmd 打开jdk安装目录回车键进入
+windows  cmd进入D:\Program Files\Java\jdk1.7.0_67\bin 目录
+keytool -import -keystore "%JAVA_HOME%\jre\lib\security\cacerts" -file D:/jxust_CertKey.cer -alias ssodemo
+keytool -import -keystore "%JAVA_HOME%\jre\lib\security\cacerts" -file D:/a.cer -alias ssodemo
+然后回车，输入changeit  Y
+即可添加证书到jdk

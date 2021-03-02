@@ -1,0 +1,67 @@
+/* 实时预览页面开始*/
+.monitorPoint{
+	height:100%;
+	border:1px solid #ddd;
+}
+.monitorPoint .box_left{
+	border-right:1px solid #ddd;
+	height:100%;
+}
+.monitorPoint .box_left h2{
+	padding: 10px 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 18px;
+    color: #333;
+    background: #F5F7FA;
+}
+.monitorPoint .box_left .monitorBox{
+	width: 100%;
+    height: calc(100% - 60px);
+    overflow: auto;
+    box-sizing: border-box;
+    padding-bottom: 20px;
+}
+.monitorPoint .box_right{
+	height:100%;
+}
+
+/* 实时预览页面结束 */
+
+.pointTotal{
+	display:flex;
+	padding:50px 0;
+	box-sizing:border-box;
+	border-bottom:1px solid #ddd;
+	margin-bottom:30px;
+}
+.pointTotal li{
+	text-align:center;
+}
+.pointTotal li.first{
+	flex:0.4;
+}
+.pointTotal li.second{
+	flex:0.2;
+}
+.pointTotal li p.num{
+	font-size:20px;
+}
+.pointTotal li p span{
+	width:10px;
+	height:10px;
+	border-radius:50%;
+	display:inline-block;
+	margin-right:10px;
+}
+.pointTotal li .greenPoint{
+	background:green;
+}
+.pointTotal li .redPoint{
+	background:red;
+}
+.pointTotal li .whitePoint{
+	background:#ddd;
+}
+.pointTotal li .yellowPoint{
+	background:#ddd;
+}

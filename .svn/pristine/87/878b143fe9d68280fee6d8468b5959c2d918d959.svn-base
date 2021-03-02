@@ -1,0 +1,18 @@
+package com.xr.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.bstek.ureport.provider.report.ReportFile;
+
+public interface FileReportProviderService {
+
+	List<ReportFile> getReportList();
+
+	void saveReport(Map<String, Object> parmMap);
+
+	Map<String, Object> getSelectedUreport(Map<String, Object> pramMap);
+
+	void deleteReport(Map<String, Object> parmMap);
+
+}

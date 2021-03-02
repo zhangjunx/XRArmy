@@ -1,0 +1,58 @@
+layui.use(["form","table"],function(){
+	 var $ = layui.$,
+	  form = layui.form,
+	  table = layui.table;
+	
+	  //监听搜索
+	  form.on('submit(LAY-user-front-search)', function(data){
+	    var field = data.field;
+	    //执行重载
+	    table.reload('LAY-user-manage', {
+	      where: field
+	    });
+	  });
+	  table.render({
+		    elem: '#LAY-user-manage',
+		    url:carUrl+'car/carManager/getCarScrapList',
+		    cellMinWidth: 80,
+		    height: "full-232",
+		    method:"POST",
+		    request:{
+		    	pageName:"page",
+		    	limitName:"pageSize",
+		    },
+		    where:{
+		    	"thisUserID":window.top.loginid,
+		    	"carNum":"",
+		    	"useDept":""
+		    },
+		    parseData: function(res){ //res 即为原始返回的数据
+		    	console.log(res);
+		        return {
+		          "code": res.result==true?"0":"", //解析接口状态
+		          "msg": res.msg, //解析提示文本
+		          "count": res.count, //解析数据长度
+		          "data": res.data //解析数据列表
+		        };
+		      },
+		    cols:  [[
+		    	  {field:'ID', title:'序号', width:80,sort:true,templet:function(d){
+					  return d.LAY_TABLE_INDEX+1
+				  }},
+				  {field:'carNum', title:'车牌号', width:300},
+			      {field:'useDeptList', title:'使用单位', width:300,sort:true},
+			      {field:'ifPrivateUse', title:'免派车辆', width:250,sort:true,templet:function(d){
+					  if(d.ifPrivateUse == 0){
+						  return "否"
+					  }else if(d.ifPrivateUse == 1){
+						  return "是"
+					  }
+				  }},
+			      {field:'parkName', title:'停车场',sort:true},
+			    ]]
+		    ,page: true
+		  });
+		  //监听工具条
+		
+})
+

@@ -1,0 +1,20 @@
+package com.xr.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import com.bstek.ureport.provider.report.ReportFile;
+
+public interface FileReportProviderMapper {
+
+	List<ReportFile> getReportList();
+
+	void saveReport(Map<String, Object> parmMap);
+
+	Map<String, Object> getSelectedUreport(Map<String, Object> pramMap);
+
+	void editReport(Map<String, Object> parmMap);
+
+	void deleteReport(Map<String, Object> parmMap);
+
+}

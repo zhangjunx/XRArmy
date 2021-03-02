@@ -1,0 +1,382 @@
+package com.xr.controller;
+
+import org.apache.commons.collections.MapUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.xr.entry.DeviceUnit;
+import com.xr.service.IDeviceUnitService;
+
+import io.swagger.annotations.Api;
+@Controller
+@RequestMapping("BoxPlat")
+@Api(tags="BoxPlat",description="接口标题：盒子平台对接接口")
+public class BoxPlatController {
+	@Autowired
+	private IDeviceUnitService idus;
+	
+	
+	public static void main(String[] args) throws Exception {
+		//add(null, null);
+	}
+	 
+	
+	/**
+	 * 下发人脸权限  ： POST
+	 * @throws Exception 
+	 */
+	@RequestMapping(value="/addFace",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> addFace(String str,String loginid) throws Exception{
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		String url="http://192.168.1.147//yunapi/?action=faceIssue"; 
+		List<Map<String,Object>> data=new ArrayList<Map<String,Object>>();
+		JSONArray arr=JSONArray.parseArray(str);
+	    m.put("ip", "192.168.1.73");//设备ip
+	    m.put("pass", "qaz123456");//设备密码
+	    m.put("sfzh", "aaa");//唯一编号，用于设备人员编号（如身份证号，工号等）
+	    m.put("sfzh_name", "aaa");//人员姓名
+	    m.put("face_pic", "");//base64,不带请求头
+	    m.put("device_port", "8000");
+	    m.put("device_vender", "海康"); 
+	    m.put("device_type", "面板");//
+	    m.put("face_log_id", "");//人脸下发记录表id
+	    m.put("face_pic_twist", "");//base64,设备为睿卡时使用
+	    String result=netPost(url, m, "POST");
+	    
+		map.put("data", data);
+		return map;
+	}
+	
+	/**
+	 * 删除人脸权限  ： DELETE
+	 * @throws Exception 
+	 */
+	@RequestMapping(value="/delFace",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> delFace(String str,String loginid) throws Exception{
+		Map<String,Object> map=new HashMap<String,Object>();
+		String url="http://192.168.1.147//yunapi/?action=faceIssue"; 
+		List<Map<String,Object>> data=new ArrayList<Map<String,Object>>();
+		JSONArray arr=JSONArray.parseArray(str);
+	 
+		map.put("data", data);
+		return map;
+	}
+	
+	/**
+	 * 同步盒子设备新增接口  ： 
+	 * @throws Exception 
+	 */
+	@RequestMapping(value="/addDev",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> addDev(String str,String loginid) throws Exception{
+		Map<String,Object> map=new HashMap<String,Object>();
+		String url="http://192.168.1.147/yunapi/?action=device";
+		List<Map<String,Object>> data=new ArrayList<Map<String,Object>>();
+		JSONArray arr=JSONArray.parseArray(str);
+		for(int i=0;i<arr.size();i++){
+			Map<String,Object> m1=new HashMap<String,Object>();
+			Integer deviceno=arr.getInteger(i);
+			DeviceUnit record=idus.selectByPrimaryKeyService(deviceno);
+			MultipartEntity reqEntity=new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+			reqEntity.addPart("device_id",new StringBody(String.valueOf(record.getDeviceno())));
+			reqEntity.addPart("device_name", new StringBody(record.getDevicename()));
+			reqEntity.addPart("device_type", new StringBody(record.getDevicetype()));
+			reqEntity.addPart("device_vender", new StringBody(record.getDevicevender()));
+			reqEntity.addPart("device_no",new StringBody(record.getDevicesn()));
+			reqEntity.addPart("device_mac",new StringBody("mac"));
+			reqEntity.addPart("device_ip", new StringBody(record.getIp()));
+			reqEntity.addPart("device_port", new StringBody(record.getPort()));
+			reqEntity.addPart("device_username", new StringBody(record.getUsername()));
+			reqEntity.addPart("device_password", new StringBody(record.getUserpass()));
+			reqEntity.addPart("device_status", new StringBody("1"));//1启用，0停用
+			String iostatus=record.getIostatus();
+			if(iostatus.equals("11")){
+				iostatus="1";
+			}if(iostatus.equals("12")){
+				iostatus="2";
+			}else{
+				iostatus="0";
+			}
+			reqEntity.addPart("device_direction", new StringBody(iostatus));
+			String result= fordata(url, reqEntity);;
+			System.out.println(result);
+			m1=JSONObject.parseObject(result);
+			data.add(m1);
+		}
+		map.put("data", data);
+		return map;
+	}
+	
+	/**
+	 * 同步盒子设备修改接口
+	 */
+	@RequestMapping(value="/editDev",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> editDev(String str,String loginid) throws Exception{
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,String> header=new HashMap<String,String>();
+		String url="http://192.168.1.147/yunapi/?action=device";
+		List<Map<String,Object>> data=new ArrayList<Map<String,Object>>();
+		JSONArray arr=JSONArray.parseArray(str);
+		for(int i=0;i<arr.size();i++){
+			Map<String,Object> m1=new HashMap<String,Object>();
+			Integer deviceno=arr.getInteger(i);
+			DeviceUnit record=idus.selectByPrimaryKeyService(deviceno);
+			JSONObject m=new JSONObject();
+			m.put("device_id", record.getDeviceno());
+			m.put("device_name", record.getDevicename());
+			m.put("device_type", record.getDevicetype());
+			m.put("device_vender", record.getDevicevender());
+			m.put("device_no", record.getDevicesn());
+			m.put("device_mac", record.getDevicemodel());
+			m.put("device_ip", record.getIp());
+			m.put("device_port", record.getPort());
+			m.put("device_username", record.getUsername());
+			m.put("device_password", record.getUserpass());
+			m.put("device_status", "1");//1启用，0停用
+			String iostatus=record.getIostatus();
+			if(iostatus.equals("11")){
+				iostatus="1";
+			}if(iostatus.equals("12")){
+				iostatus="2";
+			}else{
+				iostatus="0";
+			}
+			m.put("device_direction", iostatus);//1入，2出，0未知  
+			String result= patch(url, m,header); 
+			m1=JSONObject.parseObject(result);
+			m1.put("deviceno", deviceno);
+			data.add(m1);
+		}
+		map.put("data", data);
+		return map;
+		 
+	}
+	
+	
+	/**
+	 * 同步盒子设备删除接口
+	 */
+	@RequestMapping(value="/delDev",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> delDev(String str,String loginid) throws Exception{
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> m=new HashMap<String,Object>();
+		List<Map<String,Object>> data=new ArrayList<Map<String,Object>>();
+		JSONArray arr=JSONArray.parseArray(str);
+		for(int i=0;i<arr.size();i++){
+			Map<String,Object> m1=new HashMap<String,Object>();
+			Integer id=arr.getInteger(i);
+			String url="http://192.168.1.147/yunapi/?action=device&device_id="+id;
+			String result= netPost(url,m,"DELETE");
+			System.out.println(result);
+			m1=JSONObject.parseObject(result);
+			m1.put("deviceno", id);
+			data.add(m1);
+		}
+		
+		map.put("code", "200");
+		map.put("msg", "返回成功！");
+		map.put("data", data);
+		return map;
+	}
+	
+	/**
+	 * 同步盒子设备查询接口
+	 */
+	@RequestMapping(value="/getDev",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<String,Object> getDev(String str,String loginid) throws Exception{
+		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String, Object> m=new HashMap<String,Object>();
+		Map<String, String> param=new HashMap<String,String>();
+		Integer deviceno=1;
+		String urlencode=urlencode(param);
+		System.out.println(urlencode);
+		String url="http://192.168.1.147/yunapi/?action=device";
+		String result= netPost(url,m,"GET");
+		System.out.println(result);
+		map=JSONObject.parseObject(result);
+		return map;
+	}
+	
+	/**
+	 * 请求连接
+	 * @throws Exception
+	 */
+	public static String netPost(String urlStr, Map<String, Object> map, String method) throws Exception {
+		 JSONObject jsonObj=new JSONObject(map);
+		 String params = jsonObj.toString();
+	     URL url = new URL(urlStr);
+		 // 打开和URL之间的连接
+		 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		 connection.setConnectTimeout(8000);
+		 // 设置通用的请求属性
+		 connection.setRequestMethod(method);
+		 connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+		 connection.setRequestProperty("Connection", "Keep-Alive");
+		 connection.setUseCaches(false);
+		 connection.setDoInput(true);
+		 // 得到请求的输出流对象
+		 if(method!=null && !method.equals("GET")){
+			 connection.setDoOutput(true);
+			 DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+			 out.write(params.getBytes("UTF-8"));
+			 out.flush();
+			 out.close();
+		 }
+		 // 建立实际的连接
+		 connection.connect();
+		 // 获取所有响应头字段
+		 Map<String, List<String>> headers = connection.getHeaderFields();
+		 // 遍历所有的响应头字段
+		 for (String key : headers.keySet()) {
+			 //System.out.println(key + "--->" + headers.get(key));
+		 }
+		 // 定义 BufferedReader输入流来读取URL的响应
+		 BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+		 String result = "";
+		 String getLine;
+		 while ((getLine = in.readLine()) != null) {
+			 result += getLine;
+		 }
+		 in.close();
+		 JSONObject jsonObject = JSONObject.parseObject(result);
+		 String str=jsonObject.toString();
+		 //Map<String, Object> resultMap = (Map) jsonObject;
+		 return str;
+	}
+	
+	/**
+	 * postman 中form-data提交封装方法
+	 * @param url
+	 * @param reqEntity
+	 * @return
+	 */
+	public static String fordata(String url,MultipartEntity reqEntity){
+		HttpClient httpClient=new DefaultHttpClient();
+		HttpPost httpPost=new HttpPost(url);
+		//MultipartEntity reqEntity=new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		httpPost.setEntity(reqEntity);
+		HttpResponse response;
+		String sResponse;
+		try {
+			response=httpClient.execute(httpPost);
+			BufferedReader reader=new BufferedReader(new InputStreamReader(response.getEntity().getContent(),"UTF-8"));
+			StringBuilder s=new StringBuilder();
+			while((sResponse=reader.readLine())!=null){
+				s=s.append(sResponse);
+			}
+			String result= s.toString();
+			System.out.println(result);
+			return result;
+		}catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * patch 设备修改请求
+	 * @param url
+	 * @param jsonParam
+	 * @param header
+	 * @return
+	 */
+	public static String patch(String url,JSONObject jsonParam, Map<String, String> header){
+        int statusCode = 0;
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPatch httpPatch = new HttpPatch(url);
+        //请求头
+        if (MapUtils.isNotEmpty(header)) {
+            for (Map.Entry<String, String> entry : header.entrySet()) {
+                httpPatch.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+        httpPatch.setHeader("Content-type", "application/json");
+        try {
+            if (jsonParam != null){
+                StringEntity entity = new StringEntity(jsonParam.toString(),StandardCharsets.UTF_8);
+                httpPatch.setEntity(entity);
+            }
+            HttpResponse response = httpClient.execute(httpPatch);
+            statusCode = response.getStatusLine().getStatusCode();
+            BufferedReader reader=new BufferedReader(new InputStreamReader(response.getEntity().getContent(),"UTF-8"));
+            StringBuilder sb=new StringBuilder();
+            String s;
+            while((s=reader.readLine())!=null){
+            	sb=sb.append(s);
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            //log.error(e.getMessage());
+        	System.out.println(e);
+        }finally {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+            	System.out.println(e);
+            }
+        }
+        return null;
+    }
+ 
+    /**
+     * 将map型转为请求参数型
+     * @param data
+     * @return
+     */
+    public static String urlencode(Map<String,String> data) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry i : data.entrySet()) {
+            try {
+                sb.append(i.getKey()).append("=").append(URLEncoder.encode(i.getValue()+"","UTF-8")).append("&");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+      //name=aaa&id=1&
+        return sb.toString();
+    }
+	
+	
+     
+}
+
+

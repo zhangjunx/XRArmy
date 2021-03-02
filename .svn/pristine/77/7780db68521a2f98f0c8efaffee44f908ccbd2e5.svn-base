@@ -1,0 +1,27 @@
+package com.xr.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.xr.entry.HolderLeave;
+
+@Service
+public interface IHolderLeaveService {
+
+	int insertSelectiveService(HolderLeave record);
+	
+	HolderLeave selectByPrimaryKeyService(Integer id);
+
+	int updateByPrimaryKeySelectiveService(HolderLeave record);
+
+	int deleteByPrimaryKeyService(Integer id);
+
+	List<Map<String, Object>> getListService(Map m);
+
+	int getListCountService(Map m);
+
+	 
+
+}

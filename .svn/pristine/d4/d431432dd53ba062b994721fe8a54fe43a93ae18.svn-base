@@ -1,0 +1,149 @@
+$(function(){
+	if(getUrlParam("userid")!=null && getUrlParam("userid")!=undefined && getUrlParam("userid")!="" && getUrlParam("userid")!="administrator"){
+	  //getMenu();//获取菜单
+	}
+	if(sessionStorage.sessionID== "undefined" ||sessionStorage.sessionID==null||sessionStorage.sessionID==""){
+		  window.location.href="index.html";
+	  }
+	getOneInfo();
+})
+var loginid=getUrlParam("userid");
+var username=getUrlParam("username");
+//点击退出
+$("#exit").click(function(){
+ window.location.href="index.html";
+})
+//获取菜单并生成菜单
+function getMenu(){
+	$.ajax({
+		url:url+"/UserData/getMyMenu",
+		type:"POST",
+		data:{"loginid":getUrlParam("userid")},
+		success:function(data){
+			console.log(data);
+			console.log(toTree(data.result))
+			$("#LAY-system-side-menu").empty();
+			if(data.flag){
+				var data=toTree(data.result);
+				console.log(data);
+				$.each(data,function(i,obj){
+					var content='<li class="layui-nav-item">';
+					if(i==0){
+						content='<li class="layui-nav-item layui-nav-itemed">';
+					}
+					if(obj.level == 1){//菜单
+						content+='<a href="javascript:;"><i class="layui-icon"><img src='+obj.iconsrc+' class="icon-width"></i><cite>'+obj.title+'</cite><span class="layui-nav-more"></span></a>';
+					}else if(obj.level == 2){//页面
+						content+='<a href='+obj.menuurl+' target="mainFrame"><i class="layui-icon"><img src='+obj.iconsrc+' class="icon-width"></i><cite>'+obj.title+'</cite></a>';
+					}
+					//这里是添加所有的子菜单
+					content+=loadchild(obj,i);
+					content+='</li>';
+					$("#LAY-system-side-menu").append(content);
+				});
+				
+				layui.use("element",function(){
+					var element=layui.element;
+					element.init();
+				})
+			}
+			
+		}
+	})
+}
+
+//组装子菜单的方法
+function loadchild(obj,index){
+	if(obj==null){
+		return;
+	}
+	var content='';
+	if(obj.children!=null && obj.children.length>0){
+		content+='<dl class="layui-nav-child">';
+		$.each(obj.children,function(i,note){
+			content+='<dd>';
+			if(index==0 && i==0){
+				content+='<dd class="layui-this">'
+			}
+			if(note.level == 1){//菜单
+				content+='<a href="javascript:;">'+note.title+'<span class="layui-nav-more"></span></a>';
+			}else if(note.level == 2){//页面
+				content+='<a href='+note.menuurl+' target="mainFrame">'+note.title+'</a>';
+			}
+			
+			if(note.children==null || note.children.length == 0){
+				return;
+			}
+			if(note.level == 1){
+				content+=loadchild(note);
+			}
+			content+='</dd>';
+		});
+		content+='</dl>';
+	}
+	return content;
+}
+
+//扁平数据转换成树形结构
+function toTree(data) {
+    let result = []
+    if(!Array.isArray(data)) {
+        return result
+    }
+    data.forEach(item => {
+        delete item.children;
+    });
+    let map = {};
+    data.forEach(item => {
+        map[item.id] = item;
+    });
+    data.forEach(item => {
+        let parent = map[item.parent];
+        if(parent) {
+            (parent.children || (parent.children = [])).push(item);
+        } else {
+            result.push(item);
+        }
+    });
+    return result;
+}
+
+
+
+
+//获取当前登录用户信息
+function getOneInfo(){
+	var userid=getUrlParam("userid");
+	if(userid=="" || userid=="undefined"){
+		window.location.href="index.html";
+		return;
+	}
+	$.ajax({
+		url:url+"/UserData/getList",
+		type:"POST",
+		data:{"userid":userid},
+		success:function(data){
+			console.log(data);
+			if(!data.flag){
+				return; 
+			}
+			$("#logotitle").empty(); 
+			var res=data.result[0];
+			var title=res.title==undefined?"智慧军营":res.title;
+			var username=res.username==undefined?res.userid:res.username;
+			var logo=res.logo==undefined?"img/logo3.png":"data:image/png;base64,"+res.logo;
+			var html="<img src='"+logo+"' alt='' style='width: 19px;vertical-align: text-top;margin-right: 6px;'>"+title;
+			$("#loginUser").html(username);
+			$("#logotitle").append(html);
+		}
+	})
+}
+//url地址中解析参数
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var paramsString = window.location.search.substring(1);
+    var r = window.decodeURIComponent(window.atob(paramsString)).match(reg);
+    if (r != null) return decodeURIComponent(r[2]); return null;
+}
+
+

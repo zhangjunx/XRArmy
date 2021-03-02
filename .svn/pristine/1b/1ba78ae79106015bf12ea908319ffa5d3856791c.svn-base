@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.PlatBoxMapper" >
+
+
+<insert id="add" parameterType="Map">
+     insert into iodata (HolderNo, HolderName, 
+      IODate, IOStatus, UnitNo, 
+      UnitName, DeviceNo, DeviceName, 
+      DeviceSN, DoorName, ChannelNo, 
+      ChannelName, LocatName, OpenType, 
+      OpenTypeName, PhotoStr, Photo)
+    values (#{holderno}, #{holdername}, 
+      NOW(), #{iostatus}, #{unitno}, 
+      #{unitname}, #{deviceno}, #{devicename}, 
+      #{devicesn}, #{doorname}, #{channelno}, 
+      #{channelname}, #{locatname}, #{opentype}, 
+      #{opentypename}, #{iophotostr}, #{photo});
+   <if test="status!=null and status!='' and status=='black'">
+     insert into alarmpeople (HolderNo, HolderName, 
+      ChannelNo, ChannelName, IOStatus, 
+      Source, SourceName, IODate, 
+      DeviceNo, DeviceName, DeviceSN, 
+      DoorName, LocatName, State, PhotoStr, Photo)
+      values (#{holderno}, #{holdername}, 
+      #{channelno}, #{channelname}, #{iostatus}, 
+      #{source}, #{sourcename}, NOW(), 
+      #{deviceno}, #{devicename}, #{devicesn}, 
+      #{doorname}, #{locatname}, #{state}, 
+      #{alarmphotostr}, #{photo});
+</if>
+</insert>
+
+
+  <select id="getDev" resultType="Map">
+      select d.deviceno,d.devicename,d.iostatus,d.doorname,
+      d.devicesn,d.ip,d.port,d.boxid,
+      t.channelname,t.channelno from deviceunit d 
+	left join (select dc.channelno,c.channelname,dc.deviceno from channeldata c 
+	inner join devicechannel dc 
+	on dc.channelno=c.channelno) t on d.deviceno=t.deviceno
+      <where>
+           <if test="devicesn!=null and devicesn!='' ">
+               and d.devicesn=#{devicesn}
+           </if>
+           <if test="deviceno!=null and deviceno!='' ">
+               and d.deviceno=#{deviceno}
+           </if>
+      </where>
+   </select>
+
+   
+</mapper>

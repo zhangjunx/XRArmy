@@ -1,0 +1,184 @@
+package com.xr.https;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import org.apache.commons.codec.binary.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import com.alibaba.fastjson.JSONObject;
+
+public class HKPlatController {
+	public final static String URL="https://192.168.1.250/artemis";
+	public final static String appKey="24949434";
+	public final static String appSecret="85q63mc5ZX51IzU390Rj";
+	
+	
+	public static void main(String[] args) {
+		getToken();
+	}
+	
+	/**
+	 * 签名字符串有Http Method,headers,Url(指path+query+bodyForm)组成。
+	 * 以appSecret为秘钥，使用HmacSHA256算法对签名字符串生成消息摘要，
+	 * 对消息摘要使用BASE64算法生成签名（签名过程中的编码方式全为UTF-8）
+	 * @throws Exception 
+	 */
+	public static void getSign() throws Exception{
+	
+		
+	}
+	
+	public static void getAreaList(){
+		Map<String,Object> m=new HashMap<String,Object>();
+		String url=URL+"/api/resource/v1/regions/root";
+		String result=net(url, m, "POST");
+	}
+	
+	
+	public static void getToken(){
+		String message="24949434";
+	     Mac sha256_HMAC;
+		try {
+			sha256_HMAC = Mac.getInstance("HmacSHA256");
+			SecretKeySpec secret_key=new SecretKeySpec(appSecret.getBytes(),"HmacSHA256");
+		     sha256_HMAC.init(secret_key);
+		     String hash=Base64.encodeBase64String(sha256_HMAC.doFinal(message.getBytes()));
+		     System.out.println(hash);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	     
+	
+	}
+	 
+	
+	
+	/**
+	 * 请求连接
+	 * @param strurl
+	 * @param m
+	 * @param method
+	 * @return
+	 */
+	  
+	private static String net(String strurl, Map<String, Object> m, String method) {
+		// 
+		JSONObject obj=new JSONObject(m);
+		String param=obj.toString();
+		try {
+			URL url=new URL(strurl);
+			//打开与URL之间的链接
+			HttpURLConnection conn=(HttpURLConnection) url.openConnection();
+			conn.setConnectTimeout(3000);
+			//设置通用的请求属性
+			conn.setRequestMethod(method);
+			conn.setRequestProperty("Content-Type", "application/json");
+			conn.setRequestProperty("Connection", "Keep-Alive");
+			//conn.setRequestProperty("token", token);
+			conn.setUseCaches(false);
+			conn.setDoOutput(true);
+			conn.setDoInput(true);
+			//得到请求的输出流对象
+			OutputStream os=conn.getOutputStream();
+			DataOutputStream dos=new DataOutputStream(os);
+			dos.write(param.getBytes("UTF-8"));
+			dos.flush();
+			dos.close();
+			//建立实际的链接
+			conn.connect();
+			//获取所有响应头字段
+			Map<String,List<String>> headers=conn.getHeaderFields();
+			//遍历所有的响应头字段
+			for(String key:headers.keySet()){
+				System.out.println(key+"--->"+headers.get(key));
+			}
+			//定义BufferedReader输入流来读取URL的响应
+			BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"));
+			String result="";
+			String getLine="";
+			while((getLine=in.readLine())!=null){
+				result+=getLine;
+			}
+			in.close();
+			JSONObject obj2=JSONObject.parseObject(result);
+			String str=obj2.toString();
+			return str;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * 请求连接
+	 * @param strurl
+	 * @param m
+	 * @param method
+	 * @return
+	 */
+	  
+	private static String net2(String strurl, Map<String, Object> m, String method) {
+		// 
+		JSONObject obj=new JSONObject(m);
+		String param=obj.toString();
+		try {
+			URL url=new URL(strurl);
+			//打开与URL之间的链接
+			HttpURLConnection conn=(HttpURLConnection) url.openConnection();
+			conn.setConnectTimeout(3000);
+			//设置通用的请求属性
+			conn.setRequestMethod(method);
+			conn.setRequestProperty("Content-Type", "application/json");
+			conn.setRequestProperty("Connection", "Keep-Alive");
+			//conn.setRequestProperty("token", token);
+			conn.setUseCaches(false);
+			conn.setDoOutput(true);
+			conn.setDoInput(true);
+			//得到请求的输出流对象
+			OutputStream os=conn.getOutputStream();
+			DataOutputStream dos=new DataOutputStream(os);
+			dos.write(param.getBytes("UTF-8"));
+			dos.flush();
+			dos.close();
+			//建立实际的链接
+			conn.connect();
+			//获取所有响应头字段
+			Map<String,List<String>> headers=conn.getHeaderFields();
+			//遍历所有的响应头字段
+			for(String key:headers.keySet()){
+				System.out.println(key+"--->"+headers.get(key));
+			}
+			//定义BufferedReader输入流来读取URL的响应
+			BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"));
+			String result="";
+			String getLine="";
+			while((getLine=in.readLine())!=null){
+				result+=getLine;
+			}
+			in.close();
+			JSONObject obj2=JSONObject.parseObject(result);
+			String str=obj2.toString();
+			return str;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+}
+
+

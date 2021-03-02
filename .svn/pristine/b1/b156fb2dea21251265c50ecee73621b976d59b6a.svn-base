@@ -1,0 +1,23 @@
+package com.xr.demo;
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableAsync;
+
+@SpringBootApplication
+@ComponentScan(basePackages={"com.xr.controller","com.xr.service","com.xr.tools","com.xr.configure"})
+@MapperScan("com.xr.mapper")
+@EnableAsync
+public class ApplicationContext {
+
+	/**
+	 * 启动
+	 * @param args
+	 */
+    public static void main(String[] args) {
+        SpringApplication.run(ApplicationContext.class, args);
+    }
+    
+}

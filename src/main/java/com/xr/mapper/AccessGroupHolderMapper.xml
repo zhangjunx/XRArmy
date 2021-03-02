@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.AccessGroupHolderMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.AccessGroupHolder" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="GroupID" property="groupid" jdbcType="INTEGER" />
+    <result column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, GroupID, HolderNo
+  </sql>
+  
+   <sql id="c_start">
+		select res.*
+		from (select @num := @num+1 tindex, tmp.* from
+		(
+	</sql>
+
+	<sql id="c_end">
+		) tmp , (SELECT @num := 0) var order by id asc) res where 1=1
+		<if test="curpage != null and curpage != ''">
+			and res.tindex &gt;= (CONVERT(#{curpage},SIGNED)-1) *
+			CONVERT(#{pagesize},SIGNED)+1
+			and res.tindex &lt;=
+			CONVERT(#{curpage},SIGNED) *
+			CONVERT(#{pagesize},SIGNED)
+		</if>
+	</sql>
+	
+	
+	<insert id="add" parameterType="java.util.List">
+	    <foreach collection="list" item="item" index="index" separator=";">
+	        <if test="item.type!=null and item.type!='' and item.type=='aa'">
+	            insert into accessgroupholder (GroupID, HolderNo)
+                values ( #{item.groupid}, #{item.holderno})
+	        </if>
+	        <if test="item.type!=null and item.type!='' and item.type=='uu'">
+	              update accessgroupholder
+                set GroupID = #{item.groupid},
+                HolderNo = #{item.holderno}
+              where ID = #{item.id}
+	        </if>
+	         <if test="item.type!=null and item.type!='' and item.type=='dd'">
+	              delete from accessgroupholder
+                  where ID = #{item.id}
+	        </if>
+	    </foreach>
+	</insert>
+
+<select id="getListByGroup" resultType="Map">
+    select  gh.id,gh.holderno,gh.groupid,
+h.holderno,h.holdername,h.unitno,u.unitname from accessgroupholder gh
+left join holderdata h ON gh.holderno=h.holderno
+left join unitlist u on u.unitno=h.unitno
+<where>
+<if test="groupid != null and groupid!='' ">
+	and gh.groupid=#{groupid}
+</if>
+<if test="unitno != null and unitno!='' ">
+	and h.unitno=#{unitno}
+</if>
+<if test="holderno != null and holderno!='' ">
+	and gh.holderno=#{holderno}
+</if>
+<if test="holdername != null and holdername!='' ">
+	and h.holdername like concat('%',#{holdername},'%')
+</if>
+</where>
+</select>
+
+
+	<select id="getList" resultType="Map">
+		<include refid="c_start"></include>
+		select id,holderno,groupid from AccessGroupHolder  
+		<where>
+			<if test="id != null and id!='' ">
+				and id=#{id}
+			</if>
+			<if test="groupid != null and groupid!='' ">
+				and groupid=#{groupid}
+			</if>
+			<if test="holderno != null and holderno!='' ">
+				and holderno =#{holderno} 
+			</if>
+		</where>
+		<include refid="c_end"></include>
+	</select>
+
+	<select id="getListCount" resultType="Integer">
+		select count(1) from from AccessGroupHolder  
+		<where>
+			<if test="id != null and id!='' ">
+				and id=#{id}
+			</if>
+			<if test="groupid != null and groupid!='' ">
+				and groupid=#{groupid}
+			</if>
+			<if test="holderno != null and holderno!='' ">
+				and holderno =#{holderno} 
+			</if>
+		</where>
+	</select>
+  
+  <select id="getGroupList" resultType="Map">
+		<include refid="c_start"></include>
+		select g.id,g.name,g.remark,t.groupid,t.holderno from AccessGroup g 
+		left join (select id,holderno,groupid 
+		from AccessGroupHolder 
+		<where>
+		    <if test="groupid != null and groupid!='' ">
+				and groupid=#{groupid}
+			</if>
+			<if test="holderno != null and holderno!='' ">
+				and holderno =#{holderno} 
+			</if>
+		</where>) t 
+		on t.groupid=g.id 
+		<where>
+			<if test="id != null and id!='' ">
+				and g.id=#{id}
+			</if>
+			<if test="name != null and name!='' ">
+				and g.name=#{name}
+			</if>
+			 
+		</where>
+		<include refid="c_end"></include>
+	</select>
+  
+  <select id="getGroupListCount" resultType="Integer">
+		select count(1) from AccessGroup g 
+		left join (select id,holderno,groupid 
+		from AccessGroupHolder 
+		<where>
+		    <if test="groupid != null and groupid!='' ">
+				and groupid=#{groupid}
+			</if>
+			<if test="holderno != null and holderno!='' ">
+				and holderno =#{holderno} 
+			</if>
+		</where>) t 
+		on t.groupid=g.id 
+		<where>
+			<if test="id != null and id!='' ">
+				and g.id=#{id}
+			</if>
+			<if test="name != null and name!='' ">
+				and g.name=#{name}
+			</if>
+			 
+		</where>
+	</select>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from accessgroupholder
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from accessgroupholder
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.AccessGroupHolder" >
+    insert into accessgroupholder (ID, GroupID, HolderNo
+      )
+    values (#{id,jdbcType=INTEGER}, #{groupid,jdbcType=INTEGER}, #{holderno,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.AccessGroupHolder" >
+    insert into accessgroupholder
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="groupid != null" >
+        GroupID,
+      </if>
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="groupid != null" >
+        #{groupid,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.AccessGroupHolder" >
+    update accessgroupholder
+    <set >
+      <if test="groupid != null" >
+        GroupID = #{groupid,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        HolderNo = #{holderno,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.AccessGroupHolder" >
+    update accessgroupholder
+    set GroupID = #{groupid,jdbcType=INTEGER},
+      HolderNo = #{holderno,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

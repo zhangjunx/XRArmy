@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.AccessRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.AccessRecord" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="HolderNo" property="holderno" jdbcType="VARCHAR" />
+    <result column="HolderName" property="holdername" jdbcType="VARCHAR" />
+    <result column="DeviceNo" property="deviceno" jdbcType="VARCHAR" />
+    <result column="DeviceName" property="devicename" jdbcType="VARCHAR" />
+    <result column="DeviceSN" property="devicesn" jdbcType="VARCHAR" />
+    <result column="DoorName" property="doorname" jdbcType="VARCHAR" />
+    <result column="BoxID" property="boxid" jdbcType="VARCHAR" />
+    <result column="BoxName" property="boxname" jdbcType="VARCHAR" />
+    <result column="BoxIP" property="boxip" jdbcType="VARCHAR" />
+    <result column="State" property="state" jdbcType="VARCHAR" />
+    <result column="Type" property="type" jdbcType="VARCHAR" />
+    <result column="CreateDate" property="createdate" jdbcType="TIMESTAMP" />
+    <result column="UpdateDate" property="updatedate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, HolderNo, HolderName, DeviceNo, DeviceName, DeviceSN, DoorName, BoxID, BoxName, 
+    BoxIP, State, Type, CreateDate, UpdateDate
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from accessrecord
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from accessrecord
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.AccessRecord" >
+    insert into accessrecord (ID, HolderNo, HolderName, 
+      DeviceNo, DeviceName, DeviceSN, 
+      DoorName, BoxID, BoxName, 
+      BoxIP, State, Type, 
+      CreateDate, UpdateDate)
+    values (#{id,jdbcType=INTEGER}, #{holderno,jdbcType=VARCHAR}, #{holdername,jdbcType=VARCHAR}, 
+      #{deviceno,jdbcType=VARCHAR}, #{devicename,jdbcType=VARCHAR}, #{devicesn,jdbcType=VARCHAR}, 
+      #{doorname,jdbcType=VARCHAR}, #{boxid,jdbcType=VARCHAR}, #{boxname,jdbcType=VARCHAR}, 
+      #{boxip,jdbcType=VARCHAR}, #{state,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, 
+      #{createdate,jdbcType=TIMESTAMP}, #{updatedate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.AccessRecord" >
+    insert into accessrecord
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="holderno != null" >
+        HolderNo,
+      </if>
+      <if test="holdername != null" >
+        HolderName,
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo,
+      </if>
+      <if test="devicename != null" >
+        DeviceName,
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN,
+      </if>
+      <if test="doorname != null" >
+        DoorName,
+      </if>
+      <if test="boxid != null" >
+        BoxID,
+      </if>
+      <if test="boxname != null" >
+        BoxName,
+      </if>
+      <if test="boxip != null" >
+        BoxIP,
+      </if>
+      <if test="state != null" >
+        State,
+      </if>
+      <if test="type != null" >
+        Type,
+      </if>
+      <if test="createdate != null" >
+        CreateDate,
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="holderno != null" >
+        #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceno != null" >
+        #{deviceno,jdbcType=VARCHAR},
+      </if>
+      <if test="devicename != null" >
+        #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="doorname != null" >
+        #{doorname,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        #{boxid,jdbcType=VARCHAR},
+      </if>
+      <if test="boxname != null" >
+        #{boxname,jdbcType=VARCHAR},
+      </if>
+      <if test="boxip != null" >
+        #{boxip,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.AccessRecord" >
+    update accessrecord
+    <set >
+      <if test="holderno != null" >
+        HolderNo = #{holderno,jdbcType=VARCHAR},
+      </if>
+      <if test="holdername != null" >
+        HolderName = #{holdername,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceno != null" >
+        DeviceNo = #{deviceno,jdbcType=VARCHAR},
+      </if>
+      <if test="devicename != null" >
+        DeviceName = #{devicename,jdbcType=VARCHAR},
+      </if>
+      <if test="devicesn != null" >
+        DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      </if>
+      <if test="doorname != null" >
+        DoorName = #{doorname,jdbcType=VARCHAR},
+      </if>
+      <if test="boxid != null" >
+        BoxID = #{boxid,jdbcType=VARCHAR},
+      </if>
+      <if test="boxname != null" >
+        BoxName = #{boxname,jdbcType=VARCHAR},
+      </if>
+      <if test="boxip != null" >
+        BoxIP = #{boxip,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        State = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        Type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null" >
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedate != null" >
+        UpdateDate = #{updatedate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.AccessRecord" >
+    update accessrecord
+    set HolderNo = #{holderno,jdbcType=VARCHAR},
+      HolderName = #{holdername,jdbcType=VARCHAR},
+      DeviceNo = #{deviceno,jdbcType=VARCHAR},
+      DeviceName = #{devicename,jdbcType=VARCHAR},
+      DeviceSN = #{devicesn,jdbcType=VARCHAR},
+      DoorName = #{doorname,jdbcType=VARCHAR},
+      BoxID = #{boxid,jdbcType=VARCHAR},
+      BoxName = #{boxname,jdbcType=VARCHAR},
+      BoxIP = #{boxip,jdbcType=VARCHAR},
+      State = #{state,jdbcType=VARCHAR},
+      Type = #{type,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      UpdateDate = #{updatedate,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

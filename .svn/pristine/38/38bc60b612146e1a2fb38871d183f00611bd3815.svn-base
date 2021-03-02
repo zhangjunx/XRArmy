@@ -1,0 +1,76 @@
+/*layui.use("layer",function(){
+	var layer=layui.layer;
+})*/
+//点击选择发布对象
+$("#selectPerson").click(function(){
+	layer.open({
+		type:2,
+		title:"接收对象",
+		content:"publishObjects.html",
+		area:["90%","92%"]
+	})
+})
+
+$("#informer").val(window.top.username);
+layui.use(["form","table","laydate"],function(){
+	 var $ = layui.$,
+	  form = layui.form,
+	  table = layui.table,
+	  laydate = layui.laydate;
+	  
+	 lay('.date').each(function() {
+			laydate.render({
+				elem : this,//元素
+				trigger : 'click',//怎么触发
+			});
+	 });
+	//监听提交按钮    
+	 form.on('submit(component-form-demo1)', function(data){
+	     var obj=data.field;
+	     obj.informer=window.top.loginid;
+	     obj.loginid=window.top.loginid;
+	     if($("#approver li").length == 0){
+	    	 layer.msg("请选择发布对象!",{time:2000});
+	    	 return;
+	     }
+	     var arr=[];
+	     for(var i=0;i<$("#approver li").length;i++){
+	    	 var userid=$("#approver li").eq(i).attr("data-userid");
+	    	 arr.push(userid);
+	     }
+	     obj.str=arr;
+		 var toggle="/NoticeInform/add";
+	     $.ajax({
+	    	 url:url+toggle,
+	    	 type:"POST",
+	    	 data:obj,
+	    	 traditional:true,
+	    	 success:function(res){
+	    		 console.log(res)
+	    		 layer.msg(res.reason,{time:2000},function(){
+	    			 $("#title").val("");
+	    			 $("#content").val("");
+	    			 $("#approver").html("");
+	    		 });
+	    	 }
+	     })
+    });
+	 //点击取消
+	 $("#resetData").click(function(){
+		parent.layer.closeAll();
+	 })
+	
+})
+//双击对象删除
+$(document).on("dblclick","#approver li",function(){
+	$(this).remove();
+})
+//创建人员,发布对象
+function createObjects(arr){
+	for(var item of arr){
+		if($("#approver li[data-userid="+item.userid+"]").length == 0){
+			var $li=$("<li class='approver-item' data-userid="+item.userid+">"+item.username+"</li>");
+			$("#approver").append($li);
+		}
+	}
+}

@@ -1,0 +1,29 @@
+package com.xr.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.xr.entry.SynBoxRecord;
+
+@Service
+public interface ISynBoxRecordService {
+
+	int insertSelectiveService(SynBoxRecord record);
+
+	int updateByPrimaryKeySelectiveService(SynBoxRecord record);
+
+	SynBoxRecord selectByPrimaryKeyService(Integer id);
+
+	int deleteByPrimaryKeyService(Integer id);
+
+	List<Map<String, Object>> getListService(Map m);
+
+	int getListCountService(Map m);
+
+	List<Map<String, Object>> getHolderService(Map m);
+
+	 
+
+}

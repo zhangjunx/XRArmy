@@ -1,0 +1,253 @@
+var getCar;
+layui.use(["form","table"],function(){
+	 var $ = layui.$,
+	  form = layui.form,
+	  table = layui.table;
+	  getPeople();//人员通道
+	 
+	  //监听搜索
+	  form.on('submit(LAY-user-front-search)', function(data){
+	    var field = data.field;
+	    var index=$(".main-tab .label.curr").index();
+	    if(index==0){
+	    	 field.type="P";
+	    	//执行重载
+		    table.reload('LAY-user-manage', {
+		      where: field
+		    });
+	    }else if(index==1){
+	    	 field.type="P";
+	    	//执行重载
+		    table.reload('LAY-car-manage', {
+		      where: field
+		    });
+	    }
+	  });
+	  
+	  function getPeople(){
+		  table.render({
+			    elem: '#LAY-user-manage',
+			    url:url+'/ChannelData/getList',
+			    cellMinWidth: 80,
+			    height: "full-232",
+			    method:"POST",
+			    request:{
+			   	pageName:"curpage",
+			   	limitName:"pagesize",
+			   },
+			   where:{
+				   "type":"P"
+			   },
+			   parseData: function(res){ //res 即为原始返回的数据
+			   	console.log(res);
+			       return {
+			         "code": res.flag==true?"0":"", //解析接口状态
+			         "msg": res.reason, //解析提示文本
+			         "count": res.count, //解析数据长度
+			         "data": res.result //解析数据列表
+			       };
+			     },
+			    cols:  [[
+			    	  {field:'ID', title:'序号', width:100,sort:true,templet:function(d){
+						  return d.LAY_TABLE_INDEX+1
+					  }},
+				      {field:'channelname', title:'通道名称', width:200,sort:true},
+				      {field:'locatname', title:'通道位置', width:200,sort:true},
+				      {field:'areaname', title:'所属区域', width:200},
+				      {field:'remark', title:'备注', width:300,sort:true},
+				      {field:'devicelist', title:'绑定的设备', sort:true,templet:function(d){
+				    	  var arr=[];
+				    	  if(d.arr==undefined || d.arr==""){
+				    		  return "";
+				    	  }else{
+				    		  for(var item of d.arr){
+				    			  if(item.id!=undefined && item.id!=null && item.id!='' && item.id==item.deviceno){
+				    				  arr.push(item.devicename);
+				    			  }
+				    		  }
+				    		  return arr.join(",");
+				    	  }
+				      }},
+				      {fixed: 'right', title:'操作',width:300, templet:function(){
+						  var $a2="<a class='layui-btn layui-btn-normal layui-btn-xs' lay-event='edit'>编辑</a>";
+						  var $a3="<a class='layui-btn layui-btn-danger layui-btn-xs' lay-event='del'>删除</a>";
+						  var $a4="<a class='layui-btn layui-btn-warm layui-btn-xs' lay-event='setDevice'>绑定设备</a>";
+						  return $a2+$a3+$a4;
+					  }},
+				    ]],
+			     page: true,
+			     limit:15,
+				 limits:[15,20,30,40,50,60,70,80,90]
+			  }); 
+	  }
+	  
+	  
+	  //车辆通道
+	  getCar=function(){
+		  table.render({
+			    elem: '#LAY-car-manage',
+			    url:url+'/ChannelData/getList',
+			    cellMinWidth: 80,
+			    height: "full-232",
+			   method:"POST",
+			   request:{
+			   	pageName:"curpage",
+			   	limitName:"pagesize",
+			   },
+			   where:{
+				   "type":"C"
+			   },
+			   parseData: function(res){ //res 即为原始返回的数据
+			   	console.log(res);
+			       return {
+			         "code": res.flag==true?"0":"", //解析接口状态
+			         "msg": res.reason, //解析提示文本
+			         "count": res.count, //解析数据长度
+			         "data": res.result //解析数据列表
+			       };
+			     },
+			    cols:  [[
+			    	  {field:'ID', title:'序号', width:100,sort:true,templet:function(d){
+						  return d.LAY_TABLE_INDEX+1
+					  }},
+				      {field:'channelname', title:'通道名称', width:200,sort:true},
+				      {field:'locatname', title:'通道位置', width:200,sort:true},
+				      {field:'areaname', title:'所属区域', width:200},
+				      {field:'remark', title:'备注', width:300,sort:true},
+				      {field:'devicelist', title:'绑定的设备', sort:true,templet:function(d){
+				    	  var arr=[];
+				    	  if(d.arr==undefined || d.arr==""){
+				    		  return "";
+				    	  }else{
+				    		  for(var item of d.arr){
+				    			  if(item.id!=undefined && item.id!=null && item.id!='' && item.id==item.deviceno){
+				    				  arr.push(item.devicename);
+				    			  }
+				    		  }
+				    		  return arr.join(",");
+				    	  }
+				      }},
+				      {fixed: 'right', title:'操作',width:300, templet:function(){
+						  var $a2="<a class='layui-btn layui-btn-normal layui-btn-xs' lay-event='edit'>编辑</a>";
+						  var $a3="<a class='layui-btn layui-btn-danger layui-btn-xs' lay-event='del'>删除</a>";
+						  var $a4="<a class='layui-btn layui-btn-warm layui-btn-xs' lay-event='setDevice'>绑定设备</a>";
+						  return $a2+$a3+$a4;
+					  }},
+				    ]],
+			     page: true,
+			     limit:15,
+				 limits:[15,20,30,40,50,60,70,80,90]
+			  });
+	  }
+	  
+		  
+		  //监听工具条 人员通道
+		  table.on('tool(LAY-user-manage)', function(obj){
+		  			var data = obj.data;
+		   if(obj.event === 'del'){
+				  layer.confirm('确定删除?', function(index){
+					$.ajax({
+						url:url+'/ChannelData/delete?channelno='+data.channelno,
+						type:"POST",
+						success:function(res){
+							console.log(res)
+							layer.close(index);
+							if(res.flag){
+								layer.msg(res.reason,{time:1000},function(){
+									 obj.del();
+								})
+							}else{
+								layer.msg(res.reason,{time:2000});
+							}
+						}
+					})
+				  });
+				} else if(obj.event === 'edit'){
+					 layer.open({
+						 type:2,
+						 title:"修改人员通道",
+						 content:"passagewayManage_add.html?id="+data.channelno,
+						 area:["90%","91%"],
+					 })
+				}else if(obj.event === 'setDevice'){
+					layer.open({
+						 type:2,
+						 title:"绑定设备",
+						 content:"device-layer.html?pannel=0&id="+data.channelno,
+						 area:["90%","91%"],
+					 })
+				}
+		  });
+		  
+		  
+		  //监听工具条 车辆通道
+		  table.on('tool(LAY-car-manage)', function(obj){
+		  			var data = obj.data;
+		   if(obj.event === 'del'){
+				  layer.confirm('确定删除?', function(index){
+					$.ajax({
+						url:url+'/ChannelData/delete?channelno='+data.channelno,
+						type:"POST",
+						success:function(res){
+							console.log(res)
+							layer.close(index);
+							if(res.flag){
+								layer.msg(res.reason,{time:1000},function(){
+									 obj.del();
+								})
+							}else{
+								layer.msg(res.reason,{time:2000});
+							}
+						}
+					})
+				  });
+				}else if(obj.event === 'edit'){
+					 layer.open({
+						 type:2,
+						 title:"修改设备通道",
+						 content:"carPassManage_add.html?id="+data.channelno,
+						 area:["90%","91%"],
+					 })
+				}else if(obj.event === 'setDevice'){
+					layer.open({
+						 type:2,
+						 title:"绑定设备",
+						 content:"device-layer.html?pannel=1&id="+data.channelno,
+						 area:["90%","91%"],
+					 })
+				}
+		  });
+		  
+		//点击选项卡
+		  $(".main-tab .label").click(function(){
+			  	$(this).addClass("curr").siblings().removeClass("curr");
+			  	var index=$(this).index();
+			  	$(".layui-card-body").eq(index).show().siblings(".layui-card-body").hide();
+			  	if(index==0){
+			  		getPeople();
+			  	}else if(index==1){
+			  		getCar();
+			  	} 
+		  })
+		  
+		  
+})
+//点击新增
+ $('#add').click(function(){
+	 var index=$(".main-tab .label.curr").index();
+	 if(index==0){
+		 layer.open({
+			 type:2,
+			 title:"添加人员通道",
+			 content:"passagewayManage_add.html",
+			 area:["90%","91%"],
+		 })
+	 }else if(index==1){
+		 layer.open({
+			 type:2,
+			 title:"添加车辆通道",
+			 content:"carPassManage_add.html",
+			 area:["90%","91%"],
+		 })
+	 } 
+});

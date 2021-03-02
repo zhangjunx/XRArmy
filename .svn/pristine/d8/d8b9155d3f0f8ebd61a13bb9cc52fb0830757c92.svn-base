@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xr.mapper.ACL_Role_MenuMapper" >
+  <resultMap id="BaseResultMap" type="com.xr.entry.ACL_Role_Menu" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="RoleID" property="roleid" jdbcType="INTEGER" />
+    <result column="MenuID" property="menuid" jdbcType="VARCHAR" />
+    <result column="Source" property="source" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, RoleID, MenuID, Source
+  </sql>
+  
+  
+  <update id="addBatch" parameterType="Map">
+       <foreach collection="list" item="item" index="index" separator=";">
+            <if test="item.type=='aa'">
+                insert into acl_role_menu (RoleID, MenuID,Source)
+              values (#{item.roleid}, #{item.menuid},#{item.source})
+            </if>
+            <if test="item.type=='dd'">
+                delete from acl_role_menu
+               where ID = #{item.id}
+            </if>
+       </foreach>
+  </update>
+  
+   <select id="getList" resultType="Map">
+       select id,roleid,menuid from acl_role_menu
+      <where>
+	      <if test="id != null and id!='' " >
+	        and ID=#{id}
+	      </if>
+	      <if test="roleid != null and roleid!='' " >
+	        and RoleID=#{roleid}
+	      </if>
+	      <if test="menuid != null and menuid!='' " >
+	         and MenuID=#{menuid}
+	      </if>
+       </where>
+  </select>
+  
+  <select id="getTree" resultType="Map">
+      select me.id "id",me.name "title",case when me.parentid is null then '' else me.parentid end "parent" ,
+me.code,me.menuurl,me.iconsrc,me.ifscreen,me.ifshow,me.level,me.sort,
+t.id rmid,t.roleid,t.rolename,t.menuid,t.menuname from acl_menu me 
+left join (select rm.id,rm.roleid,rm.menuid,r.name rolename,m.name menuname from acl_role r
+inner join  acl_role_menu rm on r.id=rm.roleid
+inner join acl_menu m on rm.menuid=m.id
+<where>
+    <if test="roleid!=null and roleid!='' ">
+         r.id=#{roleid}
+    </if>
+</where>
+) t on me.id=t.menuid
+  </select>
+  
+  <select id="getMyPerm" resultType="Map">
+  select t.menuid "id",m.name "title",
+case when m.parentid is NULL then '' else m.parentid end "parent",m.code,m.iconsrc,m.menuurl,
+m.level,m.sort,m.ifshow,m.ifshow  from acl_menu m 
+inner join (select menuid from acl_role_menu 
+where roleid=(select roleid from userdata 
+where userid='admin'))t on t.menuid=m.id
+order by id asc
+      <!-- select t.menuid,me.name menuname,me.parentid,me.menuurl,
+me.iconsrc,me.ifshow,me.ifscreen,me.sort,me.level 
+ from (select rm.id,rm.roleid,rm.menuid,r.name rolename from acl_role r
+inner join  acl_role_menu rm on r.id=rm.roleid
+where r.id=(select roleid from userdata u inner join acl_role r on r.id=u.RoleID
+ where userid=#{loginid}))t inner join acl_menu me on me.id=t.menuid -->
+  </select>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from acl_role_menu
+    where ID = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from acl_role_menu
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xr.entry.ACL_Role_Menu" >
+    insert into acl_role_menu (ID, RoleID, MenuID, 
+      Source)
+    values (#{id,jdbcType=INTEGER}, #{roleid,jdbcType=INTEGER}, #{menuid,jdbcType=VARCHAR}, 
+      #{source,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xr.entry.ACL_Role_Menu" >
+    insert into acl_role_menu
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="roleid != null" >
+        RoleID,
+      </if>
+      <if test="menuid != null" >
+        MenuID,
+      </if>
+      <if test="source != null" >
+        Source,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="roleid != null" >
+        #{roleid,jdbcType=INTEGER},
+      </if>
+      <if test="menuid != null" >
+        #{menuid,jdbcType=VARCHAR},
+      </if>
+      <if test="source != null" >
+        #{source,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xr.entry.ACL_Role_Menu" >
+    update acl_role_menu
+    <set >
+      <if test="roleid != null" >
+        RoleID = #{roleid,jdbcType=INTEGER},
+      </if>
+      <if test="menuid != null" >
+        MenuID = #{menuid,jdbcType=VARCHAR},
+      </if>
+      <if test="source != null" >
+        Source = #{source,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xr.entry.ACL_Role_Menu" >
+    update acl_role_menu
+    set RoleID = #{roleid,jdbcType=INTEGER},
+      MenuID = #{menuid,jdbcType=VARCHAR},
+      Source = #{source,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,179 @@
+.carFile{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 102px;
+    height: 102px;
+    opacity: 0;
+}
+
+.peopleBox{
+	display: flex;
+	flex-wrap: wrap;
+}
+.peopleBox .people-item{
+	border: 1px solid #ddd;
+	color: #666;
+	padding: 10px 15px;
+	box-sizing: border-box;
+	margin: 10px;
+	cursor: pointer;
+	border-radius: 5px;
+	display: inline-block;
+}
+.peopleBox .people-item.curr{
+	background: url(../../img/right-role.png) no-repeat right 66px;
+	border-color: #039BDD;
+}
+.peopleBox .people-item p label{
+	width: 50px;
+	display: inline-block;
+	text-align: right;
+}
+.peopleBox .people-item p span{
+	width: 130px;
+	display: inline-block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	vertical-align: middle;
+	margin-left: 10px;
+}
+/* 车辆同步数据开始 */
+.passTime{
+	height: 100% ;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+}
+
+.pass-box{
+	border-right: 1px solid #ddd;
+	height: 100%;
+	display:inline-block;
+	vertical-align:top;
+}
+.pass-box .pass-list{
+	height: calc(100% - 45px);
+	overflow: auto;
+	text-align:center;
+}
+.pass-box h2 span{
+	height: 18px;
+	line-height: 18px;
+	float: right;
+	display: inline-block;
+	padding-left: 16px;
+	width: auto;
+	overflow: hidden;
+	background: url(../../img/form_check.png) no-repeat left 0px;
+	cursor: pointer;
+	font-size: 14px;
+	margin-top: 4px;
+}
+.pass-box h2 span.curr{
+    float: right;
+	display: inline-block;
+	padding-left: 16px;
+	width: auto;
+	overflow: hidden;
+	background: url(../../img/form_check_on.png) no-repeat left 3px;
+}
+.pass-box .pass-list li{
+    margin: 10px 0;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    display: inline-block;
+    border-radius: 5px;
+    overflow: hidden;
+    width:200px;
+    text-align:center;
+    line-height:40px;
+}
+.pass-box .pass-list li.curr{
+	border:1px solid #1E9FFF;
+	color:#1E9FFF;
+}
+.pass-box .pass-list li .checkbox{
+	height: 18px;
+	line-height: 18px;
+	float: left;
+	display: inline-block;
+	padding-left: 16px;
+	width: auto;
+	overflow: hidden;
+	background: url(../../img/form_check.png) no-repeat left 0px;
+	cursor: pointer;
+	font-size: 14px;
+	margin-right: 5px;
+	margin-top: 2px;
+}
+.pass-box .pass-list li.curr .checkbox{
+	float: left;
+	display: inline-block;
+	padding-left: 16px;
+	width: auto;
+	overflow: hidden;
+	background: url(../../img/form_check_on.png) no-repeat left 3px;
+}
+.timeGroup h2, .pass-box h2{
+	padding: 10px 10px;
+	border-bottom: 1px solid #ddd;
+	font-size: 18px;
+	color: #333;
+	background: #F5F7FA;
+}
+
+.timeGroup{
+	height: 100%;
+	display:inline-block;
+}
+.timeGroup h2 span{
+	height: 18px;
+	line-height: 18px;
+	float: right;
+	display: inline-block;
+	padding-left: 16px;
+	width: auto;
+	overflow: hidden;
+	background: url(../../img/form_check.png) no-repeat left 0px;
+	cursor: pointer;
+	font-size: 14px;
+	margin-top: 4px;
+	margin-right: 10px;
+}
+.timeGroup h2 span.curr{
+	float: right;
+	display: inline-block;
+	padding-left: 16px;
+	width: auto;
+	overflow: hidden;
+	background: url(../../img/form_check_on.png) no-repeat left 3px;
+}
+.timeGroup .timeBox{
+	height: calc(100% - 55px);
+	overflow: auto;
+}
+.timeGroup .timeBox li{
+	padding: 0 10px;
+	box-sizing: border-box;
+	margin: 10px 0;
+	display: flex;
+}
+
+.timeGroup .timeBox li label.layui-form-label{
+	padding: 9px 0;
+	box-sizing: border-box;
+	width: 50px;
+}
+.timeGroup .timeBox li div.layui-input-block{
+	margin-left:60px;
+}
+.timeGroup .timeBox .time{
+	width: 46%;
+}
+
+
+/* 车辆同步数据结束 */

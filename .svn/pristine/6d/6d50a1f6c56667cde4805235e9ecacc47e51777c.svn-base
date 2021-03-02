@@ -1,0 +1,224 @@
+$(function(){
+	console.log("登录人：")
+	console.log(getUrlParam("userid"))
+	console.log(getUrlParam("username"))
+	if(getUrlParam("userid") != "administrator"){
+		console.log("11111：")
+		getMenu();//获取菜单
+		
+	}
+	if(sessionStorage.sessionID== "undefined" ||sessionStorage.sessionID==null||sessionStorage.sessionID==""){
+		  window.location.href="index.html";
+	  }
+	getOneInfo();
+})
+var arrList=[];
+var loginid=getUrlParam("userid");
+var username=getUrlParam("username");
+//点击退出
+$("#exit").click(function(){
+	$.ajax({
+		url:url+"/UserData/loginOut",
+		type:"POST",
+		data:{"loginid":getUrlParam("userid")},
+		success:function(data){
+			console.log(data);
+			layer.msg(data.reason,{time:1000},function(){
+				window.location.href="index.html";
+			})
+		}
+	})
+})
+var arr=[];
+$(document).on("click","#LAY-system-side-menu li a",function(){
+	arr=[];
+	var id=$(this).attr("data-id");
+	if(id != "" && id != undefined && id != null){
+		var list=getObjById(arrList,id);
+		if(list&&list.children){
+		  var childrenList=getChildren(list.children);
+			  for(var item of childrenList){
+				  arr.push(item.title);
+			  }
+		  }
+	}
+})
+//根据id查询id所对应的对象
+function getObjById(list,id){
+	//判断list是否是数组
+	if(!list instanceof Array){
+	  return  null
+	}
+	//遍历数组
+	for(let i in list){
+	  let item=list[i]
+	  if(item.id==id){
+		return item
+	  }else{
+		 //查不到继续遍历
+		  if(item.children){
+		   let value=getObjById(item.children,id)
+		 //查询到直接返回
+		   if(value){
+			   return value
+			 }
+		}
+	   
+	  }
+	 
+	 }
+}
+//list 为已查询到的节点children数组，returnvalue为返回值
+function  getChildren (list,returnValue=[]) {
+     for(let i in list){
+      //把元素都存入returnValue
+      returnValue.push(list[i])
+      if (list[i].children) {
+          getChildren(list[i].children, returnValue)
+      }
+     }
+     return returnValue
+ }
+//获取菜单并生成菜单
+function getMenu(){
+	$.ajax({
+		url:url+"/UserData/getMyMenu",
+		type:"POST",
+		data:{"loginid":getUrlParam("userid")},
+		success:function(data){
+			console.log(data);
+			$("#LAY-system-side-menu").empty();
+			if(data.flag){
+				var data=toTree(data.result);
+				arrList=data;
+				$.each(data,function(i,obj){
+					var content='<li class="layui-nav-item">';
+					if(i==0){
+						content='<li class="layui-nav-item">';
+					}
+					if(obj.level == 1){//菜单
+						content+='<a href="javascript:;"><i class="layui-icon"><img src='+obj.iconsrc+' class="icon-width"></i><cite>'+obj.title+'</cite><span class="layui-nav-more"></span></a>';
+					}else if(obj.level == 2){//页面
+						content+='<a href='+obj.menuurl+' data-id='+obj.id+' target="mainFrame"><i class="layui-icon"><img src='+obj.iconsrc+' class="icon-width"></i><cite>'+obj.title+'</cite></a>';
+					}
+					//这里是添加所有的子菜单
+					content+=loadchild(obj,i);
+					content+='</li>';
+					$("#LAY-system-side-menu").append(content);
+				});
+				
+				layui.use("element",function(){
+					var element=layui.element;
+					element.init();
+				})
+			}
+			
+		}
+	})
+}
+
+//组装子菜单的方法
+function loadchild(obj,index){
+	if(obj==null){
+		return;
+	}
+	var content='';
+	if(obj.children!=null && obj.children.length>0){
+		content+='<dl class="layui-nav-child">';
+		$.each(obj.children,function(i,note){
+			content+='<dd>';
+			if(index==0 && i==0){
+				content+='<dd class="layui-this">'
+			}
+			if(note.level == 1){//菜单
+				content+='<a href="javascript:;">'+note.title+'<span class="layui-nav-more"></span></a>';
+			}else if(note.level == 2){//页面
+				content+='<a href='+note.menuurl+' data-id='+note.id+' target="mainFrame">'+note.title+'</a>';
+			}
+			
+			if(note.children==null || note.children.length == 0){
+				return;
+			}
+			if(note.level == 1){
+				content+=loadchild(note);
+			}
+			content+='</dd>';
+		});
+		content+='</dl>';
+	}
+	return content;
+}
+
+//扁平数据转换成树形结构
+function toTree(data) {
+    let result = []
+    if(!Array.isArray(data)) {
+        return result
+    }
+    data.forEach(item => {
+        delete item.children;
+    });
+    let map = {};
+    data.forEach(item => {
+        map[item.id] = item;
+    });
+    data.forEach(item => {
+        let parent = map[item.parent];
+        if(parent) {
+            (parent.children || (parent.children = [])).push(item);
+        } else {
+            result.push(item);
+        }
+    });
+    return result;
+}
+
+
+
+
+//获取当前登录用户信息
+function getOneInfo(){
+	var userid=getUrlParam("userid");
+	if(userid=="undefined"|| userid==null || userid=="" ){
+		window.location.href="index.html";
+		//return;
+	}else if(userid!="undefined"&& userid!=null&& userid!="" && userid=="administrator"){
+		$("#logotitle").empty(); 
+		$("#loginUser").html("");
+		var html="<img src='img/logo3.png' alt='' style='width: 19px;vertical-align: text-top;margin-right: 6px;'>智慧军营";
+		$("#logotitle").append(html); 
+		$("#loginUser").html(getUrlParam("username"));
+	}else{
+		$.ajax({
+			url:url+"/UserData/getList",
+			type:"POST",
+			data:{"userid":userid,"loginid":userid},
+			success:function(data){
+				console.log(data);
+				$("#logotitle").empty(); 
+				$("#loginUser").html("");
+				if(!data.flag){
+					return; 
+				}
+				var res=data.result[0];
+				var title=res.title==undefined?"智慧军营":res.title;
+				var username=res.username==undefined?res.userid:res.username;
+				var logo=res.logo==undefined?"img/logo3.png":"data:image/png;base64,"+res.logo;
+				var html="<img src='"+logo+"' alt='' style='width: 19px;vertical-align: text-top;margin-right: 6px;'>"+title;
+				$("#loginUser").html(username);
+				$("#logotitle").append(html);
+			}
+		})
+	}
+	 
+	
+}
+//url地址中解析参数
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var paramsString = window.location.search.substring(1);
+    var r = window.decodeURIComponent(window.atob(paramsString)).match(reg);
+    if (r != null) return decodeURIComponent(r[2]); return null;
+}
+
+
